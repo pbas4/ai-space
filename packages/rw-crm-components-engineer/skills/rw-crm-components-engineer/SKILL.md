@@ -18,3 +18,5 @@ Create new components, fix bugs in existing components, and add features to exis
 8. Run relevant verification and return structured context, plan, status, verification, and proposed learning entry.
 
 Never guess. When Figma conflicts with the existing UI library, the UI library is authoritative; flag the conflict and record the decision.
+
+Use focused Figma, code-search, testing, visual-review, and accessibility helpers as evidence providers. Keep the full Confluence best-practices subtree rooted at page `21790813` indexed and refresh relevant descendants on demand, including nested pages. Report gaps instead of silently omitting them. Keep stable learning rules separate from task-specific exceptions, and persist a proposed lesson only after user approval.

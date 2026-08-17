@@ -20,3 +20,8 @@ outputs:
     - proposed_learning_entry
 authority:
   figma_conflict: ui-library
+helpers:
+  - figma
+  - code-search
+  - testing
+  - accessibility
