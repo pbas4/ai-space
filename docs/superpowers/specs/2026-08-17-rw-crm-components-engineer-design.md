@@ -18,7 +18,11 @@ The engineer maintains an indexed knowledge map for discovering relevant sources
 
 Task context and Figma links are the preferred starting points when available. The engineer identifies the relevant files, components, stories, routes, design nodes, tokens, and states, then retrieves only the context needed for the task. It reports missing, stale, inaccessible, or ambiguous context instead of filling gaps with assumptions. Figma files are not treated as permanently retained in full.
 
-The knowledge map also indexes the RW Front-End Chapter’s [Best practices and Conventions](https://rwnl.atlassian.net/wiki/spaces/FC/pages/21790813/Best+practices+and+Conventions) page and refreshes it on demand because the page can change. Relevant guidance includes:
+The knowledge map also indexes the entire Confluence subtree rooted at the RW Front-End Chapter’s [Best practices and Conventions](https://rwnl.atlassian.net/wiki/spaces/FC/pages/21790813/Best+practices+and+Conventions) page. This includes the root page, every current and future direct child, and every nested descendant page—not only the root page content. The agent discovers the descendant hierarchy and refreshes page metadata and relevant bodies on demand because the subtree can change. It must report inaccessible, archived, ambiguous, or newly changed pages rather than silently omitting them.
+
+The currently discovered direct subpages are Contribution Guidelines, Styling best practices, Enhancements to ESLint Configuration, Default PR Template, Package Versioning, Project Changelogs, Application Performance, New Components (moving away from AntD), and Folder structure. These names are an index snapshot, not a fixed allowlist; recursive discovery remains authoritative for each task.
+
+Relevant guidance from the root and applicable subpages includes:
 
 - use the Shared Form library and `Form.Item` validation/labels for forms, keeping required-field indicators aligned with validation rules;
 - keep applications warning-free, documenting any intentionally ignored non-fixable warning;
