@@ -1,0 +1,9 @@
+{
+  "root": "21790813",
+  "descendants": [
+    { "id": "1318322345", "title": "Contribution Guidelines", "parentId": "21790813" },
+    { "id": "132448285", "title": "Styling best practices", "parentId": "21790813" },
+    { "id": "2100592655", "title": "Folder structure", "parentId": "21790813" }
+  ],
+  "refreshPolicy": "on-demand-recursive"
+}
