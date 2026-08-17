@@ -1,0 +1,8 @@
+{
+  "id": "new-component",
+  "task": "Create DatePicker",
+  "request": { "task": "Create DatePicker", "componentScope": ["DatePicker"], "repositoryScope": ["packages/ui"], "figmaLinks": [], "constraints": [] },
+  "context": { "scope": { "components": ["DatePicker"], "screens": [], "routes": [] }, "sources": [], "evidence": [], "gaps": [], "ambiguities": [], "libraryDecisions": [] },
+  "editSetHash": "new-hash",
+  "edits": ["packages/ui/DatePicker.mjs"]
+}

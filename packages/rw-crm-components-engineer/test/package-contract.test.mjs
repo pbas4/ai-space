@@ -25,6 +25,6 @@ test('package exposes RW CRM Components Engineer profile and reusable skill', as
   assert.match(skill, /plan/i);
   assert.match(skill, /code edits?/i);
   assert.equal(packageJson.type, 'module');
-  assert.equal(packageJson.scripts.test, 'node --test test/*.test.mjs');
-  assert.equal(packageJson.scripts.validate, 'node scripts/validate-package.mjs');
+  assert.equal(packageJson.scripts.test, 'npm run test:unit && npm run test:scenarios && npm run test:contract');
+  assert.equal(packageJson.scripts.validate, 'npm run test && node scripts/validate-package.mjs');
 });

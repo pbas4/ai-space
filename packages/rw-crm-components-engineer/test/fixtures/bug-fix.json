@@ -1,0 +1,8 @@
+{
+  "id": "bug-fix",
+  "task": "Fix DatePicker keyboard bug",
+  "request": { "task": "Fix DatePicker keyboard bug", "componentScope": ["DatePicker"], "repositoryScope": ["packages/ui/DatePicker.mjs"], "figmaLinks": [], "constraints": [] },
+  "context": { "scope": { "components": ["DatePicker"], "screens": [], "routes": [] }, "sources": [], "evidence": [], "gaps": [], "ambiguities": [], "libraryDecisions": [] },
+  "editSetHash": "bug-hash",
+  "edits": ["packages/ui/DatePicker.mjs", "packages/ui/DatePicker.test.mjs"]
+}

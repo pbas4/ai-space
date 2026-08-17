@@ -10,7 +10,15 @@ const required = [
   'skills/rw-crm-components-engineer/SKILL.md',
   'schemas/context-envelope.schema.json',
   'schemas/engineer-result.schema.json',
-  'schemas/learning-ledger.schema.json'
+  'schemas/learning-ledger.schema.json',
+  'references/workflow.md',
+  'references/rw-conventions.md',
+  'references/create-task-plan-consumer-contract.md',
+  'test/fixtures/new-component.json',
+  'test/fixtures/bug-fix.json',
+  'test/fixtures/feature-extension.json',
+  'test/fixtures/figma-conflict.json',
+  'test/fixtures/approved-correction.json'
 ];
 
 for (const relativePath of required) {

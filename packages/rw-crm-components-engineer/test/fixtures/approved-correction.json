@@ -1,0 +1,5 @@
+{
+  "id": "approved-correction",
+  "task": "Record a user correction",
+  "correction": { "id": "correction-1", "lesson": "Keep state owned by one entity", "classification": "stable-rule", "evidence": ["user correction"], "scope": ["state management"] }
+}

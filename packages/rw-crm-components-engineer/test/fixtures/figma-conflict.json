@@ -1,0 +1,8 @@
+{
+  "id": "figma-conflict",
+  "task": "Implement DatePicker from Figma",
+  "request": { "task": "Implement DatePicker from Figma", "componentScope": ["DatePicker"], "repositoryScope": ["packages/ui"], "figmaLinks": ["figma://date-picker"], "constraints": [] },
+  "context": { "scope": { "components": ["DatePicker"], "screens": [], "routes": [] }, "sources": [{ "id": "figma:date-picker", "kind": "figma", "uri": "figma://date-picker", "freshness": "fresh" }, { "id": "library:date-picker", "kind": "ui-library", "uri": "storybook://DatePicker", "freshness": "fresh" }], "evidence": [], "gaps": [], "ambiguities": [], "libraryDecisions": [{ "topic": "radius", "figma": "8px", "library": "4px", "authority": "ui-library", "decision": "use 4px" }] },
+  "editSetHash": "conflict-hash",
+  "edits": ["packages/ui/DatePicker.mjs"]
+}

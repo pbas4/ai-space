@@ -4,7 +4,10 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "node --test test/*.test.mjs",
-    "validate": "node scripts/validate-package.mjs"
+    "test": "npm run test:unit && npm run test:scenarios && npm run test:contract",
+    "test:unit": "node --test test/contracts.test.mjs test/context-map.test.mjs test/learning-ledger.test.mjs test/approval-gate.test.mjs test/engineer-workflow.test.mjs",
+    "test:scenarios": "node --test test/validation-scenarios.test.mjs",
+    "test:contract": "node --test test/package-contract.test.mjs test/instruction-contract.test.mjs",
+    "validate": "npm run test && node scripts/validate-package.mjs"
   }
 }
