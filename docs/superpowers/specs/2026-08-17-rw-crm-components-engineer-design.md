@@ -18,6 +18,18 @@ The engineer maintains an indexed knowledge map for discovering relevant sources
 
 Task context and Figma links are the preferred starting points when available. The engineer identifies the relevant files, components, stories, routes, design nodes, tokens, and states, then retrieves only the context needed for the task. It reports missing, stale, inaccessible, or ambiguous context instead of filling gaps with assumptions. Figma files are not treated as permanently retained in full.
 
+The knowledge map also indexes the RW Front-End Chapter’s [Best practices and Conventions](https://rwnl.atlassian.net/wiki/spaces/FC/pages/21790813/Best+practices+and+Conventions) page and refreshes it on demand because the page can change. Relevant guidance includes:
+
+- use the Shared Form library and `Form.Item` validation/labels for forms, keeping required-field indicators aligned with validation rules;
+- keep applications warning-free, documenting any intentionally ignored non-fixable warning;
+- prefer shared-library fonts, themes, and icons; avoid inline styles, unnecessary `!important`, excessive `z-index` layers, and unsafe CSS-module `:global` usage;
+- keep components below 250 lines, prefer focused custom hooks and one component per file, avoid code smells, excessive prop drilling, hidden/self-hiding components, and feature-specific behavior in generic components;
+- use appropriate types rather than `ts-ignore` or `any` except where an external library requires it, and prefer modern JavaScript and array functions;
+- keep state owned by a single entity and follow the project’s established structure; and
+- use the recommended project tooling where applicable, including GraphQL code generation/Apollo, Jest, and ESLint.
+
+These conventions are implementation and review inputs, not a substitute for inspecting the current UI library or code. If the page conflicts with current repository practice, the engineer reports the discrepancy and requests a decision rather than silently choosing.
+
 When Figma conflicts with the existing UI library, the UI library is authoritative. The engineer must flag the conflict, identify the affected decision, and record which library rule or component contract governs the implementation.
 
 ## Engineer profile and workflow
