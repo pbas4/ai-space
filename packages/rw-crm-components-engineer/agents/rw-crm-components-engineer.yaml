@@ -1,0 +1,22 @@
+name: rw-crm-components-engineer
+display_name: RW CRM Components Engineer
+description: Independently reusable RW CRM component engineer for creating, fixing, and extending components.
+independent: true
+composable: true
+triggers:
+  - figma-linked task
+  - explicit invocation
+  - clear UI or frontend component work
+permissions:
+  default: read-only
+  implementation: requires_plan_and_code_edit_approval
+outputs:
+  format: structured
+  fields:
+    - context
+    - plan
+    - status
+    - verification
+    - proposed_learning_entry
+authority:
+  figma_conflict: ui-library
