@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://rw.local/schemas/context-envelope.schema.json",
+  "type": "object",
+  "required": ["task", "componentScope", "repositoryScope", "figmaLinks", "constraints", "approvals"],
+  "properties": {
+    "task": { "type": "string", "minLength": 1 },
+    "componentScope": { "type": "array", "items": { "type": "string" } },
+    "repositoryScope": { "type": "array", "items": { "type": "string" } },
+    "figmaLinks": { "type": "array", "items": { "type": "string" } },
+    "constraints": { "type": "array", "items": { "type": "string" } },
+    "approvals": { "type": ["object", "null"] }
+  }
+}

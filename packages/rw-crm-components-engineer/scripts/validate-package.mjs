@@ -7,7 +7,10 @@ const required = [
   '.codex-plugin/plugin.json',
   'package.json',
   'agents/rw-crm-components-engineer.yaml',
-  'skills/rw-crm-components-engineer/SKILL.md'
+  'skills/rw-crm-components-engineer/SKILL.md',
+  'schemas/context-envelope.schema.json',
+  'schemas/engineer-result.schema.json',
+  'schemas/learning-ledger.schema.json'
 ];
 
 for (const relativePath of required) {

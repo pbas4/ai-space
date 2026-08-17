@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://rw.local/schemas/engineer-result.schema.json",
+  "type": "object",
+  "required": ["context", "plan", "status", "changedArtifacts", "verification", "proposedLearningEntry"],
+  "properties": {
+    "context": { "type": "object" },
+    "plan": { "type": ["object", "null"] },
+    "status": { "enum": ["needs-context", "awaiting-plan-approval", "awaiting-edit-approval", "implemented", "blocked"] },
+    "changedArtifacts": { "type": "array", "items": { "type": "string" } },
+    "verification": { "type": "object" },
+    "proposedLearningEntry": { "type": ["object", "null"] }
+  }
+}
