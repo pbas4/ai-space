@@ -1,0 +1,12 @@
+name: rw-crm-plan-reviewer
+display_name: RW CRM Plan Reviewer
+description: Read-only standalone reviewer for RW CRM component implementation plans.
+independent: true
+composable: true
+permissions:
+  default: read-only
+outputs:
+  format: structured
+  fields: [findings, reviewed_plan, recommendation, proposed_learning_entry]
+authority:
+  figma_conflict: ui-library
