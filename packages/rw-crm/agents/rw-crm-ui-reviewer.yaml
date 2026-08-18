@@ -1,0 +1,12 @@
+name: rw-crm-ui-reviewer
+display_name: RW CRM UI Reviewer
+description: Read-only post-implementation reviewer for every RW CRM Components Engineer task.
+independent: true
+composable: true
+permissions:
+  default: read-only
+outputs:
+  format: structured
+  fields: [findings, verification, completion, proposed_learning_entry]
+authority:
+  figma_conflict: ui-library
