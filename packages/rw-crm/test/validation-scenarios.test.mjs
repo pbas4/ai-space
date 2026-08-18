@@ -25,8 +25,9 @@ function deps(scenario) {
 
 for (const [name, scenario] of Object.entries(scenarios).slice(0, 4)) {
   test(`${name} scenario implements only after both approvals`, async () => {
-    const request = { ...scenario.request, approvals: { plan: { planId: scenario.id, approvedBy: 'user', approvedAt: 'now' }, codeEdits: { planId: scenario.id, editSetHash: scenario.editSetHash, approvedBy: 'user', approvedAt: 'now' } } };
-    const result = await runEngineerWorkflow(request, deps(scenario));
+    const request = { ...scenario.request, approvals: { codeEdits: { planId: scenario.id, editSetHash: scenario.editSetHash, approvedBy: 'user', approvedAt: 'now' } } };
+    const approvedPlan = { id: scenario.id, goal: scenario.task, approvalStatus: 'approved', approval: { approvedBy: 'user', approvedAt: 'now' } };
+    const result = await runEngineerWorkflow({ request, approvedPlan }, deps(scenario));
     assert.equal(result.status, 'implemented');
     assert.deepEqual(result.changedArtifacts, scenario.edits);
     assert.equal(result.verification.checks[0].status, 'passed');

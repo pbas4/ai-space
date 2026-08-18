@@ -2,7 +2,7 @@ import { assertImplementationAuthorized, approveCodeEdits, approvePlan, createAp
 
 const emptyVerification = { checks: [] };
 
-export async function runEngineerWorkflow(request, deps) {
+export async function runEngineerWorkflow({ request, approvedPlan }, deps) {
   const context = await deps.contextAdapter.discover(request);
   const base = {
     context,
@@ -14,10 +14,13 @@ export async function runEngineerWorkflow(request, deps) {
   };
   if (context.gaps?.length || context.ambiguities?.length) return base;
 
-  const plan = await deps.implementationAdapter.propose(context, request);
+  if (!approvedPlan || approvedPlan.approvalStatus !== 'approved' || !approvedPlan.approval) {
+    return { ...base, plan: approvedPlan ?? null, status: 'awaiting-plan-approval' };
+  }
+  const editProposal = await deps.implementationAdapter.propose(context, request, approvedPlan);
+  const plan = { ...approvedPlan, ...editProposal, id: approvedPlan.id };
   let state = createApprovalState(plan.id, plan.editSetHash);
-  if (!request.approvals?.plan) return { ...base, plan, status: 'awaiting-plan-approval' };
-  state = approvePlan(state, request.approvals.plan);
+  state = approvePlan(state, { planId: plan.id, ...approvedPlan.approval });
   if (!request.approvals?.codeEdits) return { ...base, plan, status: 'awaiting-edit-approval' };
   state = approveCodeEdits(state, request.approvals.codeEdits);
 

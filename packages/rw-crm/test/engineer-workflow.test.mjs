@@ -10,6 +10,7 @@ const request = {
   constraints: [],
   approvals: {}
 };
+const approvedPlan = { id: 'plan-1', goal: 'Add DatePicker', approvalStatus: 'approved', approval: { approvedBy: 'user', approvedAt: 'now' } };
 
 function deps(overrides = {}) {
   const calls = [];
@@ -36,27 +37,27 @@ function deps(overrides = {}) {
   };
 }
 
-test('returns a plan and never applies edits before both approvals', async () => {
+test('consumes an approved plan and never applies edits before both approvals', async () => {
   const firstDeps = deps();
-  const proposed = await runEngineerWorkflow(request, firstDeps);
-  assert.equal(proposed.status, 'awaiting-plan-approval');
+  const proposed = await runEngineerWorkflow({ request, approvedPlan }, firstDeps);
+  assert.equal(proposed.status, 'awaiting-edit-approval');
   assert.deepEqual(firstDeps.calls, ['context', 'propose']);
 
-  const planApproved = await runEngineerWorkflow({ ...request, approvals: { plan: { planId: 'plan-1', approvedBy: 'user', approvedAt: 'now' } } }, deps());
-  assert.equal(planApproved.status, 'awaiting-edit-approval');
+  const rejected = await runEngineerWorkflow({ request, approvedPlan: { ...approvedPlan, approvalStatus: 'awaiting-approval' } }, deps());
+  assert.equal(rejected.status, 'awaiting-plan-approval');
 
   const authorizedDeps = deps();
-  const implemented = await runEngineerWorkflow({ ...request, approvals: { plan: { planId: 'plan-1', approvedBy: 'user', approvedAt: 'now' }, codeEdits: { planId: 'plan-1', editSetHash: 'hash-1', approvedBy: 'user', approvedAt: 'now' } } }, authorizedDeps);
+  const implemented = await runEngineerWorkflow({ request: { ...request, approvals: { plan: { planId: 'plan-1', approvedBy: 'user', approvedAt: 'now' }, codeEdits: { planId: 'plan-1', editSetHash: 'hash-1', approvedBy: 'user', approvedAt: 'now' } } }, approvedPlan }, authorizedDeps);
   assert.equal(implemented.status, 'implemented');
   assert.deepEqual(authorizedDeps.calls, ['context', 'propose', 'apply', 'verify']);
 });
 
 test('blocks implementation when context is missing and surfaces library authority decisions', async () => {
-  const blocked = await runEngineerWorkflow(request, deps({ contextAdapter: { async discover() { return { scope: {}, sources: [], evidence: [], gaps: [{ reason: 'missing code', impact: 'cannot edit' }], ambiguities: [], libraryDecisions: [] }; } } }));
+  const blocked = await runEngineerWorkflow({ request, approvedPlan }, deps({ contextAdapter: { async discover() { return { scope: {}, sources: [], evidence: [], gaps: [{ reason: 'missing code', impact: 'cannot edit' }], ambiguities: [], libraryDecisions: [] }; } } }));
   assert.equal(blocked.status, 'needs-context');
   assert.deepEqual(blocked.changedArtifacts, []);
   assert.equal(blocked.verification.checks.length, 0);
 
-  const conflict = await runEngineerWorkflow(request, deps());
+  const conflict = await runEngineerWorkflow({ request, approvedPlan }, deps());
   assert.equal(conflict.context.libraryDecisions[0].authority, 'ui-library');
 });
