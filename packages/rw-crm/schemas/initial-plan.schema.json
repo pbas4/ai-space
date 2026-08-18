@@ -1,0 +1,1 @@
+{"type":"object","required":["id","goal","scope","files","interfaces","risks","verification","libraryDecisions","approvalStatus"]}

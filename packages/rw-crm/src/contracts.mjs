@@ -57,4 +57,43 @@ export function validateLedgerEntry(value) {
   return result(errors);
 }
 
+export function validateInitialPlan(value) {
+  const errors = [];
+  if (!value || typeof value !== 'object') return result(['initial plan must be an object']);
+  for (const field of ['id', 'goal']) if (typeof value[field] !== 'string' || value[field] === '') errors.push(`${field} is required`);
+  for (const field of ['files', 'interfaces', 'risks', 'verification', 'libraryDecisions']) if (!Array.isArray(value[field])) errors.push(`${field} must be an array`);
+  if (!value.scope || typeof value.scope !== 'object') errors.push('scope is required');
+  if (value.approvalStatus !== 'awaiting-approval') errors.push('initial plans must await approval');
+  return result(errors);
+}
+
+export function validatePlanReview(value) {
+  const errors = [];
+  if (!value || typeof value !== 'object') return result(['plan review must be an object']);
+  if (!Array.isArray(value.findings)) errors.push('findings must be an array');
+  if (!value.reviewedPlan || typeof value.reviewedPlan !== 'object') errors.push('reviewedPlan is required');
+  if (!new Set(['approve', 'revise', 'blocked']).has(value.recommendation)) errors.push('recommendation is invalid');
+  return result(errors);
+}
+
+export function validateUiReview(value) {
+  const errors = [];
+  if (!value || typeof value !== 'object') return result(['UI review must be an object']);
+  if (!Array.isArray(value.findings)) errors.push('findings must be an array');
+  if (!value.verification || typeof value.verification !== 'object') errors.push('verification is required');
+  if (!new Set(['pass', 'blocked', 'pass-with-findings']).has(value.completion)) errors.push('completion is invalid');
+  return result(errors);
+}
+
+export function validateModelProposal(value) {
+  const errors = [];
+  if (!value || typeof value !== 'object') return result(['model proposal must be an object']);
+  if (typeof value.proposalId !== 'string' || value.proposalId === '') errors.push('proposalId is required');
+  if (!new Set(['luna', 'terra', 'sol']).has(value.tier)) errors.push('tier is invalid');
+  if (!value.assignments || typeof value.assignments !== 'object') errors.push('assignments is required');
+  if (!Array.isArray(value.reasons)) errors.push('reasons must be an array');
+  if (!new Set(['awaiting-confirmation', 'approved', 'rejected']).has(value.status)) errors.push('status is invalid');
+  return result(errors);
+}
+
 export { VALID_LEDGER_CLASSES, VALID_STATUSES };
