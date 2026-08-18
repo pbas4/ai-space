@@ -9,12 +9,15 @@ const profiles = ['rw-crm-workflow', 'rw-crm-components-planner', 'rw-crm-plan-r
 
 test('manifest exports all independent RW CRM profiles and skills', async () => {
   const manifest = JSON.parse(await readFile(join(root, '.codex-plugin/plugin.json'), 'utf8'));
-  assert.deepEqual(Object.keys(manifest.entrypoints.profiles).sort(), profiles.sort());
-  assert.deepEqual(Object.keys(manifest.entrypoints.skills).sort(), profiles.sort());
+  assert.equal(manifest.skills, './skills/');
   for (const profile of profiles) {
     const content = await readFile(join(root, `agents/${profile}.yaml`), 'utf8');
     assert.match(content, /independent: true/);
     assert.match(content, /composable: true/);
+  }
+  for (const skill of profiles) {
+    const content = await readFile(join(root, `skills/${skill}/SKILL.md`), 'utf8');
+    assert.match(content, /^---\nname: .+\ndescription: .+\n---\n/);
   }
 });
 

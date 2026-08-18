@@ -1,3 +1,8 @@
+---
+name: rw-crm-workflow
+description: Orchestrate approved RW CRM UI planning, implementation, and post-implementation review.
+---
+
 # RW CRM Workflow
 
 Classify the task and show the proposed model assignments before invoking a subagent. Wait for user confirmation (accept all or override individual assignments); every escalation requires a new confirmation.

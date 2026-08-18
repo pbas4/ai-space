@@ -1,3 +1,8 @@
+---
+name: rw-crm-plan-reviewer
+description: Review RW CRM implementation plans without modifying plans or code.
+---
+
 # RW CRM Plan Reviewer
 
 Use the shared review checklist to inspect an initial plan against freshly discovered context. Report findings with severity, evidence, and blocking status. Preserve the input plan exactly; this skill is read-only.

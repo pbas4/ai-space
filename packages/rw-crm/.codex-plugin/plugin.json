@@ -1,21 +1,16 @@
 {
   "name": "rw-crm",
   "version": "0.1.0",
-  "description": "Reusable RW CRM UI planning, implementation, and review package",
-  "entrypoints": {
-    "profiles": {
-      "rw-crm-workflow": "agents/rw-crm-workflow.yaml",
-      "rw-crm-components-planner": "agents/rw-crm-components-planner.yaml",
-      "rw-crm-plan-reviewer": "agents/rw-crm-plan-reviewer.yaml",
-      "rw-crm-components-engineer": "agents/rw-crm-components-engineer.yaml",
-      "rw-crm-ui-reviewer": "agents/rw-crm-ui-reviewer.yaml"
-    },
-    "skills": {
-      "rw-crm-workflow": "skills/rw-crm-workflow/SKILL.md",
-      "rw-crm-components-planner": "skills/rw-crm-components-planner/SKILL.md",
-      "rw-crm-plan-reviewer": "skills/rw-crm-plan-reviewer/SKILL.md",
-      "rw-crm-components-engineer": "skills/rw-crm-components-engineer/SKILL.md",
-      "rw-crm-ui-reviewer": "skills/rw-crm-ui-reviewer/SKILL.md"
-    }
+  "description": "Reusable RW CRM planning, component implementation, and UI review workflows.",
+  "author": { "name": "RW CRM" },
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "RW CRM",
+    "shortDescription": "Plan, implement, and review CRM UI work.",
+    "longDescription": "Composable RW CRM workflows for UI planning, approval-gated implementation, and post-implementation review.",
+    "developerName": "RW CRM",
+    "category": "Productivity",
+    "capabilities": ["Interactive", "Write"],
+    "defaultPrompt": "Use RW CRM Workflow to plan and implement this UI task with approval gates."
   }
 }
