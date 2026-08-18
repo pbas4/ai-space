@@ -1,0 +1,11 @@
+name: rw-crm-workflow
+display_name: RW CRM Workflow
+description: Optional orchestrator for planning, approvals, implementation, and UI review.
+independent: true
+composable: true
+permissions:
+  default: read-only
+  implementation: delegated_to_components_engineer_after_approvals
+outputs:
+  format: structured
+  fields: [routing, model_proposal, planner, plan_review, plan_approval, engineer, ui_review, status]
