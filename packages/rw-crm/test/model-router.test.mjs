@@ -16,4 +16,7 @@ test('requires explicit confirmation for execution and escalation', () => {
   const escalation = requestModelEscalation(approved, 'sol', 'Figma conflict');
   assert.equal(escalation.status, 'awaiting-confirmation');
   assert.equal(approved.tier, 'terra');
+  const acceptedAll = approveModelExecution(proposal, { proposalId: proposal.proposalId, acceptAll: true, approvedBy: 'user', approvedAt: 'now' });
+  assert.deepEqual(acceptedAll.assignments, proposal.assignments);
+  assert.throws(() => approveModelExecution(proposal, { proposalId: proposal.proposalId, assignments: {}, approvedBy: 'user', approvedAt: 'now' }), /assignments/);
 });

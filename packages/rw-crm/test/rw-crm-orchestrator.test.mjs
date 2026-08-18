@@ -13,7 +13,7 @@ function deps(calls) {
     uiReviewer: async () => { calls.push('ui-reviewer'); return { findings: [], verification: { checks: [] }, completion: 'pass' }; }
   };
 }
-function modelApproval() { return { proposalId: 'model:Fix Button', assignments: {}, approvedBy: 'user', approvedAt: 'now' }; }
+function modelApproval() { return { proposalId: 'model:Fix Button', acceptAll: true, approvedBy: 'user', approvedAt: 'now' }; }
 
 test('pauses before every subagent until model confirmation', async () => {
   const calls = [];

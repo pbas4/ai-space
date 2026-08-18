@@ -5,9 +5,9 @@
   "type": "module",
   "scripts": {
     "test": "npm run test:unit && npm run test:scenarios && npm run test:contract",
-    "test:unit": "node --test test/contracts.test.mjs test/context-map.test.mjs test/learning-ledger.test.mjs test/approval-gate.test.mjs test/engineer-workflow.test.mjs",
+    "test:unit": "node --test test/contracts.test.mjs test/context-map.test.mjs test/learning-ledger.test.mjs test/approval-gate.test.mjs test/model-router.test.mjs test/components-planner.test.mjs test/plan-reviewer.test.mjs test/engineer-workflow.test.mjs test/ui-reviewer.test.mjs test/ui-task-router.test.mjs test/rw-crm-orchestrator.test.mjs",
     "test:scenarios": "node --test test/validation-scenarios.test.mjs",
-    "test:contract": "node --test test/package-migration.test.mjs test/package-contract.test.mjs test/instruction-contract.test.mjs",
+    "test:contract": "node --test test/package-migration.test.mjs test/package-contract.test.mjs test/profile-contract.test.mjs test/plugin-consumer-contract.test.mjs test/instruction-contract.test.mjs",
     "validate": "npm run test && node scripts/validate-package.mjs"
   }
 }

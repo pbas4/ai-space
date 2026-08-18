@@ -29,7 +29,9 @@ export function proposeModelExecution(request, classification, defaults = DEFAUL
 export function approveModelExecution(proposal, approval) {
   if (proposal.status !== 'awaiting-confirmation') throw new Error('model proposal is not awaiting confirmation');
   if (proposal.proposalId !== approval.proposalId) throw new Error('model proposal ID does not match');
-  return { ...proposal, assignments: approval.assignments, status: 'approved', approval: { approvedBy: approval.approvedBy, approvedAt: approval.approvedAt } };
+  const assignments = approval.acceptAll ? proposal.assignments : approval.assignments;
+  if (!assignments || typeof assignments !== 'object' || Object.keys(assignments).length !== Object.keys(proposal.assignments).length) throw new Error('model assignments must be confirmed for every subagent');
+  return { ...proposal, assignments, status: 'approved', approval: { approvedBy: approval.approvedBy, approvedAt: approval.approvedAt } };
 }
 
 export function requestModelEscalation(current, target, reason) {
