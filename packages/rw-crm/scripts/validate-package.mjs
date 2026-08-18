@@ -26,5 +26,5 @@ for (const relativePath of required) {
 }
 
 const manifest = JSON.parse(await readFile(join(root, '.codex-plugin/plugin.json'), 'utf8'));
-if (manifest.name !== 'rw-crm-components-engineer') throw new Error('invalid plugin name');
-console.log('RW CRM Components Engineer package contract: PASS');
+if (manifest.name !== 'rw-crm') throw new Error('invalid plugin name');
+console.log('RW CRM package contract: PASS');

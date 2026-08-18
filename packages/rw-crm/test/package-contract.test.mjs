@@ -16,7 +16,7 @@ test('package exposes RW CRM Components Engineer profile and reusable skill', as
   const skill = await read('skills/rw-crm-components-engineer/SKILL.md');
   const packageJson = JSON.parse(await read('package.json'));
 
-  assert.equal(manifest.name, 'rw-crm-components-engineer');
+  assert.equal(manifest.name, 'rw-crm');
   assert.match(profile, /RW CRM Components Engineer/);
   assert.match(profile, /independently|independent/i);
   assert.match(profile, /compos/i);

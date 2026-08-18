@@ -1,7 +1,7 @@
 {
-  "name": "rw-crm-components-engineer",
+  "name": "rw-crm",
   "version": "0.1.0",
-  "description": "Reusable RW CRM component engineering agent package",
+  "description": "Reusable RW CRM UI planning, implementation, and review package",
   "entrypoints": {
     "profile": "agents/rw-crm-components-engineer.yaml",
     "skill": "skills/rw-crm-components-engineer/SKILL.md"
