@@ -1,0 +1,12 @@
+name: rw-crm-components-planner
+display_name: RW CRM Components Planner
+description: Read-only planner that turns relevant CRM UI context into an initial implementation plan.
+independent: true
+composable: true
+permissions:
+  default: read-only
+outputs:
+  format: structured
+  fields: [context, plan, proposed_learning_entry]
+authority:
+  figma_conflict: ui-library
