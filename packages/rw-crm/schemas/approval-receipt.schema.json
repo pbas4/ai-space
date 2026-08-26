@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://rw.local/schemas/approval-receipt.schema.json",
+  "type": "object",
+  "required": ["planId", "planHash", "approvedBy", "approvedAt"],
+  "properties": {
+    "planId": { "type": "string", "minLength": 1 },
+    "planHash": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "editSetHash": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "approvedBy": { "type": "string", "minLength": 1 },
+    "approvedAt": { "type": "string", "format": "date-time" }
+  }
+}

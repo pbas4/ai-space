@@ -6,6 +6,9 @@ const VALID_STATUSES = new Set([
   'blocked'
 ]);
 const VALID_LEDGER_CLASSES = new Set(['stable-rule', 'task-exception']);
+const MODEL_ASSIGNMENT_ROLES = ['planner', 'planReviewer', 'engineer', 'uiReviewer', 'prWriter', 'orchestrator'];
+const ALLOWED_MODELS = new Set(['gpt-5.6-luna', 'gpt-5.6-terra', 'gpt-5.6-sol']);
+const ALLOWED_REASONING = new Set(['light', 'medium', 'high']);
 
 const result = (errors) => ({ valid: errors.length === 0, errors });
 
@@ -31,6 +34,7 @@ export function validateContextEnvelope(value) {
     if (!Array.isArray(value[field])) errors.push(`${field} must be an array`);
   }
   if (!value.approvals || typeof value.approvals !== 'object') errors.push('approvals is required');
+  if (value.approvals && (!('plan' in value.approvals) || !('codeEdits' in value.approvals))) errors.push('approvals must include plan and codeEdits');
   return result(errors);
 }
 
@@ -91,8 +95,22 @@ export function validateModelProposal(value) {
   if (typeof value.proposalId !== 'string' || value.proposalId === '') errors.push('proposalId is required');
   if (!new Set(['luna', 'terra', 'sol']).has(value.tier)) errors.push('tier is invalid');
   if (!value.assignments || typeof value.assignments !== 'object') errors.push('assignments is required');
+  else for (const role of MODEL_ASSIGNMENT_ROLES) {
+    const assignment = value.assignments[role];
+    if (!ALLOWED_MODELS.has(assignment?.model) || !ALLOWED_REASONING.has(assignment?.reasoning)) errors.push(`assignment is invalid for ${role}`);
+  }
   if (!Array.isArray(value.reasons)) errors.push('reasons must be an array');
   if (!new Set(['awaiting-confirmation', 'approved', 'rejected']).has(value.status)) errors.push('status is invalid');
+  return result(errors);
+}
+
+export function validateApprovalReceipt(value, { requireEditSetHash = false } = {}) {
+  const errors = [];
+  if (!value || typeof value !== 'object') return result(['approval receipt must be an object']);
+  for (const field of ['planId', 'planHash', 'approvedBy', 'approvedAt']) if (typeof value[field] !== 'string' || value[field] === '') errors.push(`${field} is required`);
+  if (!/^[a-f0-9]{64}$/.test(value.planHash ?? '')) errors.push('planHash must be a SHA-256 digest');
+  if (requireEditSetHash && !/^[a-f0-9]{64}$/.test(value.editSetHash ?? '')) errors.push('editSetHash must be a SHA-256 digest');
+  if (value.approvedAt && (Number.isNaN(Date.parse(value.approvedAt)) || new Date(value.approvedAt).toISOString() !== value.approvedAt)) errors.push('approvedAt must be an ISO-8601 timestamp');
   return result(errors);
 }
 

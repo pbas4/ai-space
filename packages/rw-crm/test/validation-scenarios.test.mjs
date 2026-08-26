@@ -5,6 +5,7 @@ import { approveLearningEntry, proposeLearningEntry } from '../src/ledger/learni
 import { classifyTask, proposeModelExecution, requestModelEscalation } from '../src/routing/model-router.mjs';
 import { routeUiTask } from '../src/routing/ui-task-router.mjs';
 import { reviewImplementation } from '../src/review/ui-reviewer.mjs';
+import { createEditSetDigest, createPlanDigest } from '../src/workflow/approval-gate.mjs';
 
 const scenarios = {
   newComponent: JSON.parse(await import('node:fs/promises').then(({ readFile }) => readFile(new URL('./fixtures/new-component.json', import.meta.url), 'utf8'))),
@@ -28,8 +29,15 @@ function deps(scenario) {
 
 for (const [name, scenario] of Object.entries(scenarios).slice(0, 4)) {
   test(`${name} scenario implements only after both approvals`, async () => {
-    const request = { ...scenario.request, approvals: { codeEdits: { planId: scenario.id, editSetHash: scenario.editSetHash, approvedBy: 'user', approvedAt: 'now' } } };
-    const approvedPlan = { id: scenario.id, goal: scenario.task, approvalStatus: 'approved', approval: { approvedBy: 'user', approvedAt: 'now' } };
+    const approvedPlan = { id: scenario.id, goal: scenario.task, approvalStatus: 'approved' };
+    const planHash = createPlanDigest(approvedPlan);
+    const request = {
+      ...scenario.request,
+      approvals: {
+        plan: { planId: scenario.id, planHash, approvedBy: 'user', approvedAt: '2026-08-26T10:00:00.000Z' },
+        codeEdits: { planId: scenario.id, planHash, editSetHash: createEditSetDigest(scenario.id, scenario.edits), approvedBy: 'user', approvedAt: '2026-08-26T10:01:00.000Z' }
+      }
+    };
     const result = await runEngineerWorkflow({ request, approvedPlan }, deps(scenario));
     assert.equal(result.status, 'implemented');
     assert.deepEqual(result.changedArtifacts, scenario.edits);

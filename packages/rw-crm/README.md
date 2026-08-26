@@ -19,6 +19,7 @@ The package can be used independently or consumed by the Create Task Plan plugin
 
 - Planning and reviews are read-only.
 - Implementation requires separate approval of the implementation plan and code edits.
+- Approval receipts bind the plan ID and SHA-256 plan hash; code-edit receipts also bind the exact edit-set hash, so changed content requires fresh approval.
 - The UI library is authoritative when it conflicts with Figma; conflicts are reported explicitly.
 - Missing or ambiguous Figma, library, CRM-code, or convention context is reported rather than guessed.
 - Learning-ledger entries are proposed after corrections and persisted only with user approval.
@@ -35,6 +36,14 @@ Before subagents run, the workflow presents a native model-selection prompt with
 - `Individual agents` — choose each assignment separately.
 
 The PR Description Writer always uses `gpt-5.6-luna` with light reasoning.
+
+The selected assignment is passed to each worker as immutable execution context. The package validates that contract; the host must honor the requested Codex model and reasoning level or report that it cannot.
+
+## Context and routing
+
+For each task, the package indexes the complete Confluence Best Practices subtree rooted at `21790813` and retrieves only relevant page bodies on demand. Read failures are returned as context gaps.
+
+Tasks are classified as `ui-related`, `possible-ui`, or `non-ui` with evidence. Standalone RW CRM handles `possible-ui`; Create Task Plan auto-invokes it only for `ui-related` work and asks before routing an ambiguous task.
 
 ## RW CRM workflow
 

@@ -21,12 +21,12 @@ Create new components, fix bugs in existing components, and add features to exis
 2. Retrieve only the relevant indexed context and report missing, stale, inaccessible, or ambiguous context.
 3. Consult the versioned learning ledger and distinguish stable rules from task-specific exceptions.
 4. Propose a bounded plan with affected files, behavior, risks, and verification.
-5. Wait for explicit approval of the plan.
-6. Show the proposed code edits and wait for explicit approval of those edits.
+5. Wait for an explicit plan approval receipt containing the exact plan ID and SHA-256 plan hash.
+6. Show the proposed code edits and wait for an explicit code-edit approval receipt containing that plan hash and the exact SHA-256 edit-set hash.
 7. Implement only the approved scope.
 8. For component changes in the `rw-crm-components` repository, apply the mandatory version and changelog policy in [references/rw-components-versioning.md](../../references/rw-components-versioning.md) before verification.
 9. Run relevant verification and return structured context, plan, status, verification, and proposed learning entry.
 
 Never guess. When Figma conflicts with the existing UI library, the UI library is authoritative; flag the conflict and record the decision.
 
-Use focused Figma, code-search, testing, visual-review, and accessibility helpers as evidence providers. Keep the full Confluence best-practices subtree rooted at page `21790813` indexed and refresh relevant descendants on demand, including nested pages. Report gaps instead of silently omitting them. Keep stable learning rules separate from task-specific exceptions, and persist a proposed lesson only after user approval.
+Use focused Figma, code-search, testing, visual-review, and accessibility helpers as evidence providers. Keep the full Confluence best-practices subtree rooted at page `21790813` indexed per task and refresh relevant descendants on demand, including nested pages; retrieve only applicable page bodies. Report gaps instead of silently omitting them. Keep stable learning rules separate from task-specific exceptions, and persist a proposed lesson only after user approval.
