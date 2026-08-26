@@ -1,14 +1,52 @@
 # RW Create Task Plan
 
-The Realworks-oriented Create Task Plan plugin analyzes Jira work, routes UI-related tasks through the reusable RW CRM agents, and creates reviewed implementation plans after approval.
+Realworks-oriented Jira task planning plugin for Codex. It turns a Jira issue into a reviewed, implementation-ready plan while preserving read-only analysis and explicit approval gates.
 
-The package directory is prefixed with `rw-` for monorepo clarity. The plugin identifier remains `create-task-plan` so existing installations and invocations continue to work:
+The package directory uses the `rw-` prefix for monorepo clarity. The technical plugin identifier remains `create-task-plan`, so existing installations continue to work:
 
-```text
-create-task-plan@personal
+```bash
+codex plugin add create-task-plan@personal
 ```
 
+## What it does
+
+1. Resolves and reads a Jira issue through the configured Atlassian Rovo connection.
+2. Classifies the issue as UI-related or non-UI using evidence from the Jira task.
+3. For UI-related tasks, invokes the installed `rw-crm:rw-crm-components-planner` with the Jira scope, links, Figma references, and repository context.
+4. Runs requirements, repository-impact, and technical-risk analysis.
+5. Presents gaps, assumptions, risks, and the reviewed implementation plan for user approval.
+6. Executes approved work only on an approved non-protected task branch, with checkpoint commit authorization.
+
+## UI routing
+
+The RW CRM package is invoked only when the Jira issue contains a Figma/design reference or clearly identifies CRM UI-library or reusable component work. Non-UI issues continue through the plugin's separate planning workflow.
+
+The planner is read-only. Create Task Plan does not invoke the Components Engineer or other implementation agents while creating the initial plan. Figma is also read-only and is inspected only after explicit user consent.
+
+## Safety and approvals
+
+- Existing Jira issues are never edited, commented on, or transitioned.
+- New Jira subtasks require explicit approval of the complete creation batch.
+- The implementation plan must be explicitly approved before implementation.
+- Branch names require approval and must follow the issue taxonomy.
+- `main` and `master` are protected from task changes and commits.
+- Commits require checkpoint approval; pushing and pull-request creation require separate approval.
+- Missing UI context is surfaced as an explicit planning risk; the plugin does not invent component details.
+
+## Package relationship
+
+This plugin is a thin consumer of the independently reusable RW CRM package:
+
+```text
+rw-create-task-plan
+└── consumes installed rw-crm:rw-crm-components-planner for UI planning
+```
+
+The RW CRM package can be invoked directly for standalone planning, implementation, review, and PR-description workflows.
+
 ## Validation
+
+From this package directory:
 
 ```bash
 python3 -m unittest discover -s tests -v
