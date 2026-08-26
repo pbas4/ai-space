@@ -13,6 +13,7 @@ const required = [
   'schemas/learning-ledger.schema.json',
   'schemas/initial-plan.schema.json', 'schemas/plan-review.schema.json', 'schemas/ui-review.schema.json', 'schemas/model-proposal.schema.json',
   'references/workflow.md',
+  'references/testing-policy.md',
   'references/rw-conventions.md',
   'references/create-task-plan-consumer-contract.md',
   'references/review-checklist.md', 'references/model-policy.md',

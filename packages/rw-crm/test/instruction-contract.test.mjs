@@ -34,3 +34,18 @@ test('engineer requires component version and Pol changelog updates only in rw-c
     'component change', 'Do not apply', 'CHANGELOG-GUIDE.md'
   ]) assert.match(text, new RegExp(phrase.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i'), phrase);
 });
+
+test('RW CRM target-repository verification uses direct Jest and prohibits Nx', async () => {
+  const paths = [
+    'skills/rw-crm-workflow/SKILL.md',
+    'skills/rw-crm-components-planner/SKILL.md',
+    'skills/rw-crm-plan-reviewer/SKILL.md',
+    'skills/rw-crm-components-engineer/SKILL.md',
+    'skills/rw-crm-ui-reviewer/SKILL.md',
+    'references/testing-policy.md'
+  ];
+  const text = await Promise.all(paths.map(read)).then((files) => files.join('\n'));
+  assert.match(text, /direct Jest commands/i);
+  assert.match(text, /never invoke Nx/i);
+  assert.match(text, /Nx-wrapped/i);
+});
