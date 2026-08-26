@@ -7,6 +7,40 @@ const DEFAULTS = {
   orchestrator: { model: 'gpt-5.6-luna', reasoning: 'medium' }
 };
 
+const SELECTION_OPTIONS = [
+  { value: 'recommended', label: 'Recommended', description: 'Automatically choose models from task complexity and context.', nativePrompt: true },
+  { value: 'light', label: 'Light', description: 'Luna for the whole workflow with focused reasoning.', nativePrompt: true },
+  { value: 'medium', label: 'Medium', description: 'Terra for core work and Luna for supporting review/orchestration.', nativePrompt: true },
+  { value: 'high', label: 'High', description: 'Sol for analysis and implementation with high analytical reasoning.', nativePrompt: true },
+  { value: 'individual', label: 'Individual agents', description: 'Choose the model and reasoning for each agent separately.', nativePrompt: true }
+];
+
+function presetAssignments(preset) {
+  const common = { prWriter: { model: 'gpt-5.6-luna', reasoning: 'light' }, orchestrator: { model: 'gpt-5.6-luna', reasoning: 'medium' } };
+  if (preset === 'light') return {
+    planner: { model: 'gpt-5.6-luna', reasoning: 'high' },
+    planReviewer: { model: 'gpt-5.6-luna', reasoning: 'medium' },
+    engineer: { model: 'gpt-5.6-luna', reasoning: 'medium' },
+    uiReviewer: { model: 'gpt-5.6-luna', reasoning: 'medium' },
+    ...common
+  };
+  if (preset === 'medium') return {
+    planner: { model: 'gpt-5.6-terra', reasoning: 'high' },
+    planReviewer: { model: 'gpt-5.6-luna', reasoning: 'medium' },
+    engineer: { model: 'gpt-5.6-terra', reasoning: 'high' },
+    uiReviewer: { model: 'gpt-5.6-terra', reasoning: 'high' },
+    ...common
+  };
+  if (preset === 'high') return {
+    planner: { model: 'gpt-5.6-sol', reasoning: 'high' },
+    planReviewer: { model: 'gpt-5.6-sol', reasoning: 'high' },
+    engineer: { model: 'gpt-5.6-sol', reasoning: 'medium' },
+    uiReviewer: { model: 'gpt-5.6-sol', reasoning: 'high' },
+    ...common
+  };
+  return null;
+}
+
 export function classifyTask(request, contextSummary = {}) {
   const reasons = [];
   if (contextSummary.ambiguities?.length || contextSummary.gaps?.length || request.figmaLinks?.length || request.constraints?.includes('accessibility')) {
@@ -20,11 +54,14 @@ export function classifyTask(request, contextSummary = {}) {
   return { tier: 'luna', reasons: ['localized, well-scoped work'], escalationTriggers: ['scope-expansion', 'context-gap'] };
 }
 
-export function proposeModelExecution(request, classification, defaults = DEFAULTS) {
-  const assignments = structuredClone(defaults);
-  if (classification.tier === 'luna') for (const key of ['planner', 'planReviewer', 'engineer', 'uiReviewer']) assignments[key] = { model: 'gpt-5.6-luna', reasoning: 'medium' };
-  if (classification.tier === 'terra') for (const key of ['planner', 'engineer', 'uiReviewer']) assignments[key] = { model: 'gpt-5.6-terra', reasoning: 'high' };
-  return { proposalId: `model:${request.task ?? 'task'}`, tier: classification.tier, assignments, reasons: classification.reasons, status: 'awaiting-confirmation' };
+export function proposeModelExecution(request, classification, defaults = DEFAULTS, preset = 'recommended') {
+  if (preset !== 'recommended' && preset !== 'individual' && !['light', 'medium', 'high'].includes(preset)) throw new Error(`unknown model preset: ${preset}`);
+  const assignments = presetAssignments(preset) ?? structuredClone(defaults);
+  if (preset === 'recommended') {
+    if (classification.tier === 'luna') for (const key of ['planner', 'planReviewer', 'engineer', 'uiReviewer']) assignments[key] = { model: 'gpt-5.6-luna', reasoning: 'medium' };
+    if (classification.tier === 'terra') for (const key of ['planner', 'engineer', 'uiReviewer']) assignments[key] = { model: 'gpt-5.6-terra', reasoning: 'high' };
+  }
+  return { proposalId: `model:${request.task ?? 'task'}`, tier: classification.tier, preset, assignments, selectionOptions: SELECTION_OPTIONS, reasons: classification.reasons, status: 'awaiting-confirmation' };
 }
 
 export function approveModelExecution(proposal, approval) {
@@ -40,4 +77,4 @@ export function requestModelEscalation(current, target, reason) {
   return { escalationId: `${current.proposalId}:${target}`, from: current.tier, to: target, reason, status: 'awaiting-confirmation' };
 }
 
-export { DEFAULTS };
+export { DEFAULTS, SELECTION_OPTIONS };
