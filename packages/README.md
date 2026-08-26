@@ -11,3 +11,9 @@ Each directory under this folder is an independently usable project within the A
 - Document the project’s validation or test command in its own README or manifest.
 
 Projects may use different runtimes or no runtime at all; the monorepo does not require a shared package manager.
+## Packages
+
+- [`rw-crm/`](rw-crm/) — reusable RW CRM planning, implementation, and UI-review agents.
+- [`rw-create-task-plan/`](rw-create-task-plan/) — Jira task planning plugin that consumes RW CRM UI planning agents.
+
+Each package is independently installable and owns its source, tests, documentation, and runtime configuration.

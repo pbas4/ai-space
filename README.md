@@ -7,6 +7,7 @@ Monorepo for independent AI projects, agents, plugins, and reusable workflows.
 Projects live under [`packages/`](packages/). Each project owns its own source, tests, documentation, and runtime configuration.
 
 - [`packages/rw-crm/`](packages/rw-crm/) — reusable RW CRM planning, implementation, and UI-review Codex plugin.
+- [`packages/rw-create-task-plan/`](packages/rw-create-task-plan/) — Realworks-oriented Create Task Plan plugin with RW CRM UI planning integration.
 
 ## Working with a project
 

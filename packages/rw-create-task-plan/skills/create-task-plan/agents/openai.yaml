@@ -1,0 +1,8 @@
+interface:
+  display_name: Create Task Plan
+  short_description: Analyze Jira work, plan it, and execute safely on approved branches.
+  default_prompt: Create a task plan for Jira issue PROJECT-123.
+policy:
+  allow_implicit_invocation: false
+dependencies:
+  tools: []

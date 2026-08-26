@@ -1,0 +1,27 @@
+{
+  "name": "create-task-plan",
+  "version": "0.2.1+codex.20260826085815",
+  "description": "Analyze Jira tasks, route UI work through the read-only RW UI Components Planner, and execute approved plans safely on protected task branches.",
+  "author": {
+    "name": "Pol"
+  },
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Create Task Plan",
+    "shortDescription": "Turn Jira tasks into reviewed, implementation-ready plans.",
+    "longDescription": "Reads Jira through configured Atlassian Rovo, optionally inspects linked Figma designs, routes UI-related work through the read-only RW UI Components Planner, analyzes risks in parallel, and executes approved plans safely.",
+    "developerName": "Pol",
+    "category": "Productivity",
+    "capabilities": [
+      "Read-only Jira and Figma analysis",
+      "Approved Jira subtask creation",
+      "Protected-branch execution",
+      "Task-scoped commit authorization",
+      "Parallel requirements and risk analysis"
+    ],
+    "defaultPrompt": [
+      "Create a task plan for PROJECT-123",
+      "Create a task plan for this Jira issue: https://example.atlassian.net/browse/PROJECT-123"
+    ]
+  }
+}
