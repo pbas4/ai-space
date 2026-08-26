@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { classifyTask, proposeModelExecution, approveModelExecution, requestModelEscalation } from '../src/routing/model-router.mjs';
+import { classifyTask, proposeModelExecution, approveModelExecution, approveModelEscalation, requestModelEscalation } from '../src/routing/model-router.mjs';
 
 test('classifies simple, standard, and complex tasks', () => {
   assert.equal(classifyTask({ task: 'Change button copy', componentScope: ['Button'] }, {}).tier, 'luna');
@@ -51,4 +51,38 @@ test('offers native-selectable Light, Medium, High, and Recommended model modes'
   assert.equal(high.assignments.engineer.model, 'gpt-5.6-sol');
   assert.equal(high.assignments.engineer.reasoning, 'medium');
   assert.equal(high.assignments.uiReviewer.reasoning, 'high');
+});
+
+test('honors the requested preset and rejects role substitution in individual approval', () => {
+  const classification = { tier: 'terra', reasons: ['standard work'], escalationTriggers: [] };
+  const proposal = proposeModelExecution({ task: 'Fix Button', modelSelection: { preset: 'light' } }, classification);
+  assert.equal(proposal.preset, 'light');
+  assert.deepEqual(proposal.assignments.engineer, { model: 'gpt-5.6-luna', reasoning: 'medium' });
+
+  const substituted = { ...proposal.assignments };
+  substituted.unexpectedWorker = substituted.planner;
+  delete substituted.planner;
+  assert.throws(() => approveModelExecution(proposal, {
+    proposalId: proposal.proposalId,
+    assignments: substituted,
+    approvedBy: 'user',
+    approvedAt: 'now'
+  }), /roles/);
+});
+
+test('requires explicit confirmation before applying a model escalation', () => {
+  const proposal = approveModelExecution(
+    proposeModelExecution({ task: 'Fix Button' }, { tier: 'terra', reasons: ['standard'], escalationTriggers: [] }),
+    { proposalId: 'model:Fix Button', acceptAll: true, approvedBy: 'user', approvedAt: 'now' }
+  );
+  const escalation = requestModelEscalation(proposal, 'sol', 'Figma conflict');
+  assert.throws(() => approveModelEscalation(proposal, escalation, { escalationId: escalation.escalationId, acceptAll: false }), /assignments/);
+  const approved = approveModelEscalation(proposal, escalation, {
+    escalationId: escalation.escalationId,
+    acceptAll: true,
+    approvedBy: 'user',
+    approvedAt: 'later'
+  });
+  assert.equal(approved.status, 'approved');
+  assert.equal(approved.escalation.escalationId, escalation.escalationId);
 });

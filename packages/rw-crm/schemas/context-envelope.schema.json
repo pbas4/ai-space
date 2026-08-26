@@ -9,6 +9,13 @@
     "repositoryScope": { "type": "array", "items": { "type": "string" } },
     "figmaLinks": { "type": "array", "items": { "type": "string" } },
     "constraints": { "type": "array", "items": { "type": "string" } },
-    "approvals": { "type": ["object", "null"] }
+    "approvals": {
+      "type": "object",
+      "required": ["plan", "codeEdits"],
+      "properties": {
+        "plan": { "type": ["object", "null"] },
+        "codeEdits": { "type": ["object", "null"] }
+      }
+    }
   }
 }

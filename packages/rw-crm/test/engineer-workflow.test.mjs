@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { runEngineerWorkflow } from '../src/workflow/engineer-workflow.mjs';
+import { createEditSetDigest, createPlanDigest } from '../src/workflow/approval-gate.mjs';
 
 const request = {
   task: 'Add DatePicker',
@@ -10,7 +11,10 @@ const request = {
   constraints: [],
   approvals: {}
 };
-const approvedPlan = { id: 'plan-1', goal: 'Add DatePicker', approvalStatus: 'approved', approval: { approvedBy: 'user', approvedAt: 'now' } };
+const approvedPlan = { id: 'plan-1', goal: 'Add DatePicker', approvalStatus: 'approved' };
+const approvedAt = '2026-08-26T10:00:00.000Z';
+const planReceipt = { planId: 'plan-1', planHash: createPlanDigest(approvedPlan), approvedBy: 'user', approvedAt };
+const codeReceipt = { planId: 'plan-1', planHash: createPlanDigest(approvedPlan), editSetHash: createEditSetDigest('plan-1', ['packages/ui/DatePicker.mjs']), approvedBy: 'user', approvedAt: '2026-08-26T10:01:00.000Z' };
 
 function deps(overrides = {}) {
   const calls = [];
@@ -40,16 +44,26 @@ function deps(overrides = {}) {
 test('consumes an approved plan and never applies edits before both approvals', async () => {
   const firstDeps = deps();
   const proposed = await runEngineerWorkflow({ request, approvedPlan }, firstDeps);
-  assert.equal(proposed.status, 'awaiting-edit-approval');
-  assert.deepEqual(firstDeps.calls, ['context', 'propose']);
+  assert.equal(proposed.status, 'awaiting-plan-approval');
+  assert.deepEqual(firstDeps.calls, ['context']);
 
   const rejected = await runEngineerWorkflow({ request, approvedPlan: { ...approvedPlan, approvalStatus: 'awaiting-approval' } }, deps());
   assert.equal(rejected.status, 'awaiting-plan-approval');
 
   const authorizedDeps = deps();
-  const implemented = await runEngineerWorkflow({ request: { ...request, approvals: { plan: { planId: 'plan-1', approvedBy: 'user', approvedAt: 'now' }, codeEdits: { planId: 'plan-1', editSetHash: 'hash-1', approvedBy: 'user', approvedAt: 'now' } } }, approvedPlan }, authorizedDeps);
+  const implemented = await runEngineerWorkflow({ request: { ...request, approvals: { plan: planReceipt, codeEdits: codeReceipt } }, approvedPlan }, authorizedDeps);
   assert.equal(implemented.status, 'implemented');
   assert.deepEqual(authorizedDeps.calls, ['context', 'propose', 'apply', 'verify']);
+});
+
+test('does not trust an approval embedded in the plan or a stale receipt', async () => {
+  const embedded = { ...approvedPlan, approval: { approvedBy: 'user', approvedAt } };
+  const noRequestApproval = await runEngineerWorkflow({ request, approvedPlan: embedded }, deps());
+  assert.equal(noRequestApproval.status, 'awaiting-plan-approval');
+
+  const stalePlan = { ...approvedPlan, files: ['DatePicker.tsx'] };
+  const stale = await runEngineerWorkflow({ request: { ...request, approvals: { plan: planReceipt } }, approvedPlan: stalePlan }, deps());
+  assert.equal(stale.status, 'awaiting-plan-approval');
 });
 
 test('blocks implementation when context is missing and surfaces library authority decisions', async () => {

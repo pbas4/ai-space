@@ -8,12 +8,17 @@ function normalize(source, defaults = {}) {
   };
 }
 
-export function buildSourceIndex({ figma = [], uiLibrary = [], crmCode = [], confluenceRoot = null }) {
+export function buildSourceIndex({ figma = [], uiLibrary = [], crmCode = [], confluence = [], confluenceRoot = null }) {
+  const confluenceSources = confluence.length
+    ? confluence
+    : confluenceRoot
+      ? [{ ...confluenceRoot, isConfluenceRoot: true }]
+      : [];
   return [
     ...figma.map((source) => normalize(source, { kind: 'figma' })),
     ...uiLibrary.map((source) => normalize(source, { kind: 'ui-library' })),
     ...crmCode.map((source) => normalize(source, { kind: 'crm-code' })),
-    ...(confluenceRoot ? [normalize(confluenceRoot, { kind: 'confluence' })] : [])
+    ...confluenceSources.map((source) => normalize(source, { kind: 'confluence' }))
   ];
 }
 
@@ -23,7 +28,13 @@ export async function discoverConfluenceTree(rootId, listChildren) {
   const visited = new Set([rootId]);
 
   async function visit(parentId, depth) {
-    const children = await listChildren(parentId);
+    let children;
+    try {
+      children = await listChildren(parentId);
+    } catch (error) {
+      gaps.push({ sourceId: parentId, reason: 'child-discovery-failed', impact: error.message });
+      return;
+    }
     for (const child of children) {
       if (child.inaccessible) {
         gaps.push({ sourceId: child.id, reason: 'inaccessible', impact: 'descendant body and children unavailable' });
@@ -45,14 +56,19 @@ export async function discoverConfluenceTree(rootId, listChildren) {
 
 function matches(source, envelope) {
   const scope = [...(envelope.componentScope ?? []), ...(envelope.repositoryScope ?? [])].map(String);
-  const haystack = [source.id, source.uri, ...(source.tags ?? [])].join(' ').toLowerCase();
+  const haystack = [source.id, source.uri, source.title, ...(source.tags ?? [])].filter(Boolean).join(' ').toLowerCase();
   const scopeMatch = scope.some((value) => haystack.includes(value.toLowerCase()));
   const figmaMatch = (envelope.figmaLinks ?? []).some((link) => source.uri === link || source.uri.includes(link));
-  return source.kind === 'confluence' || scopeMatch || figmaMatch;
+  return scopeMatch || figmaMatch;
 }
 
 export function selectRelevantSources(envelope, index) {
-  const sources = index.filter((source) => matches(source, envelope));
+  const matchingSources = index.filter((source) => matches(source, envelope));
+  const matchingConfluence = matchingSources.filter((source) => source.kind === 'confluence');
+  const fallbackConfluence = !matchingConfluence.length
+    ? index.find((source) => source.kind === 'confluence' && source.isConfluenceRoot)
+    : null;
+  const sources = fallbackConfluence ? [...matchingSources, fallbackConfluence] : matchingSources;
   const gaps = [];
   const ambiguities = [];
   for (const kind of ['figma', 'ui-library', 'crm-code']) {

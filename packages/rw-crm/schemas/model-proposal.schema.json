@@ -1,1 +1,1 @@
-{"type":"object","required":["proposalId","tier","assignments","reasons","status"]}
+{"type":"object","required":["proposalId","tier","preset","assignments","selectionOptions","reasons","status"],"properties":{"tier":{"enum":["luna","terra","sol"]},"preset":{"enum":["recommended","light","medium","high","individual"]},"assignments":{"type":"object","required":["planner","planReviewer","engineer","uiReviewer","prWriter","orchestrator"]},"reasons":{"type":"array"},"status":{"enum":["awaiting-confirmation","approved","rejected"]}}}

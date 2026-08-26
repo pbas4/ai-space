@@ -11,7 +11,7 @@ codex plugin add create-task-plan@personal
 ## What it does
 
 1. Resolves and reads a Jira issue through the configured Atlassian Rovo connection.
-2. Classifies the issue as UI-related or non-UI using evidence from the Jira task.
+2. Classifies the issue as `ui-related`, `possible-ui`, or `non-ui` using evidence from the Jira task.
 3. For UI-related tasks, invokes the installed `rw-crm:rw-crm-components-planner` with the Jira scope, links, Figma references, and repository context.
 4. Runs requirements, repository-impact, and technical-risk analysis.
 5. Presents gaps, assumptions, risks, and the reviewed implementation plan for user approval.
@@ -19,7 +19,7 @@ codex plugin add create-task-plan@personal
 
 ## UI routing
 
-The RW CRM package is invoked only when the Jira issue contains a Figma/design reference or clearly identifies CRM UI-library or reusable component work. Non-UI issues continue through the plugin's separate planning workflow.
+The RW CRM package is automatically invoked only for `ui-related` work: a Figma/design reference, component scope, or explicit CRM UI-library or reusable component work. Generic frontend or visual language is `possible-ui`; the plugin asks before invoking RW CRM. `non-ui` issues continue through the separate planning workflow.
 
 The planner is read-only. Create Task Plan does not invoke the Components Engineer or other implementation agents while creating the initial plan. Figma is also read-only and is inspected only after explicit user consent.
 

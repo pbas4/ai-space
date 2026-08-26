@@ -162,6 +162,14 @@ class CreateTaskPlanSkillContractTest(unittest.TestCase):
         self.assertIn("every detected Figma URL or design reference", self.skill)
         self.assertIn("Do not invoke the RW CRM Components Engineer or any implementation agent during planning", self.skill)
 
+    def test_uses_the_shared_three_way_ui_routing_policy(self):
+        self.assertIn("`ui-related`", self.skill)
+        self.assertIn("`possible-ui`", self.skill)
+        self.assertIn("`non-ui`", self.skill)
+        self.assertIn("auto-invoke the RW CRM Components Planner only for `ui-related`", self.skill)
+        self.assertIn("For `possible-ui`, ask one structured-choice confirmation", self.skill)
+        self.assertIn("classification evidence", self.skill)
+
     def test_preserves_non_ui_flow_and_surfaces_ui_planner_findings(self):
         self.assertIn("For a non-UI issue, do not invoke the RW UI Components Planner", self.skill)
         self.assertIn("Continue with the separate non-UI planning workflow unchanged", self.skill)

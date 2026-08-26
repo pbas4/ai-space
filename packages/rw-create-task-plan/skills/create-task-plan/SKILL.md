@@ -26,14 +26,14 @@ Use this skill only when the user supplies a Jira URL, an issue key such as `PRO
 1. Normalize the input as a Jira URL, issue key, or numeric identifier. For a numeric identifier that cannot be resolved unambiguously, ask for its Jira project/key.
 2. Confirm that a configured Atlassian Rovo MCP connection and a read-only issue retrieval tool are available. If not, stop and explain that Atlassian Rovo must be configured before this skill can run.
 3. Retrieve the issue and preserve links, attachments, description, acceptance criteria, comments available through the read-only tool, and related issues as evidence.
-4. Classify the retrieved Jira issue before repository analysis or planning. Mark it `ui_related` when retrieved evidence contains a Figma URL or design reference, or explicitly identifies a CRM UI-library component, component-library change, or reusable UI component work. Record the supporting evidence. Do not classify generic mentions of screens, frontend, or UI as UI-related without a design reference or component-specific evidence. Otherwise mark it `non_ui`.
+4. Classify the retrieved Jira issue before repository analysis or planning using the shared RW CRM routing policy. Return `ui-related` when evidence contains a Figma URL or design reference, non-empty component scope, or explicitly identifies a CRM UI-library component, component-library change, or reusable-component work. Return `possible-ui` for generic screens, frontend, or UI language without definite component evidence. Return `non-ui` otherwise. Record the classification evidence and confidence. The coordinator must auto-invoke the RW CRM Components Planner only for `ui-related`. For `possible-ui`, ask one structured-choice confirmation before invoking the Planner; the choices are invoke RW CRM planning, continue as non-UI, or cancel planning.
 5. Confirm the current repository context before starting repository analysis. Never inspect or modify a repository outside the user's current task scope.
 
 ## RW UI Components Planner consultation
 
-For every `ui_related` issue, discover the installed `rw-crm:rw-crm-components-planner` before gap synthesis and invoke it once through its documented read-only interface when available. Provide Jira key, URL, issue type, title, description, acceptance criteria, labels, attachments, links, related issues, UI-classification evidence, and every detected Figma URL or design reference. Do not invoke the RW CRM Components Engineer or any implementation agent during planning.
+For every `ui-related` issue, and every `possible-ui` issue for which the user selected RW CRM planning, discover the installed `rw-crm:rw-crm-components-planner` before gap synthesis and invoke it once through its documented read-only interface when available. Provide Jira key, URL, issue type, title, description, acceptance criteria, labels, attachments, links, related issues, UI-classification evidence, and every detected Figma URL or design reference. Do not invoke the RW CRM Components Engineer or any implementation agent during planning.
 
-Require the planner's read-only initial implementation plan with equivalent `status`, `evidence`, `scope`, `files`, `interfaces`, `risks_and_gaps`, `verification`, and `questions` fields. `status` is `available` when the planner returned relevant context, `unavailable` when discovery, invocation, Figma access, or component context failed, and `not-applicable` only for `non_ui` work.
+Require the planner's read-only initial implementation plan with equivalent `status`, `evidence`, `scope`, `files`, `interfaces`, `risks_and_gaps`, `verification`, and `questions` fields. `status` is `available` when the planner returned relevant context, `unavailable` when discovery, invocation, Figma access, or component context failed, and `not-applicable` only for `non-ui` work.
 
 For a non-UI issue, do not invoke the RW UI Components Planner. Continue with the separate non-UI planning workflow unchanged.
 
@@ -63,11 +63,11 @@ When subagents and per-agent model routing are available, start these independen
 
 Give each worker only its assigned scope and require a short report containing evidence, findings, confidence, and unanswered questions. If subagents or a requested model override are unavailable, complete the same checks sequentially using the closest configured model and disclose a fallback only when it materially changes depth, speed, or cost.
 
-For `ui_related` work, merge the RW UI Components Planner's structured finding with these worker summaries before synthesis. An available finding is mandatory input to both the displayed gap analysis and the created implementation plan; do not relegate it to an appendix or silently discard it.
+For `ui-related` work, merge the RW UI Components Planner's structured finding with these worker summaries before synthesis. An available finding is mandatory input to both the displayed gap analysis and the created implementation plan; do not relegate it to an appendix or silently discard it.
 
 ## Figma discovery
 
-1. Inspect the Jira evidence for Figma URLs or design references and pass every detected reference to the RW UI Components Planner consultation for `ui_related` work.
+1. Inspect the Jira evidence for Figma URLs or design references and pass every detected reference to the RW UI Components Planner consultation for `ui-related` work.
 2. If none exist, continue without Figma; a UI-library component issue still uses the RW UI Components Planner consultation.
 3. If one exists, disclose the exact reference and ask whether the RW UI Components Planner may inspect it through the configured read-only Figma interface before planning.
 4. On no or inaccessible Figma, retain the reference as evidence and require the planner finding to report unavailable UI context. On yes, follow the planner's documented interface and any installed Figma prerequisite before design-context access. It must not edit the design.
@@ -90,8 +90,8 @@ For `ui_related` work, merge the RW UI Components Planner's structured finding w
 
 ## Planning handoff
 
-1. For `ui_related` work, use the RW UI Components Planner's read-only initial implementation plan as the planning baseline. Do not invoke Superpowers brainstorming or the RW CRM Components Engineer.
-2. For `non_ui` work, continue the separate non-UI planning workflow and use the installed `superpowers:writing-plans` skill only after synthesis and clarification. Do not invoke Superpowers brainstorming.
+1. For `ui-related` work, use the RW UI Components Planner's read-only initial implementation plan as the planning baseline. Do not invoke Superpowers brainstorming or the RW CRM Components Engineer.
+2. For `non-ui` work, continue the separate non-UI planning workflow and use the installed `superpowers:writing-plans` skill only after synthesis and clarification. Do not invoke Superpowers brainstorming.
 3. Present the resulting plan and wait for explicit approval before implementation.
 4. After approval, follow the existing execution and verification gates. Route complex or high-risk non-UI implementation/review work to `gpt-5.6-sol` at medium or high reasoning by difficulty; route remaining independent test or exploration work to `gpt-5.6-luna` at high or extra-high reasoning by difficulty.
 5. Preserve protected-branch, test-driven development, verification, commit-authorization, Jira, and Figma read-only boundaries. Do not write Jira outside the explicitly approved subtask batch or write Figma at any point.

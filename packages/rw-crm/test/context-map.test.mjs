@@ -12,10 +12,13 @@ test('selects Figma, library, and CRM sources relevant to task scope', () => {
     figma: [{ id: 'figma:date-picker', kind: 'figma', uri: 'https://figma.com/date-picker', tags: ['DatePicker'] }],
     uiLibrary: [{ id: 'library:date-picker', kind: 'ui-library', uri: 'storybook://DatePicker', tags: ['DatePicker'] }],
     crmCode: [{ id: 'code:date-picker', kind: 'crm-code', uri: 'packages/ui/DatePicker.tsx', tags: ['DatePicker'] }],
-    confluenceRoot: { id: 'confluence:21790813', kind: 'confluence', uri: 'https://rwnl.atlassian.net/wiki/pages/21790813', tags: ['frontend'] }
+    confluence: [
+      { id: 'confluence:21790813', uri: 'https://rwnl.atlassian.net/wiki/pages/21790813', title: 'Best practices', tags: ['frontend'], isConfluenceRoot: true },
+      { id: 'confluence:datepicker', uri: 'https://rwnl.atlassian.net/wiki/pages/datepicker', title: 'DatePicker conventions', tags: ['DatePicker'] }
+    ]
   });
   const report = selectRelevantSources({ componentScope: ['DatePicker'], figmaLinks: ['https://figma.com/date-picker'], repositoryScope: ['packages/ui'] }, index);
-  assert.deepEqual(report.sources.map((source) => source.id), ['figma:date-picker', 'library:date-picker', 'code:date-picker', 'confluence:21790813']);
+  assert.deepEqual(report.sources.map((source) => source.id), ['figma:date-picker', 'library:date-picker', 'code:date-picker', 'confluence:datepicker']);
   assert.deepEqual(report.gaps, []);
 });
 
@@ -29,6 +32,15 @@ test('recursively discovers every Confluence descendant and reports inaccessible
   const report = await discoverConfluenceTree('root', async (id) => children[id] ?? []);
   assert.deepEqual(report.pages.map((page) => page.id), ['root', 'child-1', 'grandchild-1', 'child-2']);
   assert.deepEqual(report.gaps, [{ sourceId: 'blocked', reason: 'inaccessible', impact: 'descendant body and children unavailable' }]);
+});
+
+test('reports a child-discovery failure while retaining previously discovered pages', async () => {
+  const report = await discoverConfluenceTree('root', async (id) => {
+    if (id === 'root') return [{ id: 'child', title: 'Child' }];
+    throw new Error('permission denied');
+  });
+  assert.deepEqual(report.pages.map((page) => page.id), ['root', 'child']);
+  assert.deepEqual(report.gaps, [{ sourceId: 'child', reason: 'child-discovery-failed', impact: 'permission denied' }]);
 });
 
 test('refreshes only selected stale sources and reports fetch failures', async () => {

@@ -1,4 +1,4 @@
-import { assertImplementationAuthorized, approveCodeEdits, approvePlan, createApprovalState } from './approval-gate.mjs';
+import { assertImplementationAuthorized, approveCodeEdits, approvePlan, createApprovalState, proposeCodeEdits } from './approval-gate.mjs';
 
 const emptyVerification = { checks: [] };
 
@@ -14,13 +14,18 @@ export async function runEngineerWorkflow({ request, approvedPlan }, deps) {
   };
   if (context.gaps?.length || context.ambiguities?.length) return base;
 
-  if (!approvedPlan || approvedPlan.approvalStatus !== 'approved' || !approvedPlan.approval) {
+  if (!approvedPlan || approvedPlan.approvalStatus !== 'approved' || !request.approvals?.plan) {
     return { ...base, plan: approvedPlan ?? null, status: 'awaiting-plan-approval' };
+  }
+  let state;
+  try {
+    state = approvePlan(createApprovalState(approvedPlan), request.approvals.plan);
+  } catch (error) {
+    return { ...base, plan: approvedPlan, status: 'awaiting-plan-approval', approvalError: error.message };
   }
   const editProposal = await deps.implementationAdapter.propose(context, request, approvedPlan);
   const plan = { ...approvedPlan, ...editProposal, id: approvedPlan.id };
-  let state = createApprovalState(plan.id, plan.editSetHash);
-  state = approvePlan(state, { planId: plan.id, ...approvedPlan.approval });
+  state = proposeCodeEdits(state, plan.edits ?? []);
   if (!request.approvals?.codeEdits) return { ...base, plan, status: 'awaiting-edit-approval' };
   state = approveCodeEdits(state, request.approvals.codeEdits);
 
