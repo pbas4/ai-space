@@ -23,3 +23,14 @@ test('profile and references define the complete collaboration contract', async 
     'verification', 'accessibility'
   ]) assert.match(text, new RegExp(phrase.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i'), phrase);
 });
+
+test('engineer requires component version and Pol changelog updates only in rw-crm-components', async () => {
+  const skill = await read('skills/rw-crm-components-engineer/SKILL.md');
+  const policy = await read('references/rw-components-versioning.md');
+  const text = `${skill}\n${policy}`;
+  for (const phrase of [
+    'git@bitbucket.org:rwnl/rw-crm-components.git',
+    'package.json', 'CHANGELOG.md', 'libs/', 'version', 'Pol',
+    'component change', 'Do not apply', 'CHANGELOG-GUIDE.md'
+  ]) assert.match(text, new RegExp(phrase.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i'), phrase);
+});

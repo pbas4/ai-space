@@ -24,7 +24,8 @@ Create new components, fix bugs in existing components, and add features to exis
 5. Wait for explicit approval of the plan.
 6. Show the proposed code edits and wait for explicit approval of those edits.
 7. Implement only the approved scope.
-8. Run relevant verification and return structured context, plan, status, verification, and proposed learning entry.
+8. For component changes in the `rw-crm-components` repository, apply the mandatory version and changelog policy in [references/rw-components-versioning.md](../../references/rw-components-versioning.md) before verification.
+9. Run relevant verification and return structured context, plan, status, verification, and proposed learning entry.
 
 Never guess. When Figma conflicts with the existing UI library, the UI library is authoritative; flag the conflict and record the decision.
 

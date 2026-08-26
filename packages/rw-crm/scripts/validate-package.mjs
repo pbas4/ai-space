@@ -16,6 +16,7 @@ const required = [
   'references/rw-conventions.md',
   'references/create-task-plan-consumer-contract.md',
   'references/review-checklist.md', 'references/model-policy.md',
+  'references/rw-components-versioning.md',
   'test/fixtures/new-component.json',
   'test/fixtures/bug-fix.json',
   'test/fixtures/feature-extension.json',
