@@ -17,6 +17,7 @@ Use this skill only when the user supplies a Jira URL, an issue key such as `PRO
 - Never push directly to `main` or `master`.
 - The only permitted write to `main` is the initial `git pull --ff-only` fast-forward update while local `main` and the worktree are clean. Never make task changes, commit, merge, rebase, reset, use force operations, or perform any other write on `main` or `master`.
 - Use configured Atlassian Rovo MCP tools to resolve and read the task. Do not invent tool names; discover available tools first.
+- When verifying tests in a target repository, inspect its Jest configuration and run the narrowest relevant Jest command directly. Never invoke Nx directly or through an Nx-wrapped package script (`nx test`, `nx run`, `npx nx`); if Jest context is unavailable, report the verification gap instead of guessing a replacement.
 - Use Figma MCP only after the user explicitly agrees to inspect a detected Figma reference.
 - In clarification loops, ask exactly one question at a time, using a structured-choice prompt when appropriate and available; use a concise text question only when structured choices are unavailable. At any time, accept `proceed with assumptions`, list every assumption and risk, and continue.
 

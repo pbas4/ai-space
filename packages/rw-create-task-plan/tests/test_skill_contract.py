@@ -28,6 +28,11 @@ class CreateTaskPlanSkillContractTest(unittest.TestCase):
         self.assertIn("ask exactly one question at a time", self.skill)
         self.assertIn("only when structured choices are unavailable", self.skill)
 
+    def test_requires_direct_jest_and_prohibits_nx_for_target_verification(self):
+        self.assertIn("run the narrowest relevant Jest command directly", self.skill)
+        self.assertIn("Never invoke Nx directly", self.skill)
+        self.assertIn("Nx-wrapped package script", self.skill)
+
     def test_requires_fast_forward_main_update_before_branching(self):
         self.assertIn("git pull --ff-only", self.skill)
         self.assertIn("clean `main`", self.skill)
