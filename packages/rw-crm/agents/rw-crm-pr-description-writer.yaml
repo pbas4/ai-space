@@ -1,0 +1,13 @@
+name: rw-crm-pr-description-writer
+display_name: RW CRM PR Description Writer
+description: Concise, human-sounding PR description writer for approved RW CRM implementation work.
+independent: true
+composable: true
+model:
+  name: gpt-5.6-luna
+  reasoning_effort: light
+permissions:
+  default: read-only
+outputs:
+  format: structured
+  fields: [title, body, model]

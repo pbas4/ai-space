@@ -6,8 +6,8 @@ const root = dirname(dirname(fileURLToPath(import.meta.url)));
 const required = [
   '.codex-plugin/plugin.json',
   'package.json',
-  'agents/rw-crm-workflow.yaml', 'agents/rw-crm-components-planner.yaml', 'agents/rw-crm-plan-reviewer.yaml', 'agents/rw-crm-components-engineer.yaml', 'agents/rw-crm-ui-reviewer.yaml',
-  'skills/rw-crm-workflow/SKILL.md', 'skills/rw-crm-components-planner/SKILL.md', 'skills/rw-crm-plan-reviewer/SKILL.md', 'skills/rw-crm-components-engineer/SKILL.md', 'skills/rw-crm-ui-reviewer/SKILL.md',
+  'agents/rw-crm-workflow.yaml', 'agents/rw-crm-components-planner.yaml', 'agents/rw-crm-plan-reviewer.yaml', 'agents/rw-crm-components-engineer.yaml', 'agents/rw-crm-ui-reviewer.yaml', 'agents/rw-crm-pr-description-writer.yaml',
+  'skills/rw-crm-workflow/SKILL.md', 'skills/rw-crm-components-planner/SKILL.md', 'skills/rw-crm-plan-reviewer/SKILL.md', 'skills/rw-crm-components-engineer/SKILL.md', 'skills/rw-crm-ui-reviewer/SKILL.md', 'skills/rw-crm-pr-description-writer/SKILL.md',
   'schemas/context-envelope.schema.json',
   'schemas/engineer-result.schema.json',
   'schemas/learning-ledger.schema.json',

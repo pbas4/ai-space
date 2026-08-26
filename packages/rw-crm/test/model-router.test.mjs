@@ -19,4 +19,5 @@ test('requires explicit confirmation for execution and escalation', () => {
   const acceptedAll = approveModelExecution(proposal, { proposalId: proposal.proposalId, acceptAll: true, approvedBy: 'user', approvedAt: 'now' });
   assert.deepEqual(acceptedAll.assignments, proposal.assignments);
   assert.throws(() => approveModelExecution(proposal, { proposalId: proposal.proposalId, assignments: {}, approvedBy: 'user', approvedAt: 'now' }), /assignments/);
+  assert.throws(() => approveModelExecution(proposal, { proposalId: proposal.proposalId, assignments: { ...proposal.assignments, prWriter: { model: 'gpt-5.6-sol', reasoning: 'high' } }, approvedBy: 'user', approvedAt: 'now' }), /PR Description Writer/);
 });

@@ -3,7 +3,7 @@ import { routeUiTask } from '../routing/ui-task-router.mjs';
 
 export async function runRwCrmOrchestrator(request, deps) {
   const routing = routeUiTask(request);
-  const base = { routing, modelProposal: null, planner: null, planReview: null, planApproval: null, engineer: null, uiReview: null };
+  const base = { routing, modelProposal: null, planner: null, planReview: null, planApproval: null, engineer: null, uiReview: null, prDescription: null };
   if (!routing.invoke) return { ...base, status: 'skipped' };
   const contextSummary = await deps.contextAdapter.discover(request);
   const modelProposal = proposeModelExecution(request, classifyTask(request, contextSummary));
@@ -22,5 +22,7 @@ export async function runRwCrmOrchestrator(request, deps) {
   const engineer = await deps.engineer({ request, approvedPlan: request.approvedPlan });
   if (engineer.status !== 'implemented') return { ...base, modelProposal: approvedModels, planner, planReview, planApproval: request.approvedPlan.approval, engineer, status: engineer.status };
   const uiReview = await deps.uiReviewer({ request, approvedPlan: request.approvedPlan, changedArtifacts: engineer.changedArtifacts });
-  return { ...base, modelProposal: approvedModels, planner, planReview, planApproval: request.approvedPlan.approval, engineer, uiReview, status: uiReview.completion === 'blocked' ? 'blocked' : 'complete' };
+  if (uiReview.completion === 'blocked') return { ...base, modelProposal: approvedModels, planner, planReview, planApproval: request.approvedPlan.approval, engineer, uiReview, status: 'blocked' };
+  const prDescription = deps.prWriter ? await deps.prWriter({ request, approvedPlan: request.approvedPlan, engineer, uiReview }) : null;
+  return { ...base, modelProposal: approvedModels, planner, planReview, planApproval: request.approvedPlan.approval, engineer, uiReview, prDescription, status: 'complete' };
 }

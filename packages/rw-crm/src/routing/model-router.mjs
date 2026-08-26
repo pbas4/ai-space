@@ -3,6 +3,7 @@ const DEFAULTS = {
   planReviewer: { model: 'gpt-5.6-terra', reasoning: 'high' },
   engineer: { model: 'gpt-5.6-sol', reasoning: 'high' },
   uiReviewer: { model: 'gpt-5.6-terra', reasoning: 'high' },
+  prWriter: { model: 'gpt-5.6-luna', reasoning: 'light' },
   orchestrator: { model: 'gpt-5.6-luna', reasoning: 'medium' }
 };
 
@@ -31,6 +32,7 @@ export function approveModelExecution(proposal, approval) {
   if (proposal.proposalId !== approval.proposalId) throw new Error('model proposal ID does not match');
   const assignments = approval.acceptAll ? proposal.assignments : approval.assignments;
   if (!assignments || typeof assignments !== 'object' || Object.keys(assignments).length !== Object.keys(proposal.assignments).length) throw new Error('model assignments must be confirmed for every subagent');
+  if (JSON.stringify(assignments.prWriter) !== JSON.stringify(proposal.assignments.prWriter)) throw new Error('PR Description Writer must use gpt-5.6-luna with light reasoning');
   return { ...proposal, assignments, status: 'approved', approval: { approvedBy: approval.approvedBy, approvedAt: approval.approvedAt } };
 }
 
