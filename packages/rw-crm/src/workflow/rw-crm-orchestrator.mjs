@@ -23,6 +23,20 @@ export async function runRwCrmOrchestrator(request, deps) {
   if (engineer.status !== 'implemented') return { ...base, modelProposal: approvedModels, planner, planReview, planApproval: request.approvedPlan.approval, engineer, status: engineer.status };
   const uiReview = await deps.uiReviewer({ request, approvedPlan: request.approvedPlan, changedArtifacts: engineer.changedArtifacts });
   if (uiReview.completion === 'blocked') return { ...base, modelProposal: approvedModels, planner, planReview, planApproval: request.approvedPlan.approval, engineer, uiReview, status: 'blocked' };
-  const prDescription = deps.prWriter ? await deps.prWriter({ request, approvedPlan: request.approvedPlan, engineer, uiReview }) : null;
+  const prDescription = deps.prWriter ? await deps.prWriter({
+    task: request.task,
+    repository: request.repository,
+    repositoryName: request.repositoryName,
+    repositoryScope: request.repositoryScope,
+    ticketNumber: request.ticketNumber,
+    ticket_number: request.ticket_number,
+    additionalNotes: request.additionalNotes,
+    description: request.description,
+    prType: request.prType,
+    changedArtifacts: engineer.changedArtifacts,
+    verification: engineer.verification,
+    uiReview,
+    approvedPlan: request.approvedPlan
+  }) : null;
   return { ...base, modelProposal: approvedModels, planner, planReview, planApproval: request.approvedPlan.approval, engineer, uiReview, prDescription, status: 'complete' };
 }
