@@ -147,7 +147,7 @@ git commit -m "feat: enforce RW CRM schemas at runtime"
 
 **Interfaces:**
 - Consumes a host object with `discoverCandidates`, `retrieveSource`, `refreshContext`, `proposeImplementation`, `applyImplementation`, and `verify` functions. `discoverCandidates` returns descriptors only; it must not retrieve bodies.
-- Produces `createCodexHostAdapter(host, sourcePolicy)`, which validates required methods, authorizes every candidate before calling `retrieveSource`, and returns a frozen adapter.
+- Produces `createCodexHostAdapter(host, sourcePolicy)`, which validates required methods, authorizes every candidate before calling `retrieveSource`, returns context in the canonical `{ selectedSources, gaps }` shape, and returns a frozen adapter.
 - Produces `createSourcePolicy({ figmaHosts, confluenceHosts, repositoryRemotes })` and `authorizeSource(source)` returning `{ allowed, normalized, reason }`.
 
 - [ ] **Step 1: Write failing adapter and source-policy tests**
@@ -178,7 +178,7 @@ export function createCodexHostAdapter(host, sourcePolicy) {
       const candidates = await host.discoverCandidates(request);
       const authorized = candidates.map((candidate) => ({ candidate, decision: sourcePolicy.authorizeSource(candidate) }));
       const sources = await Promise.all(authorized.filter(({ decision }) => decision.allowed).map(({ candidate, decision }) => host.retrieveSource({ ...candidate, normalized: decision.normalized })));
-      return { sources, gaps: authorized.filter(({ decision }) => !decision.allowed).map(({ candidate, decision }) => ({ sourceId: candidate.id, reason: decision.reason, impact: 'source was rejected before retrieval' })) };
+      return { selectedSources: sources, gaps: authorized.filter(({ decision }) => !decision.allowed).map(({ candidate, decision }) => ({ sourceId: candidate.id, reason: decision.reason, impact: 'source was rejected before retrieval' })) };
     },
     refresh: (snapshot, policy) => host.refreshContext(snapshot, policy),
     implementationAdapter: Object.freeze({ propose: host.proposeImplementation, apply: host.applyImplementation }),
@@ -242,6 +242,8 @@ Expected: FAIL because `context-snapshot.mjs` does not exist.
 
 Use the same canonical JSON serialization and SHA-256 approach as approval digests. Snapshot only selected, authorized source metadata/body digest—not credentials or raw request headers. Treat added/removed sources, body digest changes, accessibility changes, new ambiguities, and new gaps as material. Treat a changed retrieval timestamp with identical content as non-material.
 
+Project `scope` and `libraryDecisions` from the discovered context into every snapshot, defaulting to `{ components: [], screens: [], routes: [] }` and `[]` when absent. Include both in the snapshot digest and treat canonical-content changes to either field as material so Figma/UI-library decisions cannot change underneath an approved plan.
+
 ```js
 export function compareContextSnapshots(previous, next) {
   const changes = diffSources(previous.selectedSources, next.selectedSources);
@@ -274,14 +276,33 @@ git commit -m "feat: snapshot RW CRM task context"
 - Modify: `packages/rw-crm/src/workflow/rw-crm-orchestrator.mjs`
 - Modify: `packages/rw-crm/src/workflow/engineer-workflow.mjs`
 - Modify: `packages/rw-crm/src/workflow/approval-gate.mjs`
+- Modify: `packages/rw-crm/src/context/context-snapshot.mjs`
+- Modify: `packages/rw-crm/src/adapters/host-adapter.mjs`
+- Modify: `packages/rw-crm/src/planning/components-planner.mjs`
+- Modify: `packages/rw-crm/src/planning/plan-reviewer.mjs`
+- Modify: `packages/rw-crm/src/review/ui-reviewer.mjs`
+- Modify: `packages/rw-crm/src/context/confluence-context-adapter.mjs`
 - Modify: `packages/rw-crm/src/contracts.mjs`
+- Modify: `packages/rw-crm/schemas/approval-receipt.schema.json`
+- Modify: `packages/rw-crm/schemas/engineer-result.schema.json`
+- Modify: `packages/rw-crm/schemas/context-snapshot.schema.json`
 - Modify: `packages/rw-crm/test/rw-crm-orchestrator.test.mjs`
 - Modify: `packages/rw-crm/test/engineer-workflow.test.mjs`
 - Modify: `packages/rw-crm/test/approval-gate.test.mjs`
+- Modify: `packages/rw-crm/test/context-snapshot.test.mjs`
+- Modify: `packages/rw-crm/test/host-adapter.test.mjs`
+- Modify: `packages/rw-crm/test/components-planner.test.mjs`
+- Modify: `packages/rw-crm/test/plan-reviewer.test.mjs`
+- Modify: `packages/rw-crm/test/ui-reviewer.test.mjs`
+- Modify: `packages/rw-crm/test/confluence-context-adapter.test.mjs`
+- Modify: `packages/rw-crm/test/shared-contracts.test.mjs`
 
 **Interfaces:**
-- Workers receive `{ request, contextSnapshot }` or a payload containing `contextSnapshot`; they do not call discovery themselves.
-- Approval state gains `contextSnapshotId` and `contextDigest`.
+- Workers receive `{ request, contextSnapshot }` or a payload containing `contextSnapshot`; the concrete Planner, Plan Reviewer, and UI Reviewer use that supplied snapshot and do not call discovery themselves. The snapshot preserves `scope` and `libraryDecisions` so existing UI-library-over-Figma evidence survives orchestration.
+- `createConfluenceContextAdapter` exposes `refresh(snapshot)` and refreshes only the selected sources so standalone Engineer calls have the same contract as orchestrated calls.
+- Snapshot comparison treats changes to `scope` or `libraryDecisions` as material, alongside source, gap, and ambiguity changes.
+- Approval state and both public receipt schemas require `contextSnapshotId` and `contextDigest`; the edit receipt additionally requires `editSetHash`.
+- Engineer results require `contextSnapshot`, `previousSnapshotId`, `currentSnapshotId`, and `changes` when status is `awaiting-context-reapproval`.
 - Produces status `awaiting-context-reapproval` with `{ previousSnapshotId, currentSnapshotId, changes }`.
 
 - [ ] **Step 1: Write failing workflow tests**
@@ -304,7 +325,7 @@ Expected: FAIL because workers still rediscover context and approval receipts do
 
 - [ ] **Step 3: Implement snapshot ownership at orchestration entry**
 
-Create a snapshot once after UI routing. Pass it to Planner and Plan Reviewer. Pass the approved plan plus the same snapshot to Engineer, UI Reviewer, and PR writer. Update standalone `runEngineerWorkflow` to accept a supplied snapshot but create one through its host adapter when invoked independently.
+Create a snapshot once after UI routing. Pass it to Planner and Plan Reviewer. Update `components-planner.mjs`, `plan-reviewer.mjs`, and `ui-reviewer.mjs` to consume the supplied snapshot instead of calling `contextAdapter.discover`; add direct worker tests proving discovery is not called when a snapshot is supplied. When a snapshot is supplied, Plan Reviewer must use its `libraryDecisions` array exactly, including an empty array, and may use plan decisions only in discovery-based standalone calls. Pass the approved plan plus the same snapshot to Engineer, UI Reviewer, and PR writer. Update standalone `runEngineerWorkflow` to accept a supplied snapshot but create one through its host adapter when invoked independently. Add `refresh(snapshot)` to `createConfluenceContextAdapter`, refreshing only selected sources and returning the standard `{ snapshot, comparison }` result. Normalize the generic host adapter's authorized `sources` into the canonical `selectedSources` field before snapshot creation.
 
 ```js
 const contextSnapshot = await getOrCreateContextSnapshot(request, deps.contextAdapter, deps.sourcePolicy, deps.clock);
@@ -313,7 +334,7 @@ const plannerRun = await runWorker('planner', { request, contextSnapshot });
 
 - [ ] **Step 4: Bind snapshot evidence to approval and apply**
 
-Add the snapshot ID/digest to canonical plan digest input. Immediately before proposing edits and immediately before `implementationAdapter.apply`, refresh the snapshot. When `comparison.material`, return the reapproval status, include the delta, and do not retain any old plan/code receipt as valid.
+Add the snapshot ID/digest to canonical plan digest input and make them required in both approval-receipt schemas and runtime validation. Require `editSetHash` for edit receipts. Immediately before proposing edits and immediately before `implementationAdapter.apply`, refresh the snapshot. When `comparison.material`, return the reapproval status with `previousSnapshotId`, `currentSnapshotId`, and `changes`, require these fields in the engineer-result runtime/schema contract, and do not retain any old plan/code receipt as valid.
 
 ```js
 if (comparison.material) return {
