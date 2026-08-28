@@ -182,3 +182,28 @@ test('requires renewed approval when context changes after edits are proposed', 
   assert.equal(result.currentSnapshotId, changedSnapshot.id);
   assert.deepEqual(workflowDeps.calls, ['propose']);
 });
+
+test('adds component repository version and changelog verification to an approved edit proposal', async () => {
+  const workflowDeps = deps({
+    implementationAdapter: {
+      async propose() {
+        return { id: 'plan-1', summary: 'Add DatePicker', editSetHash: 'hash-1', edits: ['libs/ui/DatePicker.mjs'] };
+      },
+      async apply() { throw new Error('edits should not apply before code-edit approval'); }
+    }
+  });
+
+  const result = await runEngineerWorkflow({
+    request: {
+      ...request,
+      repository: 'git@github.com:realworks/rw-crm-components.git',
+      approvals: { plan: planReceipt }
+    },
+    approvedPlan,
+    contextSnapshot
+  }, workflowDeps);
+
+  assert.equal(result.status, 'awaiting-edit-approval');
+  assert.equal(result.plan.repositoryPolicy.target, 'rw-crm-components');
+  assert.deepEqual(result.plan.verification, ['package.json version', 'CHANGELOG.md']);
+});

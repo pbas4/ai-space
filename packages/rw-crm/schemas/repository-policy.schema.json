@@ -1,0 +1,13 @@
+{
+  "type": "object",
+  "description": "Normalized repository classification and repository-specific delivery obligations.",
+  "required": ["target", "evidence", "versioningRequired", "changelogRequired", "prTemplate", "verificationRules"],
+  "properties": {
+    "target": { "enum": ["rw-crm-components", "other", "ambiguous"] },
+    "evidence": { "type": "array", "items": { "type": "object" } },
+    "versioningRequired": { "type": "boolean" },
+    "changelogRequired": { "type": "boolean" },
+    "prTemplate": { "type": ["string", "null"] },
+    "verificationRules": { "type": "array", "items": { "type": "string" } }
+  }
+}

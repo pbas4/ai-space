@@ -1,5 +1,6 @@
 import { assertImplementationAuthorized, approveCodeEdits, approvePlan, createApprovalState, proposeCodeEdits } from './approval-gate.mjs';
 import { compareContextSnapshots, createContextSnapshot } from '../context/context-snapshot.mjs';
+import { resolveRepositoryPolicy } from '../policy/repository-policy.mjs';
 
 const emptyVerification = { checks: [] };
 
@@ -69,7 +70,19 @@ export async function runEngineerWorkflow({ request, approvedPlan, contextSnapsh
   const beforeProposal = await refreshSnapshot(contextSnapshot, deps);
   if (beforeProposal.comparison.material) return reapproval(base, contextSnapshot, beforeProposal);
   const editProposal = await deps.implementationAdapter.propose(context ?? contextSnapshot, request, approvedPlan);
-  const plan = { ...approvedPlan, ...editProposal, id: approvedPlan.id };
+  const repositoryPolicy = resolveRepositoryPolicy({
+    repository: request.repository,
+    repositoryName: request.repositoryName,
+    repositoryScope: request.repositoryScope,
+    changedArtifacts: editProposal.edits ?? []
+  });
+  const plan = {
+    ...approvedPlan,
+    ...editProposal,
+    id: approvedPlan.id,
+    repositoryPolicy,
+    verification: [...new Set([...(approvedPlan.verification ?? []), ...(editProposal.verification ?? []), ...repositoryPolicy.verificationRules])]
+  };
   state = proposeCodeEdits(state, plan.edits ?? []);
   if (!request.approvals?.codeEdits) return { ...base, plan, status: 'awaiting-edit-approval' };
   state = approveCodeEdits(state, request.approvals.codeEdits);
