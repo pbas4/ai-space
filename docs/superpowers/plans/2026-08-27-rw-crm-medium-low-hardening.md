@@ -146,14 +146,14 @@ git commit -m "feat: enforce RW CRM schemas at runtime"
 - Modify: `packages/rw-crm/scripts/validate-package.mjs`
 
 **Interfaces:**
-- Consumes a host object with `discoverContext`, `refreshContext`, `proposeImplementation`, `applyImplementation`, and `verify` functions.
-- Produces `createCodexHostAdapter(host)`, which validates required methods and returns a frozen adapter.
+- Consumes a host object with `discoverCandidates`, `retrieveSource`, `refreshContext`, `proposeImplementation`, `applyImplementation`, and `verify` functions. `discoverCandidates` returns descriptors only; it must not retrieve bodies.
+- Produces `createCodexHostAdapter(host, sourcePolicy)`, which validates required methods, authorizes every candidate before calling `retrieveSource`, and returns a frozen adapter.
 - Produces `createSourcePolicy({ figmaHosts, confluenceHosts, repositoryRemotes })` and `authorizeSource(source)` returning `{ allowed, normalized, reason }`.
 
 - [ ] **Step 1: Write failing adapter and source-policy tests**
 
 ```js
-assert.throws(() => createCodexHostAdapter({ discoverContext() {} }), /refreshContext must be a function/);
+assert.throws(() => createCodexHostAdapter({ discoverCandidates() {} }), /retrieveSource must be a function/);
 assert.equal(createSourcePolicy({ figmaHosts: ['figma.com'] })
   .authorizeSource({ kind: 'figma', uri: 'https://evil.example/file/1' }).allowed, false);
 assert.equal(createSourcePolicy({ figmaHosts: ['figma.com'] })
@@ -169,11 +169,17 @@ Expected: FAIL because both modules are absent.
 - [ ] **Step 3: Implement the adapter contract**
 
 ```js
-const REQUIRED = ['discoverContext', 'refreshContext', 'proposeImplementation', 'applyImplementation', 'verify'];
-export function createCodexHostAdapter(host) {
+const REQUIRED = ['discoverCandidates', 'retrieveSource', 'refreshContext', 'proposeImplementation', 'applyImplementation', 'verify'];
+export function createCodexHostAdapter(host, sourcePolicy) {
   for (const name of REQUIRED) if (typeof host?.[name] !== 'function') throw new TypeError(`${name} must be a function`);
+  if (typeof sourcePolicy?.authorizeSource !== 'function') throw new TypeError('sourcePolicy.authorizeSource must be a function');
   return Object.freeze({
-    discover: (request, policy) => host.discoverContext(request, policy),
+    discover: async (request) => {
+      const candidates = await host.discoverCandidates(request);
+      const authorized = candidates.map((candidate) => ({ candidate, decision: sourcePolicy.authorizeSource(candidate) }));
+      const sources = await Promise.all(authorized.filter(({ decision }) => decision.allowed).map(({ candidate, decision }) => host.retrieveSource({ ...candidate, normalized: decision.normalized })));
+      return { sources, gaps: authorized.filter(({ decision }) => !decision.allowed).map(({ candidate, decision }) => ({ sourceId: candidate.id, reason: decision.reason, impact: 'source was rejected before retrieval' })) };
+    },
     refresh: (snapshot, policy) => host.refreshContext(snapshot, policy),
     implementationAdapter: Object.freeze({ propose: host.proposeImplementation, apply: host.applyImplementation }),
     verifier: Object.freeze({ run: host.verify })
@@ -185,7 +191,7 @@ Document optional evidence helpers (`inspectFigma`, `inspectVisual`, `checkAcces
 
 - [ ] **Step 4: Implement source normalization and authorization**
 
-Normalize `https` hosts by removing a leading `www.`, Confluence IDs to `confluence://<id>`, and Git remotes by removing `.git`, protocol/user prefixes, and case differences. Return an explicit `unknown-source-kind`, `invalid-uri`, or `unapproved-host` reason. Require all sources returned by host discovery to have passed `authorizeSource` before snapshot construction.
+Normalize `https` hosts by removing a leading `www.`, Confluence IDs to `confluence://<id>`, and Git remotes by removing `.git`, protocol/user prefixes, and case differences. Accept a bare numeric Confluence page ID and an already-normalized `confluence://<id>` value. Return an explicit `unknown-source-kind`, `invalid-uri`, or `unapproved-host` reason. Candidate discovery must return descriptors only; the adapter must authorize each descriptor before it grants the host retrieval call.
 
 - [ ] **Step 5: Run focused tests and package validation**
 
