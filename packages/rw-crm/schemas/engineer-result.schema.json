@@ -1,6 +1,4 @@
 {
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://rw.local/schemas/engineer-result.schema.json",
   "type": "object",
   "required": ["context", "plan", "status", "changedArtifacts", "verification", "proposedLearningEntry"],
   "properties": {
