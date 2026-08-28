@@ -18,8 +18,12 @@ function canonicalize(value, { omitApprovalFields = false } = {}) {
   return value;
 }
 
+export function canonicalJson(value, options) {
+  return JSON.stringify(canonicalize(value, options));
+}
+
 function digest(value) {
-  return createHash('sha256').update(JSON.stringify(canonicalize(value, { omitApprovalFields: true }))).digest('hex');
+  return createHash('sha256').update(canonicalJson(value, { omitApprovalFields: true })).digest('hex');
 }
 
 function requireReceiptField(receipt, field) {

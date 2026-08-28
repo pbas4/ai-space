@@ -32,6 +32,23 @@ test('creates immutable deterministic task snapshots without source bodies', () 
   assert.throws(() => { first.gaps.push({ reason: 'later' }); }, TypeError);
 });
 
+test('clones context gaps and ambiguities before freezing a snapshot', () => {
+  const input = {
+    ...context,
+    gaps: [{ reason: 'body-unavailable', details: { sourceId: 'library:button' } }],
+    ambiguities: [{ topic: 'Button', options: ['primary', 'secondary'] }]
+  };
+
+  const snapshot = createContextSnapshot({ taskId: 'task:1', now: fixedNow, context: input });
+
+  assert.equal(Object.isFrozen(input.gaps[0]), false);
+  assert.equal(Object.isFrozen(input.gaps[0].details), false);
+  assert.equal(Object.isFrozen(input.ambiguities[0]), false);
+  assert.equal(Object.isFrozen(input.ambiguities[0].options), false);
+  assert.equal(Object.isFrozen(snapshot.gaps[0]), true);
+  assert.equal(Object.isFrozen(snapshot.ambiguities[0]), true);
+});
+
 test('reports material source, gap, and ambiguity changes but ignores retrieval times', () => {
   const previous = createContextSnapshot({ taskId: 'task:1', now: fixedNow, context });
   const changedBody = {
@@ -55,6 +72,28 @@ test('reports material source, gap, and ambiguity changes but ignores retrieval 
   assert.deepEqual(compareContextSnapshots(previous, { ...previous, ambiguities: [{ topic: 'Button' }] }), {
     material: true,
     changes: [{ type: 'ambiguity-changed' }]
+  });
+});
+
+test('treats replacement gap and ambiguity content as material', () => {
+  const previous = createContextSnapshot({
+    taskId: 'task:1',
+    now: fixedNow,
+    context: {
+      ...context,
+      gaps: [{ reason: 'body-unavailable', sourceId: 'library:button' }],
+      ambiguities: [{ topic: 'Button', options: ['primary'] }]
+    }
+  });
+  const next = {
+    ...previous,
+    gaps: [{ reason: 'permission-denied', sourceId: 'library:button' }],
+    ambiguities: [{ topic: 'Button', options: ['secondary'] }]
+  };
+
+  assert.deepEqual(compareContextSnapshots(previous, next), {
+    material: true,
+    changes: [{ type: 'gap-changed' }, { type: 'ambiguity-changed' }]
   });
 });
 

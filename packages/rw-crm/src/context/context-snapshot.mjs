@@ -1,16 +1,9 @@
 import { createHash } from 'node:crypto';
 import { validateWithSchema } from '../contracts.mjs';
-
-function canonicalize(value) {
-  if (Array.isArray(value)) return value.map(canonicalize);
-  if (value && typeof value === 'object') {
-    return Object.fromEntries(Object.keys(value).sort().map((key) => [key, canonicalize(value[key])]));
-  }
-  return value;
-}
+import { canonicalJson } from '../workflow/approval-gate.mjs';
 
 function digest(value) {
-  return createHash('sha256').update(JSON.stringify(canonicalize(value))).digest('hex');
+  return createHash('sha256').update(canonicalJson(value)).digest('hex');
 }
 
 function toIsoTimestamp(value, name) {
@@ -54,15 +47,17 @@ function assertSnapshot(value) {
 export function createContextSnapshot({ taskId, context, now }) {
   const createdAt = toIsoTimestamp(now, 'now');
   const selectedSources = (context?.selectedSources ?? []).map(snapshotSource).sort((left, right) => left.id.localeCompare(right.id));
+  const gaps = JSON.parse(canonicalJson(context?.gaps ?? []));
+  const ambiguities = JSON.parse(canonicalJson(context?.ambiguities ?? []));
   const sourceDigest = digest(selectedSources);
   const snapshot = {
-    id: digest({ taskId, createdAt, sourceDigest, selectedSources, gaps: context?.gaps ?? [], ambiguities: context?.ambiguities ?? [] }),
+    id: digest({ taskId, createdAt, sourceDigest, selectedSources, gaps, ambiguities }),
     taskId,
     createdAt,
     sourceDigest,
     selectedSources,
-    gaps: [...(context?.gaps ?? [])],
-    ambiguities: [...(context?.ambiguities ?? [])]
+    gaps,
+    ambiguities
   };
   return assertSnapshot(snapshot);
 }
@@ -85,8 +80,8 @@ function diffSources(previous, next) {
 
 export function compareContextSnapshots(previous, next) {
   const changes = diffSources(previous, next);
-  if (previous.gaps.length !== next.gaps.length) changes.push({ type: 'gap-changed' });
-  if (previous.ambiguities.length !== next.ambiguities.length) changes.push({ type: 'ambiguity-changed' });
+  if (canonicalJson(previous.gaps) !== canonicalJson(next.gaps)) changes.push({ type: 'gap-changed' });
+  if (canonicalJson(previous.ambiguities) !== canonicalJson(next.ambiguities)) changes.push({ type: 'ambiguity-changed' });
   return { material: changes.length > 0, changes };
 }
 

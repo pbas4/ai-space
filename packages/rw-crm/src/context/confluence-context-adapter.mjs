@@ -1,12 +1,13 @@
 import { buildSourceIndex, discoverConfluenceTree, refreshSources, selectRelevantSources } from './context-map.mjs';
 import { createHash } from 'node:crypto';
+import { canonicalJson } from '../workflow/approval-gate.mjs';
 
 const DEFAULT_ROOT_ID = '21790813';
 
 function createBodyDigest(body) {
   return typeof body === 'undefined'
     ? null
-    : createHash('sha256').update(JSON.stringify(body)).digest('hex');
+    : createHash('sha256').update(canonicalJson(body)).digest('hex');
 }
 
 export function createConfluenceContextAdapter({ rootId = DEFAULT_ROOT_ID, listChildren, fetchPage }) {

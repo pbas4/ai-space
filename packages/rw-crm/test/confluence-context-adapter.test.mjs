@@ -95,3 +95,27 @@ test('makes a changed selected Confluence page body material to a task snapshot'
     changes: [{ sourceId: 'button', type: 'body-changed' }]
   });
 });
+
+test('uses canonical serialization for Confluence body provenance', async () => {
+  let body = { beta: 'second', alpha: 'first' };
+  const adapter = createConfluenceContextAdapter({
+    listChildren: async (id) => id === '21790813' ? [{ id: 'button', title: 'Button', tags: ['Button'], version: 1 }] : [],
+    fetchPage: async () => ({ body })
+  });
+  const envelope = { componentScope: ['Button'] };
+  const firstContext = await adapter.discover(envelope);
+  const expected = createContextSnapshot({
+    taskId: 'task:button',
+    now: '2026-08-28T09:00:00.000Z',
+    context: { ...firstContext, selectedSources: [{ ...firstContext.selectedSources[0], body }] }
+  });
+
+  assert.equal(firstContext.selectedSources[0].bodyDigest, expected.selectedSources[0].bodyDigest);
+
+  body = { alpha: 'first', beta: 'second' };
+  const nextContext = await adapter.discover(envelope);
+  const next = createContextSnapshot({ taskId: 'task:button', now: '2026-08-28T10:00:00.000Z', context: nextContext });
+  const first = createContextSnapshot({ taskId: 'task:button', now: '2026-08-28T09:00:00.000Z', context: firstContext });
+
+  assert.deepEqual(compareContextSnapshots(first, next), { material: false, changes: [] });
+});
