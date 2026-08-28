@@ -1,0 +1,11 @@
+{
+  "type": "object",
+  "required": ["discoverContext", "refreshContext", "proposeImplementation", "applyImplementation", "verify"],
+  "properties": {
+    "discoverContext": {},
+    "refreshContext": {},
+    "proposeImplementation": {},
+    "applyImplementation": {},
+    "verify": {}
+  }
+}

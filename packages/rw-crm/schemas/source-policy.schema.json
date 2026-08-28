@@ -1,0 +1,8 @@
+{
+  "type": "object",
+  "properties": {
+    "figmaHosts": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+    "confluenceHosts": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+    "repositoryRemotes": { "type": "array", "items": { "type": "string", "minLength": 1 } }
+  }
+}
