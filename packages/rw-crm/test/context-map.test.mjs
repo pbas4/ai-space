@@ -55,3 +55,25 @@ test('refreshes only selected stale sources and reports fetch failures', async (
   assert.equal(refreshed.sources[0].body, 'updated');
   assert.deepEqual(refreshed.gaps, []);
 });
+
+test('marks an unavailable body as a gap while preserving source provenance', async () => {
+  const source = {
+    id: 'confluence:forms',
+    kind: 'confluence',
+    uri: 'confluence://forms',
+    freshness: 'unknown',
+    lastSuccessfulRetrievalAt: '2026-08-28T08:00:00.000Z'
+  };
+  const refreshed = await refreshSources([source], async () => ({}));
+
+  assert.deepEqual(refreshed.sources, [{
+    ...source,
+    bodyUnavailable: true,
+    accessible: false
+  }]);
+  assert.deepEqual(refreshed.gaps, [{
+    sourceId: 'confluence:forms',
+    reason: 'body-unavailable',
+    impact: 'source body unavailable'
+  }]);
+});

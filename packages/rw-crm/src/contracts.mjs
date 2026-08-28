@@ -6,7 +6,7 @@ import { assertSupportedSchema, validateSchema } from './contracts/schema-runtim
 const schemaDirectory = join(dirname(fileURLToPath(import.meta.url)), '../schemas');
 const schemaNames = [
   'approval-receipt', 'context-envelope', 'engineer-result', 'initial-plan',
-  'learning-ledger', 'model-proposal', 'plan-review', 'ui-review'
+  'learning-ledger', 'model-proposal', 'plan-review', 'ui-review', 'context-snapshot'
 ];
 const schemas = Object.fromEntries(await Promise.all(schemaNames.map(async (name) => {
   const schema = JSON.parse(await readFile(join(schemaDirectory, `${name}.schema.json`), 'utf8'));
@@ -37,6 +37,7 @@ export function createContextEnvelope(input) {
 }
 
 export const validateContextEnvelope = (value) => validateWithSchema('context-envelope', value);
+export const validateContextSnapshot = (value) => validateWithSchema('context-snapshot', value);
 export const validateEngineerResult = (value) => validateWithSchema('engineer-result', value);
 
 export function validateLedgerEntry(value) {

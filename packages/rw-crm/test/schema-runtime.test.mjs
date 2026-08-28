@@ -9,7 +9,7 @@ import { validateWithSchema } from '../src/contracts.mjs';
 
 const schemaNames = [
   'approval-receipt', 'context-envelope', 'engineer-result', 'initial-plan',
-  'learning-ledger', 'model-proposal', 'plan-review', 'ui-review'
+  'learning-ledger', 'model-proposal', 'plan-review', 'ui-review', 'context-snapshot'
 ];
 const packageDirectory = dirname(fileURLToPath(new URL('../package.json', import.meta.url)));
 const schemas = Object.fromEntries(await Promise.all(schemaNames.map(async (name) => [
