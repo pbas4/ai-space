@@ -35,6 +35,18 @@ test('authorizes normalized Confluence identifiers and repository remotes', () =
   });
 });
 
+test('normalizes bare and confluence URI page identifiers', () => {
+  const policy = createSourcePolicy();
+
+  for (const uri of ['21790813', 'confluence://21790813']) {
+    assert.deepEqual(policy.authorizeSource({ kind: 'confluence', uri }), {
+      allowed: true,
+      normalized: { id: '21790813', uri: 'confluence://21790813' },
+      reason: null
+    });
+  }
+});
+
 test('reports invalid and unknown source input explicitly', () => {
   const policy = createSourcePolicy();
 

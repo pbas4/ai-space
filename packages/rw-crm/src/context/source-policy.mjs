@@ -23,6 +23,10 @@ function confluenceIdFromPath(pathname) {
 }
 
 function normalizeConfluence(uri) {
+  if (typeof uri === 'string') {
+    const id = uri.match(/^(?:confluence:\/\/)?(\d+)\/?$/)?.[1];
+    if (id) return { id, uri: `confluence://${id}` };
+  }
   const https = normalizeHttpsUri(uri);
   const id = https && confluenceIdFromPath(new URL(https.uri).pathname);
   return id ? { host: https.host, id, uri: `confluence://${id}` } : null;
@@ -62,7 +66,7 @@ export function createSourcePolicy({ figmaHosts = [], confluenceHosts = [], repo
     if (source.kind === 'confluence') {
       const normalized = normalizeConfluence(source.uri);
       if (!normalized) return { allowed: false, normalized: null, reason: 'invalid-uri' };
-      return allowedConfluenceHosts.has(normalized.host)
+      return (!normalized.host || allowedConfluenceHosts.has(normalized.host))
         ? { allowed: true, normalized, reason: null }
         : { allowed: false, normalized, reason: 'unapproved-host' };
     }

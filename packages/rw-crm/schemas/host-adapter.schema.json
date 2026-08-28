@@ -1,8 +1,9 @@
 {
   "type": "object",
-  "required": ["discoverContext", "refreshContext", "proposeImplementation", "applyImplementation", "verify"],
+  "required": ["discoverCandidates", "retrieveSource", "refreshContext", "proposeImplementation", "applyImplementation", "verify"],
   "properties": {
-    "discoverContext": {},
+    "discoverCandidates": {},
+    "retrieveSource": {},
     "refreshContext": {},
     "proposeImplementation": {},
     "applyImplementation": {},
