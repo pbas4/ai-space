@@ -4,7 +4,7 @@
   "properties": {
     "context": { "type": "object" },
     "plan": { "type": ["object", "null"] },
-    "status": { "enum": ["needs-context", "awaiting-plan-approval", "awaiting-edit-approval", "implemented", "blocked"] },
+    "status": { "enum": ["needs-context", "awaiting-plan-approval", "awaiting-edit-approval", "awaiting-context-reapproval", "implemented", "blocked"] },
     "changedArtifacts": { "type": "array", "items": { "type": "string" } },
     "verification": { "type": "object" },
     "proposedLearningEntry": { "type": ["object", "null"] }

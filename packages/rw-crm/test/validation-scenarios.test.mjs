@@ -6,6 +6,7 @@ import { classifyTask, proposeModelExecution, requestModelEscalation } from '../
 import { routeUiTask } from '../src/routing/ui-task-router.mjs';
 import { reviewImplementation } from '../src/review/ui-reviewer.mjs';
 import { createEditSetDigest, createPlanDigest } from '../src/workflow/approval-gate.mjs';
+import { createContextSnapshot } from '../src/context/context-snapshot.mjs';
 
 const scenarios = {
   newComponent: JSON.parse(await import('node:fs/promises').then(({ readFile }) => readFile(new URL('./fixtures/new-component.json', import.meta.url), 'utf8'))),
@@ -17,7 +18,10 @@ const scenarios = {
 
 function deps(scenario) {
   return {
-    contextAdapter: { async discover() { return scenario.context; } },
+    contextAdapter: {
+      async discover() { return scenario.context; },
+      async refresh(snapshot) { return { snapshot, comparison: { material: false, changes: [] } }; }
+    },
     implementationAdapter: {
       async propose() { return { id: scenario.id, summary: scenario.task, editSetHash: scenario.editSetHash, edits: scenario.edits }; },
       async apply(plan, edits) { return [...edits]; }
@@ -30,15 +34,20 @@ function deps(scenario) {
 for (const [name, scenario] of Object.entries(scenarios).slice(0, 4)) {
   test(`${name} scenario implements only after both approvals`, async () => {
     const approvedPlan = { id: scenario.id, goal: scenario.task, approvalStatus: 'approved' };
-    const planHash = createPlanDigest(approvedPlan);
+    const contextSnapshot = createContextSnapshot({
+      taskId: scenario.request.task,
+      context: scenario.context,
+      now: '2026-08-26T09:00:00.000Z'
+    });
+    const planHash = createPlanDigest(approvedPlan, contextSnapshot);
     const request = {
       ...scenario.request,
       approvals: {
-        plan: { planId: scenario.id, planHash, approvedBy: 'user', approvedAt: '2026-08-26T10:00:00.000Z' },
-        codeEdits: { planId: scenario.id, planHash, editSetHash: createEditSetDigest(scenario.id, scenario.edits), approvedBy: 'user', approvedAt: '2026-08-26T10:01:00.000Z' }
+        plan: { planId: scenario.id, planHash, contextSnapshotId: contextSnapshot.id, contextDigest: contextSnapshot.sourceDigest, approvedBy: 'user', approvedAt: '2026-08-26T10:00:00.000Z' },
+        codeEdits: { planId: scenario.id, planHash, contextSnapshotId: contextSnapshot.id, contextDigest: contextSnapshot.sourceDigest, editSetHash: createEditSetDigest(scenario.id, scenario.edits), approvedBy: 'user', approvedAt: '2026-08-26T10:01:00.000Z' }
       }
     };
-    const result = await runEngineerWorkflow({ request, approvedPlan }, deps(scenario));
+    const result = await runEngineerWorkflow({ request, approvedPlan, contextSnapshot }, deps(scenario));
     assert.equal(result.status, 'implemented');
     assert.deepEqual(result.changedArtifacts, scenario.edits);
     assert.equal(result.verification.checks[0].status, 'passed');

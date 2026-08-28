@@ -35,9 +35,15 @@ function requireTimestamp(value) {
   if (Number.isNaN(Date.parse(value)) || new Date(value).toISOString() !== value) throw new ApprovalRequiredError('approvedAt must be an ISO-8601 timestamp');
 }
 
-export function createPlanDigest(plan) {
+function contextEvidence(snapshot) {
+  if (typeof snapshot?.id !== 'string' || snapshot.id === '') throw new ApprovalRequiredError('context snapshot ID is required');
+  if (typeof snapshot?.sourceDigest !== 'string' || snapshot.sourceDigest === '') throw new ApprovalRequiredError('context digest is required');
+  return { contextSnapshotId: snapshot.id, contextDigest: snapshot.sourceDigest };
+}
+
+export function createPlanDigest(plan, contextSnapshot) {
   if (!plan || typeof plan !== 'object' || typeof plan.id !== 'string' || plan.id === '') throw new ApprovalRequiredError('plan ID is required');
-  return digest(plan);
+  return digest({ plan, ...contextEvidence(contextSnapshot) });
 }
 
 export function createEditSetDigest(planId, edits) {
@@ -46,14 +52,17 @@ export function createEditSetDigest(planId, edits) {
   return digest({ planId, edits });
 }
 
-export function createApprovalState(plan) {
-  return { status: 'awaiting-plan-approval', planId: plan.id, planHash: createPlanDigest(plan), editSetHash: null, planApproval: null, codeEditApproval: null };
+export function createApprovalState(plan, contextSnapshot) {
+  const evidence = contextEvidence(contextSnapshot);
+  return { status: 'awaiting-plan-approval', planId: plan.id, planHash: createPlanDigest(plan, contextSnapshot), ...evidence, editSetHash: null, planApproval: null, codeEditApproval: null };
 }
 
 export function approvePlan(state, receipt) {
   if (state.status !== 'awaiting-plan-approval') throw new ApprovalRequiredError('approval status does not accept plan approval');
   if (receipt.planId !== state.planId) throw new ApprovalRequiredError('plan ID does not match');
   if (receipt.planHash !== state.planHash) throw new ApprovalRequiredError('plan hash does not match approved plan');
+  if (receipt.contextSnapshotId !== state.contextSnapshotId) throw new ApprovalRequiredError('context snapshot ID does not match');
+  if (receipt.contextDigest !== state.contextDigest) throw new ApprovalRequiredError('context digest does not match');
   requireReceiptField(receipt, 'approvedBy');
   requireTimestamp(receipt.approvedAt);
   return { ...state, status: 'awaiting-edit-approval', planApproval: { ...receipt } };
@@ -69,6 +78,8 @@ export function approveCodeEdits(state, receipt) {
   if (!state.editSetHash) throw new ApprovalRequiredError('code edits have not been proposed');
   if (receipt.planId !== state.planId) throw new ApprovalRequiredError('plan ID does not match');
   if (receipt.planHash !== state.planHash) throw new ApprovalRequiredError('plan hash does not match approved plan');
+  if (receipt.contextSnapshotId !== state.contextSnapshotId) throw new ApprovalRequiredError('context snapshot ID does not match');
+  if (receipt.contextDigest !== state.contextDigest) throw new ApprovalRequiredError('context digest does not match');
   if (receipt.editSetHash !== state.editSetHash) throw new ApprovalRequiredError('edit set does not match approved plan');
   requireReceiptField(receipt, 'approvedBy');
   requireTimestamp(receipt.approvedAt);

@@ -14,7 +14,7 @@ const schemas = Object.fromEntries(await Promise.all(schemaNames.map(async (name
   return [name, schema];
 })));
 
-const VALID_STATUSES = new Set(['needs-context', 'awaiting-plan-approval', 'awaiting-edit-approval', 'implemented', 'blocked']);
+const VALID_STATUSES = new Set(['needs-context', 'awaiting-plan-approval', 'awaiting-edit-approval', 'awaiting-context-reapproval', 'implemented', 'blocked']);
 const VALID_LEDGER_CLASSES = new Set(['stable-rule', 'task-exception']);
 
 const result = (errors) => ({ valid: errors.length === 0, errors });
@@ -56,9 +56,11 @@ export function validateModelProposal(value) {
   return result(errors);
 }
 
-export function validateApprovalReceipt(value, { requireEditSetHash = false } = {}) {
+export function validateApprovalReceipt(value, { requireEditSetHash = false, requireContextSnapshot = false } = {}) {
   const errors = [...validateWithSchema('approval-receipt', value).errors];
   if (requireEditSetHash && !/^[a-f0-9]{64}$/.test(value?.editSetHash ?? '')) errors.push('$.editSetHash must be a SHA-256 digest');
+  if (requireContextSnapshot && !/^[a-f0-9]{64}$/.test(value?.contextSnapshotId ?? '')) errors.push('$.contextSnapshotId must be a SHA-256 digest');
+  if (requireContextSnapshot && !/^[a-f0-9]{64}$/.test(value?.contextDigest ?? '')) errors.push('$.contextDigest must be a SHA-256 digest');
   return result(errors);
 }
 
