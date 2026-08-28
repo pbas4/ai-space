@@ -10,7 +10,7 @@ export function createCodexHostAdapter(host, sourcePolicy) {
     discover: async (request) => {
       const candidates = await host.discoverCandidates(request);
       const authorized = candidates.map((candidate) => ({ candidate, decision: sourcePolicy.authorizeSource(candidate) }));
-      const sources = await Promise.all(authorized
+      const selectedSources = await Promise.all(authorized
         .filter(({ decision }) => decision.allowed)
         .map(({ candidate, decision }) => host.retrieveSource({ ...candidate, normalized: decision.normalized })));
       const gaps = authorized
@@ -20,7 +20,7 @@ export function createCodexHostAdapter(host, sourcePolicy) {
           reason: decision.reason,
           impact: 'source was rejected before retrieval'
         }));
-      return { sources, gaps };
+      return { selectedSources, gaps };
     },
     refresh: (snapshot, policy) => host.refreshContext(snapshot, policy),
     implementationAdapter: Object.freeze({

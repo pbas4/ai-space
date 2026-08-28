@@ -30,7 +30,7 @@ test('rejects candidates before retrieval and reports explicit gaps', async () =
   });
 
   assert.deepEqual(await adapter.discover('request'), {
-    sources: [{ id: 'allowed', kind: 'figma', uri: 'https://www.figma.com/file/1', normalized: { host: 'figma.com' } }],
+    selectedSources: [{ id: 'allowed', kind: 'figma', uri: 'https://www.figma.com/file/1', normalized: { host: 'figma.com' } }],
     gaps: [{ sourceId: 'rejected', reason: 'unapproved-host', impact: 'source was rejected before retrieval' }]
   });
   assert.deepEqual(retrieved, ['allowed']);
@@ -50,7 +50,7 @@ test('adapts required host methods through immutable workflow boundaries', async
   assert.equal(Object.isFrozen(adapter), true);
   assert.equal(Object.isFrozen(adapter.implementationAdapter), true);
   assert.equal(Object.isFrozen(adapter.verifier), true);
-  assert.deepEqual(await adapter.discover('request'), { sources: [], gaps: [] });
+  assert.deepEqual(await adapter.discover('request'), { selectedSources: [], gaps: [] });
   assert.deepEqual(await adapter.refresh('snapshot', 'policy'), { snapshot: 'snapshot', policy: 'policy' });
   assert.deepEqual(await adapter.implementationAdapter.propose('context', 'request'), { context: 'context', request: 'request' });
   assert.deepEqual(await adapter.implementationAdapter.apply('plan', 'edits'), ['plan', 'edits']);
