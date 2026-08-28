@@ -9,7 +9,8 @@ export async function reviewPlan({ request, initialPlan, contextSnapshot = null 
     findings.push(finding('context-incomplete', 'critical', 'context', 'Required context is missing or ambiguous.', [...(context.gaps ?? []), ...(context.ambiguities ?? [])]));
   }
   if (!initialPlan.verification?.length) findings.push(finding('verification-incomplete', 'high', 'verification', 'The plan does not define verification.', []));
-  for (const decision of initialPlan.libraryDecisions ?? []) {
+  const libraryDecisions = context.libraryDecisions?.length ? context.libraryDecisions : initialPlan.libraryDecisions ?? [];
+  for (const decision of libraryDecisions) {
     if (decision.authority === 'ui-library') findings.push(finding(`library:${decision.topic ?? 'conflict'}`, 'medium', 'library-decision', 'UI library takes precedence over conflicting Figma direction.', [decision]));
   }
   const proposedLearningEntry = await ledger.consult(request, context, checklist);

@@ -15,6 +15,8 @@ const context = {
     body: 'v1',
     retrievedAt: '2026-08-28T08:00:00.000Z'
   }],
+  scope: { components: ['Button'], screens: ['Settings'], routes: ['/settings'] },
+  libraryDecisions: [{ topic: 'radius', figma: '8px', library: '4px', authority: 'ui-library', decision: 'use 4px' }],
   gaps: [],
   ambiguities: []
 };
@@ -27,9 +29,12 @@ test('creates immutable deterministic task snapshots without source bodies', () 
   assert.equal(first.sourceDigest, same.sourceDigest);
   assert.equal(first.selectedSources[0].body, undefined);
   assert.match(first.selectedSources[0].bodyDigest, /^[a-f0-9]{64}$/);
+  assert.deepEqual(first.scope, context.scope);
+  assert.deepEqual(first.libraryDecisions, context.libraryDecisions);
   assert.equal(Object.isFrozen(first), true);
   assert.equal(Object.isFrozen(first.selectedSources), true);
   assert.throws(() => { first.gaps.push({ reason: 'later' }); }, TypeError);
+  assert.throws(() => { first.scope.components.push('Menu'); }, TypeError);
 });
 
 test('clones context gaps and ambiguities before freezing a snapshot', () => {
@@ -94,6 +99,35 @@ test('treats replacement gap and ambiguity content as material', () => {
   assert.deepEqual(compareContextSnapshots(previous, next), {
     material: true,
     changes: [{ type: 'gap-changed' }, { type: 'ambiguity-changed' }]
+  });
+});
+
+test('binds canonical scope and UI-library decisions into snapshots and material comparisons', () => {
+  const previous = createContextSnapshot({ taskId: 'task:1', now: fixedNow, context });
+  const canonicallyEquivalent = {
+    ...previous,
+    scope: { routes: ['/settings'], screens: ['Settings'], components: ['Button'] },
+    libraryDecisions: [{ library: '4px', decision: 'use 4px', authority: 'ui-library', figma: '8px', topic: 'radius' }]
+  };
+  const changedScope = { ...previous, scope: { ...previous.scope, components: ['Button', 'Menu'] } };
+  const changedDecision = {
+    ...previous,
+    libraryDecisions: [{ ...previous.libraryDecisions[0], authority: 'figma', decision: 'use 8px' }]
+  };
+
+  assert.notEqual(previous.sourceDigest, createContextSnapshot({
+    taskId: 'task:1',
+    now: fixedNow,
+    context: { ...context, libraryDecisions: changedDecision.libraryDecisions }
+  }).sourceDigest);
+  assert.deepEqual(compareContextSnapshots(previous, canonicallyEquivalent), { material: false, changes: [] });
+  assert.deepEqual(compareContextSnapshots(previous, changedScope), {
+    material: true,
+    changes: [{ type: 'scope-changed' }]
+  });
+  assert.deepEqual(compareContextSnapshots(previous, changedDecision), {
+    material: true,
+    changes: [{ type: 'library-decisions-changed' }]
   });
 });
 

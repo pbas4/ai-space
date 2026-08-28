@@ -30,6 +30,14 @@ function snapshotSource(source) {
   };
 }
 
+function snapshotScope(scope) {
+  return JSON.parse(canonicalJson(scope ?? { components: [], screens: [], routes: [] }));
+}
+
+function snapshotLibraryDecisions(libraryDecisions) {
+  return JSON.parse(canonicalJson(libraryDecisions ?? []));
+}
+
 function freeze(value) {
   if (value && typeof value === 'object' && !Object.isFrozen(value)) {
     Object.freeze(value);
@@ -47,15 +55,19 @@ function assertSnapshot(value) {
 export function createContextSnapshot({ taskId, context, now }) {
   const createdAt = toIsoTimestamp(now, 'now');
   const selectedSources = (context?.selectedSources ?? []).map(snapshotSource).sort((left, right) => left.id.localeCompare(right.id));
+  const scope = snapshotScope(context?.scope);
+  const libraryDecisions = snapshotLibraryDecisions(context?.libraryDecisions);
   const gaps = JSON.parse(canonicalJson(context?.gaps ?? []));
   const ambiguities = JSON.parse(canonicalJson(context?.ambiguities ?? []));
-  const sourceDigest = digest(selectedSources);
+  const sourceDigest = digest({ selectedSources, scope, libraryDecisions });
   const snapshot = {
-    id: digest({ taskId, createdAt, sourceDigest, selectedSources, gaps, ambiguities }),
+    id: digest({ taskId, createdAt, sourceDigest, selectedSources, scope, libraryDecisions, gaps, ambiguities }),
     taskId,
     createdAt,
     sourceDigest,
     selectedSources,
+    scope,
+    libraryDecisions,
     gaps,
     ambiguities
   };
@@ -80,6 +92,8 @@ function diffSources(previous, next) {
 
 export function compareContextSnapshots(previous, next) {
   const changes = diffSources(previous, next);
+  if (canonicalJson(previous.scope) !== canonicalJson(next.scope)) changes.push({ type: 'scope-changed' });
+  if (canonicalJson(previous.libraryDecisions) !== canonicalJson(next.libraryDecisions)) changes.push({ type: 'library-decisions-changed' });
   if (canonicalJson(previous.gaps) !== canonicalJson(next.gaps)) changes.push({ type: 'gap-changed' });
   if (canonicalJson(previous.ambiguities) !== canonicalJson(next.ambiguities)) changes.push({ type: 'ambiguity-changed' });
   return { material: changes.length > 0, changes };
@@ -88,6 +102,15 @@ export function compareContextSnapshots(previous, next) {
 export async function refreshContextSnapshot(snapshot, hostAdapter, policy, now) {
   if (typeof hostAdapter?.refresh !== 'function') throw new TypeError('hostAdapter.refresh must be a function');
   const context = await hostAdapter.refresh(snapshot, policy);
-  const next = createContextSnapshot({ taskId: snapshot.taskId, context, now });
+  if (context?.snapshot && context?.comparison) return context;
+  const next = createContextSnapshot({
+    taskId: snapshot.taskId,
+    context: {
+      ...context,
+      scope: context?.scope ?? snapshot.scope,
+      libraryDecisions: context?.libraryDecisions ?? snapshot.libraryDecisions
+    },
+    now
+  });
   return { snapshot: next, comparison: compareContextSnapshots(snapshot, next) };
 }

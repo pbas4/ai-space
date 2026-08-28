@@ -1,6 +1,6 @@
 {
   "type": "object",
-  "required": ["id", "taskId", "createdAt", "sourceDigest", "selectedSources", "gaps", "ambiguities"],
+  "required": ["id", "taskId", "createdAt", "sourceDigest", "selectedSources", "scope", "libraryDecisions", "gaps", "ambiguities"],
   "properties": {
     "id": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
     "taskId": { "type": "string", "minLength": 1 },
@@ -23,6 +23,8 @@
         }
       }
     },
+    "scope": { "type": "object" },
+    "libraryDecisions": { "type": "array", "items": { "type": "object" } },
     "gaps": { "type": "array", "items": { "type": "object" } },
     "ambiguities": { "type": "array", "items": { "type": "object" } }
   }

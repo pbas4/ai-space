@@ -20,7 +20,15 @@ async function getOrCreateContextSnapshot(request, suppliedSnapshot, deps) {
 async function refreshSnapshot(contextSnapshot, deps) {
   const refreshed = await deps.contextAdapter.refresh(contextSnapshot, deps.sourcePolicy);
   if (refreshed?.snapshot && refreshed?.comparison) return refreshed;
-  const snapshot = createContextSnapshot({ taskId: contextSnapshot.taskId, context: refreshed, now: now(deps) });
+  const snapshot = createContextSnapshot({
+    taskId: contextSnapshot.taskId,
+    context: {
+      ...refreshed,
+      scope: refreshed?.scope ?? contextSnapshot.scope,
+      libraryDecisions: refreshed?.libraryDecisions ?? contextSnapshot.libraryDecisions
+    },
+    now: now(deps)
+  });
   return { snapshot, comparison: compareContextSnapshots(contextSnapshot, snapshot) };
 }
 

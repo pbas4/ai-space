@@ -110,7 +110,11 @@ test('refreshes only selected sources and returns the standard snapshot comparis
       return { body };
     }
   });
-  const context = await adapter.discover({ componentScope: ['Button'] });
+  const context = {
+    ...(await adapter.discover({ componentScope: ['Button'] })),
+    scope: { components: ['Button'], screens: [], routes: [] },
+    libraryDecisions: [{ topic: 'radius', figma: '8px', library: '4px', authority: 'ui-library' }]
+  };
   const snapshot = createContextSnapshot({ taskId: 'task:button', now: '2026-08-28T09:00:00.000Z', context });
   childDiscoveries = 0;
   fetched.length = 0;
@@ -122,6 +126,8 @@ test('refreshes only selected sources and returns the standard snapshot comparis
   assert.deepEqual(fetched, ['button']);
   assert.deepEqual(refreshed.comparison, { material: true, changes: [{ sourceId: 'button', type: 'body-changed' }] });
   assert.equal(refreshed.snapshot.taskId, snapshot.taskId);
+  assert.deepEqual(refreshed.snapshot.scope, context.scope);
+  assert.deepEqual(refreshed.snapshot.libraryDecisions, context.libraryDecisions);
 });
 
 test('uses canonical serialization for Confluence body provenance', async () => {

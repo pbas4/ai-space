@@ -29,7 +29,13 @@ test('uses a supplied context snapshot without rediscovering context', async () 
   const contextSnapshot = createContextSnapshot({
     taskId: 'Add DatePicker',
     now: '2026-08-28T10:00:00.000Z',
-    context: { selectedSources: [], gaps: [], ambiguities: [] }
+    context: {
+      selectedSources: [],
+      scope: { components: ['LibraryDatePicker'], screens: [], routes: [] },
+      libraryDecisions: [{ authority: 'ui-library', decision: 'use library radius' }],
+      gaps: [],
+      ambiguities: []
+    }
   });
   const result = await createInitialPlan({
     request: { task: 'Add DatePicker', componentScope: ['DatePicker'] },
@@ -41,4 +47,6 @@ test('uses a supplied context snapshot without rediscovering context', async () 
 
   assert.equal(result.context, contextSnapshot);
   assert.equal(result.plan.goal, 'Add DatePicker');
+  assert.deepEqual(result.plan.scope.components, ['LibraryDatePicker']);
+  assert.deepEqual(result.plan.libraryDecisions, [{ authority: 'ui-library', decision: 'use library radius' }]);
 });

@@ -30,7 +30,13 @@ test('uses a supplied context snapshot without rediscovering context', async () 
   const contextSnapshot = createContextSnapshot({
     taskId: 'Fix DatePicker',
     now: '2026-08-28T10:00:00.000Z',
-    context: { selectedSources: [], gaps: [], ambiguities: [] }
+    context: {
+      selectedSources: [],
+      scope: { components: ['DatePicker'], screens: [], routes: [] },
+      libraryDecisions: [{ topic: 'radius', figma: '8px', library: '4px', authority: 'ui-library' }],
+      gaps: [],
+      ambiguities: []
+    }
   });
   const result = await reviewImplementation({ ...input, contextSnapshot }, {
     contextAdapter: { async discover() { throw new Error('supplied snapshot must not trigger discovery'); } },
@@ -38,5 +44,6 @@ test('uses a supplied context snapshot without rediscovering context', async () 
     checklist: []
   });
 
-  assert.equal(result.completion, 'pass');
+  assert.equal(result.completion, 'pass-with-findings');
+  assert.equal(result.findings[0].category, 'library-decision');
 });

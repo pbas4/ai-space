@@ -28,11 +28,17 @@ test('uses a supplied context snapshot without rediscovering context', async () 
   const contextSnapshot = createContextSnapshot({
     taskId: 'Add DatePicker',
     now: '2026-08-28T10:00:00.000Z',
-    context: { selectedSources: [], gaps: [], ambiguities: [] }
+    context: {
+      selectedSources: [],
+      scope: { components: ['DatePicker'], screens: [], routes: [] },
+      libraryDecisions: [{ topic: 'radius', figma: '8px', library: '4px', authority: 'ui-library' }],
+      gaps: [],
+      ambiguities: []
+    }
   });
   const result = await reviewPlan({
     request: { task: 'Add DatePicker' },
-    initialPlan: completePlan,
+    initialPlan: { ...completePlan, libraryDecisions: [] },
     contextSnapshot
   }, {
     contextAdapter: { async discover() { throw new Error('supplied snapshot must not trigger discovery'); } },
@@ -41,4 +47,5 @@ test('uses a supplied context snapshot without rediscovering context', async () 
   });
 
   assert.equal(result.recommendation, 'approve');
+  assert.ok(result.findings.some((finding) => finding.category === 'library-decision'));
 });

@@ -50,6 +50,8 @@ export function createConfluenceContextAdapter({ rootId = DEFAULT_ROOT_ID, listC
       const refreshed = await refreshSources(snapshot.selectedSources.map((source) => ({ ...source, freshness: 'stale' })), fetchPage);
       const context = {
         selectedSources: refreshed.sources.map(withProvenance),
+        scope: snapshot.scope,
+        libraryDecisions: snapshot.libraryDecisions,
         gaps: [...snapshot.gaps, ...refreshed.gaps],
         ambiguities: snapshot.ambiguities
       };

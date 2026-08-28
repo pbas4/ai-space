@@ -16,6 +16,8 @@ const approvedPlan = { id: 'plan-1', goal: 'Add DatePicker', approvalStatus: 'ap
 const approvedAt = '2026-08-26T10:00:00.000Z';
 const initialContext = {
   selectedSources: [{ id: 'library:date-picker', kind: 'ui-library', uri: 'storybook://DatePicker', body: 'v1' }],
+  scope: { components: ['DatePicker'], screens: [], routes: [] },
+  libraryDecisions: [{ topic: 'radius', figma: '8px', library: '4px', authority: 'ui-library', decision: 'use 4px' }],
   gaps: [],
   ambiguities: []
 };
@@ -112,6 +114,42 @@ test('requires renewed approval before apply when a selected source materially c
   assert.equal(result.previousSnapshotId, contextSnapshot.id);
   assert.equal(result.currentSnapshotId, changedSnapshot.id);
   assert.deepEqual(result.changes, [{ sourceId: 'library:date-picker', type: 'body-changed' }]);
+  assert.deepEqual(workflowDeps.calls, []);
+});
+
+test('invalidates approval when UI-library-over-Figma decision evidence changes', async () => {
+  const changedSnapshot = createContextSnapshot({
+    taskId: request.task,
+    now: '2026-08-26T10:02:00.000Z',
+    context: {
+      ...initialContext,
+      libraryDecisions: [{ ...initialContext.libraryDecisions[0], authority: 'figma', decision: 'use 8px' }]
+    }
+  });
+  const workflowDeps = deps({
+    contextAdapter: {
+      async discover() { throw new Error('a supplied snapshot must not rediscover context'); },
+      async refresh() {
+        return {
+          selectedSources: initialContext.selectedSources,
+          scope: initialContext.scope,
+          libraryDecisions: changedSnapshot.libraryDecisions,
+          gaps: [],
+          ambiguities: []
+        };
+      }
+    }
+  });
+
+  const result = await runEngineerWorkflow({
+    request: { ...request, approvals: { plan: planReceipt, codeEdits: codeReceipt } },
+    approvedPlan,
+    contextSnapshot
+  }, workflowDeps);
+
+  assert.equal(result.status, 'awaiting-context-reapproval');
+  assert.deepEqual(result.contextSnapshot.libraryDecisions, changedSnapshot.libraryDecisions);
+  assert.deepEqual(result.changes, [{ type: 'library-decisions-changed' }]);
   assert.deepEqual(workflowDeps.calls, []);
 });
 

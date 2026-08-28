@@ -23,6 +23,8 @@ test('creates one context snapshot and shares it with every workflow worker', as
   let discoveries = 0;
   const context = {
     selectedSources: [{ id: 'library:button', kind: 'ui-library', uri: 'storybook://Button', body: 'v1' }],
+    scope: { components: ['Button'], screens: [], routes: [] },
+    libraryDecisions: [{ topic: 'radius', figma: '8px', library: '4px', authority: 'ui-library', decision: 'use 4px' }],
     gaps: [],
     ambiguities: []
   };
@@ -51,6 +53,8 @@ test('creates one context snapshot and shares it with every workflow worker', as
   assert.equal(discoveries, 1);
   assert.equal(result.engineer.contextSnapshot.id, result.planner.contextSnapshot.id);
   assert.deepEqual(workerInputs.map(([, input]) => input.contextSnapshot.id), Array(5).fill(result.planner.contextSnapshot.id));
+  assert.deepEqual(workerInputs.map(([, input]) => input.contextSnapshot.scope), Array(5).fill(context.scope));
+  assert.deepEqual(workerInputs.map(([, input]) => input.contextSnapshot.libraryDecisions), Array(5).fill(context.libraryDecisions));
 });
 
 test('pauses before every subagent until model confirmation', async () => {
