@@ -45,6 +45,7 @@
 - Create: `packages/rw-crm/src/contracts/schema-runtime.mjs`
 - Create: `packages/rw-crm/test/schema-runtime.test.mjs`
 - Modify: `packages/rw-crm/src/contracts.mjs`
+- Modify: `packages/rw-crm/schemas/approval-receipt.schema.json`
 - Modify: `packages/rw-crm/schemas/context-envelope.schema.json`
 - Modify: `packages/rw-crm/schemas/engineer-result.schema.json`
 - Modify: `packages/rw-crm/schemas/initial-plan.schema.json`
@@ -102,7 +103,7 @@ export function validateSchema(schema, value, path = '$') {
 }
 ```
 
-Support only `type`, `required`, `properties`, `items`, `enum`, `pattern`, `minLength`, and `minimum`. Throw at module load when any package schema uses another keyword, so declared schemas cannot silently escape enforcement.
+Support only `type`, `required`, `properties`, `items`, `enum`, `pattern`, `format`, `minLength`, and `minimum`. Implement `format: date-time` as the existing strict ISO-8601 timestamp rule. Throw at module load when any package schema uses another keyword, so declared schemas cannot silently escape enforcement.
 
 - [ ] **Step 4: Expand schemas and delegate from runtime validators**
 
@@ -128,7 +129,7 @@ Expected: PASS, including one invalid value for every enum and required public p
 Update `test:unit` in `packages/rw-crm/package.json` to include `test/schema-runtime.test.mjs`.
 
 ```bash
-git add packages/rw-crm/src/contracts/schema-runtime.mjs packages/rw-crm/src/contracts.mjs packages/rw-crm/schemas packages/rw-crm/test/schema-runtime.test.mjs packages/rw-crm/package.json
+git add packages/rw-crm/src/contracts/schema-runtime.mjs packages/rw-crm/src/contracts.mjs packages/rw-crm/schemas/approval-receipt.schema.json packages/rw-crm/schemas/context-envelope.schema.json packages/rw-crm/schemas/engineer-result.schema.json packages/rw-crm/schemas/initial-plan.schema.json packages/rw-crm/schemas/learning-ledger.schema.json packages/rw-crm/schemas/model-proposal.schema.json packages/rw-crm/schemas/plan-review.schema.json packages/rw-crm/schemas/ui-review.schema.json packages/rw-crm/test/schema-runtime.test.mjs packages/rw-crm/package.json
 git commit -m "feat: enforce RW CRM schemas at runtime"
 ```
 
