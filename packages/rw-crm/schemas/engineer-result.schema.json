@@ -3,8 +3,12 @@
   "required": ["context", "plan", "status", "changedArtifacts", "verification", "proposedLearningEntry"],
   "properties": {
     "context": { "type": "object" },
+    "contextSnapshot": { "type": "object" },
     "plan": { "type": ["object", "null"] },
     "status": { "enum": ["needs-context", "awaiting-plan-approval", "awaiting-edit-approval", "awaiting-context-reapproval", "implemented", "blocked"] },
+    "previousSnapshotId": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "currentSnapshotId": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "changes": { "type": "array", "items": { "type": "object" } },
     "changedArtifacts": { "type": "array", "items": { "type": "string" } },
     "verification": { "type": "object" },
     "proposedLearningEntry": { "type": ["object", "null"] }

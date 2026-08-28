@@ -2,8 +2,8 @@ function finding(id, severity, category, message, evidence = []) {
   return { id, severity, category, message, evidence, blocking: severity === 'critical' };
 }
 
-export async function reviewPlan({ request, initialPlan }, { contextAdapter, checklist, ledger }) {
-  const context = await contextAdapter.discover(request);
+export async function reviewPlan({ request, initialPlan, contextSnapshot = null }, { contextAdapter, checklist, ledger }) {
+  const context = contextSnapshot ?? await contextAdapter.discover(request);
   const findings = [];
   if (context.gaps?.length || context.ambiguities?.length) {
     findings.push(finding('context-incomplete', 'critical', 'context', 'Required context is missing or ambiguous.', [...(context.gaps ?? []), ...(context.ambiguities ?? [])]));

@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { reviewPlan } from '../src/planning/plan-reviewer.mjs';
+import { createContextSnapshot } from '../src/context/context-snapshot.mjs';
 
 const completePlan = { id: 'p1', goal: 'Add DatePicker', scope: {}, files: ['a'], interfaces: ['DatePicker API'], risks: [], verification: ['unit'], libraryDecisions: [], approvalStatus: 'awaiting-approval' };
 const context = { gaps: [], ambiguities: [], libraryDecisions: [] };
@@ -21,4 +22,23 @@ test('blocks missing context and flags library conflicts and missing verificatio
   assert.ok(result.findings.some((finding) => finding.category === 'context' && finding.blocking));
   assert.ok(result.findings.some((finding) => finding.category === 'library-decision'));
   assert.ok(result.findings.some((finding) => finding.category === 'verification'));
+});
+
+test('uses a supplied context snapshot without rediscovering context', async () => {
+  const contextSnapshot = createContextSnapshot({
+    taskId: 'Add DatePicker',
+    now: '2026-08-28T10:00:00.000Z',
+    context: { selectedSources: [], gaps: [], ambiguities: [] }
+  });
+  const result = await reviewPlan({
+    request: { task: 'Add DatePicker' },
+    initialPlan: completePlan,
+    contextSnapshot
+  }, {
+    contextAdapter: { async discover() { throw new Error('supplied snapshot must not trigger discovery'); } },
+    checklist: [],
+    ledger: { async consult(_request, context) { assert.equal(context, contextSnapshot); return []; } }
+  });
+
+  assert.equal(result.recommendation, 'approve');
 });

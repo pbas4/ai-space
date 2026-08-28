@@ -96,6 +96,34 @@ test('makes a changed selected Confluence page body material to a task snapshot'
   });
 });
 
+test('refreshes only selected sources and returns the standard snapshot comparison', async () => {
+  let body = 'first version';
+  let childDiscoveries = 0;
+  const fetched = [];
+  const adapter = createConfluenceContextAdapter({
+    listChildren: async (id) => {
+      childDiscoveries += 1;
+      return id === '21790813' ? [{ id: 'button', title: 'Button', tags: ['Button'], version: 1 }] : [];
+    },
+    fetchPage: async (source) => {
+      fetched.push(source.id);
+      return { body };
+    }
+  });
+  const context = await adapter.discover({ componentScope: ['Button'] });
+  const snapshot = createContextSnapshot({ taskId: 'task:button', now: '2026-08-28T09:00:00.000Z', context });
+  childDiscoveries = 0;
+  fetched.length = 0;
+  body = 'second version';
+
+  const refreshed = await adapter.refresh(snapshot);
+
+  assert.equal(childDiscoveries, 0);
+  assert.deepEqual(fetched, ['button']);
+  assert.deepEqual(refreshed.comparison, { material: true, changes: [{ sourceId: 'button', type: 'body-changed' }] });
+  assert.equal(refreshed.snapshot.taskId, snapshot.taskId);
+});
+
 test('uses canonical serialization for Confluence body provenance', async () => {
   let body = { beta: 'second', alpha: 'first' };
   const adapter = createConfluenceContextAdapter({

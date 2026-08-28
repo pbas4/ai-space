@@ -100,6 +100,8 @@ test('delegates package schemas by name', () => {
     validateWithSchema('approval-receipt', {
       planId: 'plan:1',
       planHash: 'a'.repeat(64),
+      contextSnapshotId: 'b'.repeat(64),
+      contextDigest: 'c'.repeat(64),
       approvedBy: 'Pol',
       approvedAt: 'not-a-timestamp'
     }).errors,

@@ -38,7 +38,17 @@ export function createContextEnvelope(input) {
 
 export const validateContextEnvelope = (value) => validateWithSchema('context-envelope', value);
 export const validateContextSnapshot = (value) => validateWithSchema('context-snapshot', value);
-export const validateEngineerResult = (value) => validateWithSchema('engineer-result', value);
+export function validateEngineerResult(value) {
+  const errors = [...validateWithSchema('engineer-result', value).errors];
+  if (value?.status === 'awaiting-context-reapproval') {
+    if (!value.contextSnapshot) errors.push('$.contextSnapshot is required when status is awaiting-context-reapproval');
+    else errors.push(...validateContextSnapshot(value.contextSnapshot).errors.map((error) => `$.contextSnapshot${error.slice(1)}`));
+    for (const field of ['previousSnapshotId', 'currentSnapshotId', 'changes']) {
+      if (!(field in value)) errors.push(`$.${field} is required when status is awaiting-context-reapproval`);
+    }
+  }
+  return result(errors);
+}
 
 export function validateLedgerEntry(value) {
   const errors = [...validateWithSchema('learning-ledger', value).errors];
@@ -56,11 +66,9 @@ export function validateModelProposal(value) {
   return result(errors);
 }
 
-export function validateApprovalReceipt(value, { requireEditSetHash = false, requireContextSnapshot = false } = {}) {
+export function validateApprovalReceipt(value, { requireEditSetHash = false } = {}) {
   const errors = [...validateWithSchema('approval-receipt', value).errors];
   if (requireEditSetHash && !/^[a-f0-9]{64}$/.test(value?.editSetHash ?? '')) errors.push('$.editSetHash must be a SHA-256 digest');
-  if (requireContextSnapshot && !/^[a-f0-9]{64}$/.test(value?.contextSnapshotId ?? '')) errors.push('$.contextSnapshotId must be a SHA-256 digest');
-  if (requireContextSnapshot && !/^[a-f0-9]{64}$/.test(value?.contextDigest ?? '')) errors.push('$.contextDigest must be a SHA-256 digest');
   return result(errors);
 }
 
