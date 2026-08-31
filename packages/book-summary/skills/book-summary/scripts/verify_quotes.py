@@ -9,8 +9,14 @@ Reads Markdown blockquote lines (`> ...`) from the summary, strips the trailing
 glyphs / dashes, splits on `[...]` (or `[…]`) elisions, and checks that each
 fragment longer than MIN_FRAGMENT chars occurs in the normalized source.
 
-Prints one line per quote (`PASS` / `FAIL`) and exits non-zero if any failed, so
-it can gate the render step. Offline; no dependencies beyond the stdlib.
+Prints one line per quote:
+  PASS  found in the prose
+  WARN  found only in a "## CHAPTER:" heading — it's a section title, not a
+        quotable line; exit code is unaffected but pick a better quote
+  FAIL  not found at all
+
+Exits non-zero if any quote FAILed, so it can gate the render step. Offline; no
+dependencies beyond the stdlib.
 """
 from __future__ import annotations
 
@@ -76,14 +82,16 @@ def main(argv: list[str]) -> int:
     with open(summary_path, encoding="utf-8") as fh:
         md = fh.read()
     with open(book_path, encoding="utf-8") as fh:
-        haystack = normalize(fh.read())
+        raw = fh.read()
+    haystack = normalize(raw)
+    prose = normalize(re.sub(r"(?m)^## CHAPTER:.*$", " \n ", raw))
 
     quotes = extract_quotes(md)
     if not quotes:
         print("no blockquotes found — nothing to verify")
         return 0
 
-    failed = 0
+    failed = warned = 0
     for quote in quotes:
         core = strip_attribution(quote)
         parts = fragments(core)
@@ -98,10 +106,15 @@ def main(argv: list[str]) -> int:
             frag = missing[0]
             frag = (frag[:60] + "…") if len(frag) > 61 else frag
             print(f"FAIL  {shown}\n      not found: {frag}")
+        elif any(p not in prose for p in checkable):
+            warned += 1
+            print(f"WARN  {shown}\n      only matches a chapter heading — not a quotable line")
         else:
             print(f"PASS  {shown}")
 
     print()
+    if warned:
+        print(f"{warned} quote(s) match only a heading — consider replacing them.")
     if failed:
         print(f"{failed} quote(s) not found in source — fix wording or drop them.")
         return 1

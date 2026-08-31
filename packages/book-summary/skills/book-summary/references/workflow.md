@@ -27,29 +27,38 @@ Record the mode in the `depth:` frontmatter field so the vault stays queryable.
 
 ## 1. Resolve the metadata first
 
-Run `scripts/fetch_meta.py`:
+Run `scripts/fetch_meta.py` with **both** an ISBN and a title/author whenever you
+have them (`--isbn <isbn> --title "<title>" --author "<surname>"`): the ISBN pins
+the exact edition, the title/author lets it fall back, and it tries Open Library
+then Google Books. It returns JSON — title, authors, `year`, `original_year`,
+`original_title`, publishers, subjects, `cover_url`, `openlibrary_url` — or `{}`
+on a total miss (then use the EPUB metadata header and the first pages of
+`book.txt`).
 
-- `--isbn <isbn>` if the extraction header or copyright page gave one, else
-- `--title "<title>" --author "<surname>"`.
+- `year` = the edition in `source_file` (trust the EPUB `DATE:` header for this).
+- `original_year` / `original_title` = the work's first publication / original
+  title — fill them only when they differ from the edition (translations,
+  reissues). Otherwise leave the placeholders and delete the lines.
 
-It returns JSON (title, authors, year, publishers, subjects, `cover_url`,
-`openlibrary_url`) from Open Library, or `{}` on a miss. Use it to fill
-frontmatter and to seed topic tags from `subjects`. Confirm anything shaky with
-the user rather than guessing. If it returns `{}`, fall back to the EPUB metadata
-header and the first pages of `book.txt`.
+Seed topic tags from `subjects`. Confirm anything shaky with the user.
 
 ## 2. Segment the text
 
 Run `scripts/split.py book.txt chunks/`. It splits on `## CHAPTER:` markers
 (added by `epub_to_text.py` from the EPUB's real TOC) when present, otherwise on
-heading-like lines, otherwise into ~8,000-word windows. It writes
-`chunks/000-*.txt` … and `chunks/index.json` (n, file, title, words).
+heading-like lines, otherwise into ~8,000-word windows. Chunks below
+`--min-words` (default 220) are folded into a neighbour, their title kept as a
+`### ` sub-heading, so a book whose TOC marks every sub-section still yields a
+readable index. It writes `chunks/000-*.txt` … and `chunks/index.json`.
 
 - Read `chunks/index.json` to see the shape of the book.
 - Read the chunk files **one at a time** — do not load `book.txt` whole for a
   long book; that is what the split is for.
+- If `index.json` still has 150+ chunks, re-run with a larger `--min-words`
+  (e.g. `--min-words 500`) before you start reading.
 - `--only 1-3,7` restricts output to specific chunks if the user asked for just
-  certain chapters. `--max-words N` tunes window size.
+  certain chapters. `--max-words N` tunes window size; `--min-words 0` disables
+  folding.
 
 ## 3. Summarize each chunk — to a notes file
 
@@ -74,16 +83,20 @@ Read `chunks/notes.md` whole and write the final sections:
 |---|---|---|
 | In one paragraph | 4–6 sentences | The thesis and the intended reader. State it plainly. |
 | Why read this book | 2–4 bullets | The concrete payoff. If the book does not earn it, say so in Critiques instead. |
-| Key ideas | 5–10 bullets | Each a *claim* ("Habits form via a cue-routine-reward loop"), not a topic ("Habits"). |
+| Key ideas | 5–10 bullets | Each a *claim* ("Habits form via a cue-routine-reward loop"), not a topic ("Habits"). Every bullet must trace to a chunk in `notes.md` — if you can't point to one, cut it. |
 | Chapter-by-chapter | 80–200 words per chapter | `### N. Title`, using the titles from `index.json`. Follow book order. |
 | Notable quotes | 5–15 quotes | Blockquote each, attribute with chapter/section, keep under ~40 words. Verbatim (step 4b). |
 | Actionable takeaways | 3–8 items, or expanded (step 4a) | Instructions the reader can act on this week. |
 | Critiques & open questions | 2–5 bullets | Weak evidence, dated claims, overreach, unanswered questions. Always write something. |
-| How this connects | 2–5 bullets | Related books/ideas as `[[wikilinks]]`; Obsidian resolves them once filed. |
+| How this connects | 2–5 bullets | Related books/ideas as `[[wikilinks]]`. When `obsidian_vault` is set, only wikilink notes that already exist under `<vault>/<books_subdir>/` — list the rest as plain text so the note has no dead links. |
 
 `brief` and `deep` scale these per the template comments. In `deep`, also fill
 the trailing `## Worked examples` and `## Apply it` sections; in `brief`/
 `standard`, delete them.
+
+Also write a one-line **`hook`** for the frontmatter: ≤ 12 words, what the book
+argues or is for. `distribute.sh` appends it to the vault's MOC line so the index
+is scannable.
 
 ### 4a. Practice-forward books
 
@@ -126,8 +139,9 @@ verbatim.
 
 Fill every field. `source_format` is `epub`/`pdf`; `source_file` is the original
 filename; `date_summarized` is today's date (ISO); `depth` is the mode from step
-0; `practice_forward` is the boolean from step 4a. Leave `rating` blank — the
-user's to set.
+0; `practice_forward` is the boolean from step 4a; `hook` is the one-liner from
+step 4; `original_title`/`original_year` come from step 1 (delete both lines when
+they match the edition). Leave `rating` blank — the user's to set.
 
 **Topic tags.** Add 1–3 `book/<topic>` tags to the `tags` list and mirror them in
 `topics:`. Use a small controlled vocabulary so the vault stays queryable — pick
@@ -142,9 +156,10 @@ one only if none fit. Seed the choice from Open Library `subjects`.
 ## 6. Cover image
 
 - EPUB: `epub_to_text.py` already wrote `cover.<ext>` next to `book.txt` when the
-  file had one — no network. Copy it to `<stem>.<ext>` beside the summary `.md`
-  so `distribute.sh` picks it up, set `cover:` frontmatter to the filename, and
-  uncomment the `![[...]]` embed line.
+  file had one (it follows an XHTML cover wrapper to the real image) — no
+  network. Copy it to `<stem>.<ext>` beside the summary `.md` so `distribute.sh`
+  picks it up, set `cover:` frontmatter to the filename, and uncomment the
+  `![[...]]` embed line.
 - PDF / no embedded cover: if `fetch_meta.py` returned a `cover_url`, ask the user
   before downloading, then `scripts/fetch_cover.sh "<url>" "<dir>/<stem>"`.
 - No cover: delete the `cover:` line and the embed line from the template.

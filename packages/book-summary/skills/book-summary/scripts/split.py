@@ -2,7 +2,7 @@
 """Split extracted book text into ordered chunks for summarizing.
 
 Usage:
-  split.py <book.txt> <out_dir> [--max-words N] [--only RANGES]
+  split.py <book.txt> <out_dir> [--max-words N] [--min-words N] [--only RANGES]
 
 Strategy:
   1. If the text contains "## CHAPTER: <title>" markers (added by epub_to_text.py),
@@ -14,8 +14,13 @@ Strategy:
 Any chunk longer than 1.6 * max-words is further divided into windows so no
 single chunk is too big to summarize comfortably.
 
+Books whose TOC marks every sub-heading produce hundreds of tiny fragments.
+After splitting, any chunk shorter than --min-words (default 220; 0 disables) is
+folded into the previous chunk, keeping its title as a "### " sub-heading in the
+body. This keeps the index readable without losing text.
+
 Writes:  <out_dir>/000-<slug>.txt, 001-..., and <out_dir>/index.json
---only 1-3,7 keeps just those chunk numbers (1-based) after splitting.
+--only 1-3,7 keeps just those chunk numbers (1-based) after splitting + merging.
 """
 import json
 import os
@@ -94,6 +99,39 @@ def segment(text, max_words):
     return [(None, text)]
 
 
+def merge_small(chunks, min_words):
+    """Fold chunks shorter than min_words into their neighbour.
+
+    A short chunk merges into the previous one (its title kept as a "### "
+    sub-heading); a short first chunk merges forward into the next. Windowed
+    parts ("... (part 2/3)") are left alone.
+    """
+    if min_words <= 0 or len(chunks) < 2:
+        return chunks
+
+    def short(body):
+        return len(body.split()) < min_words
+
+    def is_part(title):
+        return bool(title) and re.search(r"\(part \d+/\d+\)$", title)
+
+    merged = []
+    for title, body in chunks:
+        if merged and short(body) and not is_part(title) and not is_part(merged[-1][0]):
+            pt, pb = merged[-1]
+            add = ("\n\n### %s\n\n%s" % (title, body)) if title else ("\n\n%s" % body)
+            merged[-1] = (pt, pb + add)
+        else:
+            merged.append((title, body))
+
+    if len(merged) >= 2 and short(merged[0][1]) and not is_part(merged[0][0]) \
+            and not is_part(merged[1][0]):
+        (t0, b0), (t1, b1) = merged[0], merged[1]
+        merged[1] = (t0 or t1, b0 + "\n\n" + (("### %s\n\n" % t1) if t1 else "") + b1)
+        merged.pop(0)
+    return merged
+
+
 def main() -> int:
     args = sys.argv[1:]
     if len(args) < 2:
@@ -101,11 +139,14 @@ def main() -> int:
         return 2
     src, out_dir = args[0], args[1]
     max_words = 8000
+    min_words = 220
     only = None
     i = 2
     while i < len(args):
         if args[i] == "--max-words":
             max_words = int(args[i + 1]); i += 2
+        elif args[i] == "--min-words":
+            min_words = int(args[i + 1]); i += 2
         elif args[i] == "--only":
             only = parse_ranges(args[i + 1]); i += 2
         else:
@@ -125,6 +166,10 @@ def main() -> int:
         else:
             chunks.append((title, body))
 
+    before = len(chunks)
+    chunks = merge_small(chunks, min_words)
+    folded = before - len(chunks)
+
     os.makedirs(out_dir, exist_ok=True)
     index = []
     written = 0
@@ -141,7 +186,9 @@ def main() -> int:
         json.dump(index, fh, indent=2, ensure_ascii=False)
 
     total = sum(e["words"] for e in index)
-    print("split into %d chunk(s), %d words total -> %s" % (written, total, out_dir))
+    extra = ", %d small chunk(s) folded" % folded if folded else ""
+    print("split into %d chunk(s), %d words total%s -> %s"
+          % (written, total, extra, out_dir))
     for e in index:
         print("  %2d  %6dw  %s" % (e["n"], e["words"], e["title"] or "(untitled)"))
     return 0

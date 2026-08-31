@@ -16,6 +16,8 @@ BOOK = (
     "Para ganar millones, debes servir a millones de personas que "
     "van a pagar pequenas cantidades por el producto ofrecido. "
     "Las ideas no son mas que flatulencias neurologicas.\n"
+    "\n## CHAPTER: SI CREES QUE PUEDES COSTEARLO, NO PUEDES\n\n"
+    "Aqui el texto del capitulo habla de otra cosa distinta por completo.\n"
 )
 
 
@@ -56,6 +58,12 @@ class VerifyQuotes(unittest.TestCase):
     def test_no_quotes_is_ok(self):
         r = run("## Notable quotes\n\nnothing here yet\n")
         self.assertEqual(r.returncode, 0, r.stdout)
+
+    def test_heading_only_match_warns_but_passes(self):
+        r = run("## Notable quotes\n\n"
+                "> «Si crees que puedes costearlo, no puedes.» — cap. 3\n")
+        self.assertEqual(r.returncode, 0, r.stdout)
+        self.assertIn("WARN", r.stdout)
 
 
 if __name__ == "__main__":

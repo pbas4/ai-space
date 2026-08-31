@@ -71,6 +71,23 @@ PNG = bytes.fromhex(
 )
 
 
+# Variant OPF: no cover-image property; an EPUB2-style <meta name="cover"> that
+# points at an XHTML *wrapper*, which in turn <img>s the real picture.
+OPF_WRAP = OPF.replace(
+    '<item id="cover-image" href="cover.png" media-type="image/png" properties="cover-image"/>',
+    '<item id="cover" href="cover.xhtml" media-type="application/xhtml+xml"/>\n'
+    '    <item id="cover-img" href="img/portada.png" media-type="image/png"/>',
+).replace(
+    "  </metadata>",
+    '    <meta name="cover" content="cover"/>\n  </metadata>',
+)
+COVER_XHTML = (
+    '<?xml version="1.0" encoding="utf-8"?>\n'
+    '<html xmlns="http://www.w3.org/1999/xhtml"><body>'
+    '<div><img src="img/portada.png" alt="cover"/></div></body></html>\n'
+)
+
+
 def build(path: str) -> str:
     alpha = ("Alpha covers systems and habits. " * 40).strip()
     beta = ("Beta covers feedback loops and leverage points. " * 40).strip()
@@ -83,6 +100,23 @@ def build(path: str) -> str:
         z.writestr("OEBPS/c1.xhtml", C1.format(alpha=alpha))
         z.writestr("OEBPS/c2.xhtml", C2.format(beta=beta, gamma=gamma))
         z.writestr("OEBPS/cover.png", PNG)
+    return path
+
+
+def build_wrapper_cover(path: str) -> str:
+    """Like build(), but the cover is reached only through an XHTML wrapper."""
+    alpha = ("Alpha covers systems and habits. " * 40).strip()
+    beta = ("Beta covers feedback loops and leverage points. " * 40).strip()
+    gamma = ("Gamma covers stocks and flows over time. " * 40).strip()
+    with zipfile.ZipFile(path, "w", zipfile.ZIP_DEFLATED) as z:
+        z.writestr("mimetype", "application/epub+zip", compress_type=zipfile.ZIP_STORED)
+        z.writestr("META-INF/container.xml", CONTAINER)
+        z.writestr("OEBPS/content.opf", OPF_WRAP)
+        z.writestr("OEBPS/nav.xhtml", NAV)
+        z.writestr("OEBPS/c1.xhtml", C1.format(alpha=alpha))
+        z.writestr("OEBPS/c2.xhtml", C2.format(beta=beta, gamma=gamma))
+        z.writestr("OEBPS/cover.xhtml", COVER_XHTML)
+        z.writestr("OEBPS/img/portada.png", PNG)
     return path
 
 

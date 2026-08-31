@@ -3,6 +3,8 @@ title: "{{TITLE}}"
 aliases: []
 author: "{{AUTHOR}}"
 year: {{YEAR}}
+original_title: "{{ORIGINAL_TITLE}}"
+original_year: {{ORIGINAL_YEAR}}
 isbn: "{{ISBN}}"
 publisher: "{{PUBLISHER}}"
 source_format: "{{SOURCE_FORMAT}}"
@@ -13,6 +15,7 @@ tags: [book, summary{{TOPIC_TAGS}}]
 topics: [{{TOPICS}}]
 depth: {{DEPTH}}
 practice_forward: {{PRACTICE_FORWARD}}
+hook: "{{HOOK}}"
 rating:
 status: to-review
 cover: "{{COVER}}"

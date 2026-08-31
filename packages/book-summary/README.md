@@ -56,10 +56,14 @@ Point Claude at a book file:
 > Summarize `~/Downloads/atomic-habits.epub` and file it.
 
 The skill then: checks deps → extracts text (TOC chapter markers, cover) →
-looks up metadata on Open Library → splits into chunks → summarizes per the
-workflow (per-chunk notes → synthesis) → fills the template → verifies every
-quote against the source → renders the PDF → runs `distribute.sh` → reports
-paths.
+looks up metadata (Open Library, then Google Books) → splits into chunks
+(folding tiny ones) → summarizes per the workflow (per-chunk notes → synthesis)
+→ fills the template → verifies every quote against the source → renders the PDF
+→ runs `distribute.sh` → reports paths.
+
+Frontmatter carries `year` (the edition) plus `original_title` / `original_year`
+when they differ, a one-line `hook` (also appended to the vault MOC line),
+`depth`, `practice_forward`, and `book/<topic>` tags.
 
 **Depth.** Ask for `brief`, `standard` (default), or `deep` — e.g. "summarize
 this book, deep". Same sections either way; only the amount under each heading
@@ -77,11 +81,11 @@ grouped themes plus a checklist and an anti-patterns list, and
 |---|---|
 | `scripts/check_deps.sh` | Verify `pdftotext`, `pandoc`, a PDF engine, `python3`. |
 | `scripts/extract.sh <in> <out.txt>` | EPUB/PDF → plain text (+ `cover.<ext>`, `## CHAPTER:` markers for EPUB). |
-| `scripts/fetch_meta.py --isbn N` / `--title T --author A` | Open Library lookup → JSON (no key). |
-| `scripts/split.py <book.txt> <dir>` | Split into ordered chunks + `index.json`. `--only 1-3,7`, `--max-words N`. |
+| `scripts/fetch_meta.py --isbn N --title T --author A` | Open Library then Google Books → JSON (no key). Pass ISBN + title/author together. |
+| `scripts/split.py <book.txt> <dir>` | Split into ordered chunks + `index.json`. Folds sub-`--min-words` (220) chunks. `--only 1-3,7`, `--max-words N`, `--min-words N`. |
 | `scripts/fetch_cover.sh <url> <stem>` | Download a cover (network; confirm with user first). |
-| `scripts/check_existing.sh "<Author> - <Title>"` | Report whether a summary already exists in Drive/vault. |
-| `scripts/verify_quotes.py <summary.md> <book.txt>` | Check every blockquote appears in the source; exits non-zero on a miss. Offline. |
+| `scripts/check_existing.sh "<Author> - <Title>"` | Report whether a summary already exists in Drive/vault (case/space/punctuation-insensitive match). |
+| `scripts/verify_quotes.py <summary.md> <book.txt>` | Check every blockquote appears in the source (`FAIL` = missing, `WARN` = only a chapter heading); exits non-zero on `FAIL`. Offline. |
 | `scripts/render_pdf.sh <in.md> <out.pdf>` | Markdown → house-style PDF (typst → weasyprint → wkhtmltopdf). |
 | `scripts/distribute.sh <in.md> <in.pdf>` | Copy to Drive + vault, update MOC. Idempotent. |
 
@@ -92,7 +96,7 @@ cd packages/book-summary && npm test        # or: bash tests/run.sh
 ```
 
 Standard-library Python `unittest` + a shell test — no third-party deps. Covers
-EPUB extraction (spine order, TOC markers, metadata, cover), `split.py`
-(marker/window/`--only`), `verify_quotes.py` (verbatim pass, reworded fail,
-elision bridging), and `distribute.sh` (Drive + vault copy, cover, sorted
-idempotent MOC).
+EPUB extraction (spine order, TOC markers, metadata, cover, XHTML cover wrapper),
+`split.py` (marker/window/`--only`, small-chunk folding), `verify_quotes.py`
+(verbatim pass, reworded fail, elision bridging, heading `WARN`), and
+`distribute.sh` (Drive + vault copy, cover, sorted idempotent MOC with hooks).

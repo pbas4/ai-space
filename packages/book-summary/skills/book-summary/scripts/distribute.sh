@@ -67,27 +67,37 @@ cp -f "$PDF" "$VAULT/$ATT_SUB/"
 [ -n "$cover" ] && cp -f "$cover" "$VAULT/$ATT_SUB/$stem.${cover##*.}"
 
 # MOC: keep any leading non-list header, then a sorted unique list of links.
+# Each line is "- [[Author - Title]] — <hook>", the hook read from the summary's
+# frontmatter. Dedup is on the [[wikilink]] alone, so re-running with an updated
+# hook replaces the old line instead of adding one.
 mocpath="$VAULT/$MOC"
 mkdir -p "$(dirname "$mocpath")"
 touch "$mocpath"
+hook="$(/usr/bin/env python3 -c 'import re,sys
+m=re.search(r"(?m)^hook:\s*(.+?)\s*$", open(sys.argv[1],encoding="utf-8").read())
+v=(m.group(1).strip().strip("\"\x27") if m else "")
+print(v if v and v!="{{HOOK}}" else "")' "$MD")"
 newline="- [[$stem]]"
+[ -n "$hook" ] && newline="- [[$stem]] — $hook"
 /usr/bin/env python3 - "$mocpath" "$newline" <<'PY'
-import sys
+import re, sys
 path, newline = sys.argv[1], sys.argv[2]
 lines = open(path, encoding="utf-8").read().splitlines()
-header, links = [], set()
+key = lambda s: (re.match(r"- \[\[(.+?)\]\]", s.strip()) or [None, s.strip()])[1]
+header, links = [], {}
 for ln in lines:
-    if ln.strip().startswith("- [[") and ln.strip().endswith("]]"):
-        links.add(ln.strip())
-    elif ln.strip() or header:
+    s = ln.strip()
+    if s.startswith("- [[") and "]]" in s:
+        links[key(s)] = s
+    elif s or header:
         header.append(ln)
-links.add(newline.strip())
+links[key(newline)] = newline.strip()
 while header and not header[-1].strip():
     header.pop()
 out = []
 if header:
     out += header + [""]
-out += sorted(links, key=str.lower)
+out += [links[k] for k in sorted(links, key=str.lower)]
 open(path, "w", encoding="utf-8").write("\n".join(out) + "\n")
 PY
 

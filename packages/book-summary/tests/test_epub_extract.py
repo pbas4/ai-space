@@ -47,6 +47,21 @@ class EpubExtract(unittest.TestCase):
         self.assertTrue(os.path.exists(os.path.join(self.tmp, "cover.png")))
         self.assertIn("COVER: cover.png", self.text)
 
+    def test_cover_followed_through_xhtml_wrapper(self):
+        tmp = tempfile.mkdtemp()
+        epub = make_fixture_epub.build_wrapper_cover(os.path.join(tmp, "w.epub"))
+        out = os.path.join(tmp, "book.txt")
+        subprocess.run(
+            [sys.executable, os.path.join(SCRIPTS, "epub_to_text.py"), epub, out],
+            check=True, capture_output=True, text=True,
+        )
+        with open(out, encoding="utf-8") as fh:
+            text = fh.read()
+        # the real image, not the .xhtml wrapper
+        self.assertIn("COVER: cover.png", text)
+        self.assertTrue(os.path.exists(os.path.join(tmp, "cover.png")))
+        self.assertFalse(os.path.exists(os.path.join(tmp, "cover.xhtml")))
+
 
 if __name__ == "__main__":
     unittest.main()

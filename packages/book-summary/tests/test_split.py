@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""split.py: marker-based split, window fallback, --only, index.json."""
+"""split.py: marker-based split, window fallback, --only, small-chunk merge."""
 import json
 import os
 import subprocess
@@ -28,7 +28,7 @@ class Split(unittest.TestCase):
         text = "\n\n".join(
             "## CHAPTER: Chapter %d\n\n%s" % (i, ("word " * 200)) for i in range(1, 5)
         )
-        _, idx = run(text)
+        _, idx = run(text, "--min-words", "0")
         self.assertEqual([e["title"] for e in idx],
                          ["Chapter 1", "Chapter 2", "Chapter 3", "Chapter 4"])
 
@@ -36,7 +36,7 @@ class Split(unittest.TestCase):
         text = "\n\n".join(
             "## CHAPTER: Chapter %d\n\n%s" % (i, ("word " * 200)) for i in range(1, 6)
         )
-        out, idx = run(text, "--only", "2-3")
+        out, idx = run(text, "--min-words", "0", "--only", "2-3")
         self.assertEqual([e["n"] for e in idx], [2, 3])
         self.assertEqual(sorted(os.listdir(out)),
                          sorted(["index.json"] + [e["file"] for e in idx]))
@@ -46,6 +46,28 @@ class Split(unittest.TestCase):
         _, idx = run(text, "--max-words", "2000")
         self.assertGreaterEqual(len(idx), 4)
         self.assertTrue(all(e["words"] <= 2000 * 1.6 for e in idx))
+
+    def test_small_chunks_are_folded(self):
+        # 6 tiny chapters (30 words) + 1 real one; tiny ones fold into a neighbour.
+        text = "\n\n".join(
+            "## CHAPTER: Tiny %d\n\n%s" % (i, ("w " * 30)) for i in range(1, 7)
+        ) + "\n\n## CHAPTER: Real\n\n" + ("w " * 400)
+        out, idx = run(text, "--min-words", "120")
+        self.assertLess(len(idx), 7)
+        # no text lost, and folded titles survive as "### " sub-headings
+        joined = ""
+        for e in idx:
+            with open(os.path.join(out, e["file"]), encoding="utf-8") as fh:
+                joined += fh.read()
+        self.assertGreaterEqual(len(joined.split()), 580)
+        self.assertIn("### Tiny 2", joined)
+
+    def test_merge_disabled_with_zero(self):
+        text = "\n\n".join(
+            "## CHAPTER: Tiny %d\n\n%s" % (i, ("w " * 30)) for i in range(1, 7)
+        )
+        _, idx = run(text, "--min-words", "0")
+        self.assertEqual(len(idx), 6)
 
 
 if __name__ == "__main__":

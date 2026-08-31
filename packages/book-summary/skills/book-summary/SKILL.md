@@ -57,8 +57,9 @@ scripts/extract.sh <input-file> <workdir>/book.txt
 ```
 
 - EPUB → bundled stdlib parser. It follows the spine for reading order, uses the
-  book's own table of contents to insert `## CHAPTER: <title>` markers, extracts
-  the embedded `cover.<ext>` next to `book.txt`, and prints any DC metadata.
+  book's own table of contents to insert `## CHAPTER: <title>` markers, writes
+  the cover image as `cover.<ext>` next to `book.txt` (following an XHTML cover
+  wrapper to the real picture), and prints any DC metadata.
 - PDF → `pdftotext -layout`. If the script warns that very little text came out,
   the PDF is scanned: tell the user it needs OCR (`ocrmypdf in.pdf out.pdf`) and
   stop unless they want a partial summary.
@@ -66,13 +67,14 @@ scripts/extract.sh <input-file> <workdir>/book.txt
 ### 3. Read `references/workflow.md` and follow it
 
 It covers, in order: the depth mode, resolving bibliographic metadata with
-`scripts/fetch_meta.py` (Open Library, no key), segmenting the text with
-`scripts/split.py chunks/` and reading chunks one at a time, the per-chunk pass
-into `chunks/notes.md`, the synthesis pass with section length targets, the
-expanded takeaways for practice-forward books, verifying every quote with
-`scripts/verify_quotes.py`, topic-tag taxonomy, cover handling, quoting limits,
-and the filename rule. Don't skip it — the quality of the summary depends on that
-method.
+`scripts/fetch_meta.py` (Open Library + Google Books, no key; pass ISBN *and*
+title/author), segmenting with `scripts/split.py chunks/` (small chunks folded;
+raise `--min-words` if the index is still huge) and reading chunks one at a time,
+the per-chunk pass into `chunks/notes.md`, the synthesis pass with section length
+targets, the expanded takeaways for practice-forward books, the one-line `hook`,
+verifying every quote with `scripts/verify_quotes.py`, topic-tag taxonomy, cover
+handling, quoting limits, and the filename rule. Don't skip it — the quality of
+the summary depends on that method.
 
 ### 4. Fill the template
 

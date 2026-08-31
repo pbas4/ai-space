@@ -189,9 +189,15 @@ def main() -> int:
             toc_by_path.setdefault(join(base, href), []).append((frag, title))
 
         # --- cover image -----------------------------------------------------
+        # Prefer a manifest item that really is an image; fall back to the
+        # <meta name="cover"> pointer or an id/href containing "cover". If the
+        # winner turns out to be an XHTML wrapper (common), follow its first
+        # <img src> to the actual picture.
         cover_line = None
         cover_id = next(
-            (k for k, v in items.items() if "cover-image" in v[1].split()), None
+            (k for k, v in items.items()
+             if "cover-image" in v[1].split() and v[2].startswith("image/")),
+            None,
         )
         if not cover_id:
             meta_cover = re.search(r'<meta\b[^>]*name="cover"[^>]*content="([^"]+)"', opf)
@@ -199,20 +205,37 @@ def main() -> int:
                 cover_id = meta_cover.group(1)
         if not cover_id:
             cover_id = next(
+                (k for k, v in items.items()
+                 if ("cover" in k.lower() or "cover" in v[0].lower())
+                 and v[2].startswith("image/")),
+                None,
+            )
+        if not cover_id:
+            cover_id = next(
                 (k for k in items if k.lower() in ("cover", "coverimage")), None
             )
-        if cover_id:
-            chref = href_by_id[cover_id]
+
+        def read_cover(chref, depth=0):
             cpath = join(base, chref)
             try:
                 data = z.read(cpath)
-                ext = os.path.splitext(chref)[1].lower() or ".jpg"
-                cover_name = "cover" + ext
-                with open(os.path.join(out_dir, cover_name), "wb") as cf:
-                    cf.write(data)
-                cover_line = cover_name
             except KeyError:
-                pass
+                return None
+            ext = os.path.splitext(chref)[1].lower()
+            if ext in (".jpg", ".jpeg", ".png", ".webp", ".gif"):
+                name = "cover" + (".jpg" if ext == ".jpeg" else ext)
+                with open(os.path.join(out_dir, name), "wb") as cf:
+                    cf.write(data)
+                return name
+            if depth == 0 and re.search(r"\.x?html?$", cpath, re.I):
+                img = re.search(r'<img\b[^>]*\bsrc="([^"]+)"',
+                                data.decode("utf-8", "replace"), re.I)
+                if img:
+                    return read_cover(join(posixpath.dirname(chref), img.group(1)), 1)
+            return None
+
+        if cover_id:
+            cover_line = read_cover(href_by_id[cover_id])
 
         # --- body text ------------------------------------------------------
         parts, seen = [], set()
