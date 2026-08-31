@@ -162,6 +162,20 @@ class CreateTaskPlanSkillContractTest(unittest.TestCase):
         self.assertIn("every detected Figma URL or design reference", self.skill)
         self.assertIn("Do not invoke the RW CRM Components Engineer or any implementation agent during planning", self.skill)
 
+    def test_uses_concrete_cross_plugin_planner_handoff(self):
+        self.assertIn(
+            "discover the installed `rw-crm:rw-crm-components-planner` skill and invoke it as a read-only subagent",
+            self.skill,
+        )
+        self.assertIn(
+            "If that skill is not available in the current runtime, record the planner as unavailable",
+            self.skill,
+        )
+        self.assertIn(
+            "Install both `rw-crm@ai-space` and `create-task-plan@ai-space`",
+            self.skill,
+        )
+
     def test_uses_the_shared_three_way_ui_routing_policy(self):
         self.assertIn("`ui-related`", self.skill)
         self.assertIn("`possible-ui`", self.skill)

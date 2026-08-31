@@ -15,11 +15,27 @@ In Claude Code, add the AI Space marketplace and install the same package indepe
 /plugin install create-task-plan@ai-space
 ```
 
+For UI-related tasks, install the RW CRM companion as well. The Create Task Plan
+plugin delegates to its namespaced planner skill at runtime; installing only
+Create Task Plan leaves that handoff unavailable:
+
+```text
+/plugin install rw-crm@ai-space
+```
+
+In Codex, install both plugins from the same marketplace before running a UI
+plan:
+
+```bash
+codex plugin add rw-crm@ai-space
+codex plugin add create-task-plan@ai-space
+```
+
 ## What it does
 
 1. Resolves and reads a Jira issue through the configured Atlassian Rovo connection.
 2. Classifies the issue as `ui-related`, `possible-ui`, or `non-ui` using evidence from the Jira task.
-3. For UI-related tasks, invokes the installed `rw-crm:rw-crm-components-planner` with the Jira scope, links, Figma references, and repository context.
+3. For UI-related tasks, invokes the installed `rw-crm:rw-crm-components-planner` skill as a read-only subagent with the Jira scope, links, Figma references, and repository context.
 4. Runs requirements, repository-impact, and technical-risk analysis.
 5. Presents gaps, assumptions, risks, and the reviewed implementation plan for user approval.
 6. Executes approved work only on an approved non-protected task branch, with checkpoint commit authorization.

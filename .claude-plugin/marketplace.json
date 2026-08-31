@@ -19,7 +19,7 @@
       "name": "create-task-plan",
       "source": "./packages/rw-create-task-plan",
       "description": "Analyze Jira tasks and create reviewed, implementation-ready plans.",
-      "version": "0.2.1",
+      "version": "0.2.2",
       "category": "Productivity",
       "repository": "https://github.com/pbas4/ai-space"
     },
