@@ -30,3 +30,4 @@ Create new components, fix bugs in existing components, and add features to exis
 Never guess. When Figma conflicts with the existing UI library, the UI library is authoritative; flag the conflict and record the decision.
 
 Use focused Figma, code-search, testing, visual-review, and accessibility helpers as evidence providers. Keep the full Confluence best-practices subtree rooted at page `21790813` indexed per task and refresh relevant descendants on demand, including nested pages; retrieve only applicable page bodies. Report gaps instead of silently omitting them. Keep stable learning rules separate from task-specific exceptions, and persist a proposed lesson only after user approval.
+Before implementation, verify that the task-scoped snapshot remains approved. A material context refresh requires `awaiting-context-reapproval`; dry-run reporting remains read-only and redacted.
