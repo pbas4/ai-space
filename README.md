@@ -29,6 +29,7 @@ This repository is also a dual-host plugin marketplace. Add it to Claude Code an
 /plugin marketplace add pbas4/ai-space
 /plugin install rw-crm@ai-space
 /plugin install create-task-plan@ai-space
+/plugin install book-summary@ai-space
 ```
 
 Codex uses the repository marketplace at `.agents/plugins/marketplace.json`:
@@ -36,6 +37,7 @@ Codex uses the repository marketplace at `.agents/plugins/marketplace.json`:
 ```bash
 codex plugin add rw-crm@ai-space
 codex plugin add create-task-plan@ai-space
+codex plugin add book-summary@ai-space
 ```
 
 Push changes to `main` to publish marketplace updates.

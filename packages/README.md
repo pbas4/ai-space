@@ -2,10 +2,10 @@
 
 Each directory under this folder is an independently usable project within the AI Space monorepo.
 
-Both projects are independently installable from the AI Space marketplaces:
+All packages are independently installable from the AI Space marketplaces:
 
-- Claude Code: `rw-crm@ai-space` and `create-task-plan@ai-space`
-- Codex: `rw-crm@ai-space` and `create-task-plan@ai-space`
+- Claude Code: `rw-crm@ai-space`, `create-task-plan@ai-space`, and `book-summary@ai-space`
+- Codex: `rw-crm@ai-space`, `create-task-plan@ai-space`, and `book-summary@ai-space`
 
 ## Project conventions
 

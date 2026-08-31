@@ -10,7 +10,7 @@ const assert = (condition, message) => {
 
 const claude = await readJson('.claude-plugin/marketplace.json');
 const codex = await readJson('.agents/plugins/marketplace.json');
-const expectedNames = ['rw-crm', 'create-task-plan'];
+const expectedNames = ['rw-crm', 'create-task-plan', 'book-summary'];
 assert(claude.name === 'ai-space' && codex.name === 'ai-space', 'marketplace name must be ai-space');
 assert(JSON.stringify(claude.plugins.map(({ name }) => name)) === JSON.stringify(expectedNames), 'Claude plugin entries are invalid');
 assert(JSON.stringify(codex.plugins.map(({ name }) => name)) === JSON.stringify(expectedNames), 'Codex plugin entries are invalid');
@@ -27,5 +27,5 @@ for (const plugin of codex.plugins) {
   assert(typeof plugin.category === 'string', `${plugin.name}: category is required`);
 }
 
-console.log('Claude marketplace: 2 plugins valid');
-console.log('Codex marketplace: 2 plugins valid');
+console.log('Claude marketplace: 3 plugins valid');
+console.log('Codex marketplace: 3 plugins valid');

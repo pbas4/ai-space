@@ -22,6 +22,14 @@
       "version": "0.2.1",
       "category": "Productivity",
       "repository": "https://github.com/pbas4/ai-space"
+    },
+    {
+      "name": "book-summary",
+      "source": "./packages/book-summary",
+      "description": "Summarize EPUB and PDF books into Markdown and PDF files.",
+      "version": "0.1.0",
+      "category": "Productivity",
+      "repository": "https://github.com/pbas4/ai-space"
     }
   ]
 }
