@@ -20,6 +20,25 @@ cd ai-space
 
 Then work inside the relevant project directory. Project-specific commands are documented in that project’s README or package manifest.
 
+## Plugin marketplaces
+
+This repository is also a dual-host plugin marketplace. Add it to Claude Code and install either plugin independently:
+
+```text
+/plugin marketplace add pbas4/ai-space
+/plugin install rw-crm@ai-space
+/plugin install create-task-plan@ai-space
+```
+
+Codex uses the repository marketplace at `.agents/plugins/marketplace.json`:
+
+```bash
+codex plugin add rw-crm@ai-space
+codex plugin add create-task-plan@ai-space
+```
+
+Push changes to `main` to publish marketplace updates.
+
 For a focused checkout containing only one project, use sparse checkout:
 
 ```bash

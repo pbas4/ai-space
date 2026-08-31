@@ -1,0 +1,27 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "ai-space",
+  "owner": {
+    "name": "pbas4",
+    "url": "https://github.com/pbas4"
+  },
+  "description": "Independent AI Space plugins for CRM workflows and Jira task planning.",
+  "plugins": [
+    {
+      "name": "rw-crm",
+      "source": "./packages/rw-crm",
+      "description": "Reusable RW CRM planning, component implementation, and UI review workflows.",
+      "version": "0.1.0",
+      "category": "Developer Tools",
+      "repository": "https://github.com/pbas4/ai-space"
+    },
+    {
+      "name": "create-task-plan",
+      "source": "./packages/rw-create-task-plan",
+      "description": "Analyze Jira tasks and create reviewed, implementation-ready plans.",
+      "version": "0.2.1",
+      "category": "Productivity",
+      "repository": "https://github.com/pbas4/ai-space"
+    }
+  ]
+}
