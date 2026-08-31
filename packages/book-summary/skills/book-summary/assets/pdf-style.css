@@ -1,0 +1,59 @@
+/* House style for book-summary PDFs. Rendered by weasyprint via pandoc.
+   Keep this stable so every summary PDF looks identical. */
+
+@page {
+  size: A4;
+  margin: 22mm 20mm;
+  @bottom-right { content: counter(page); color: #999; font-size: 9pt; }
+}
+
+html { font-size: 11pt; }
+
+body {
+  font-family: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+  line-height: 1.5;
+  color: #1a1a1a;
+}
+
+h1, h2, h3, h4 {
+  font-family: "Helvetica Neue", Arial, sans-serif;
+  line-height: 1.25;
+  color: #111;
+  break-after: avoid;
+}
+
+h1 { font-size: 1.9rem; margin: 0 0 0.2rem; }
+h2 {
+  font-size: 1.25rem;
+  margin: 1.6rem 0 0.5rem;
+  padding-bottom: 0.15rem;
+  border-bottom: 1px solid #ddd;
+}
+h3 { font-size: 1.05rem; margin: 1.1rem 0 0.3rem; }
+
+p { margin: 0.5rem 0; }
+
+blockquote {
+  margin: 0.8rem 0;
+  padding: 0.1rem 0 0.1rem 0.9rem;
+  border-left: 3px solid #bbb;
+  color: #444;
+  font-style: italic;
+}
+
+ul, ol { padding-left: 1.3rem; margin: 0.4rem 0; }
+li { margin: 0.2rem 0; break-inside: avoid; }
+
+code {
+  font-family: "SF Mono", Menlo, Consolas, monospace;
+  font-size: 0.9em;
+  background: #f3f3f3;
+  padding: 0.1em 0.3em;
+  border-radius: 3px;
+}
+
+hr { border: none; border-top: 1px solid #ddd; margin: 1.5rem 0; }
+a { color: #1a1a1a; text-decoration: none; }
+
+/* The YAML frontmatter renders as a leading definition list via pandoc; tone it down. */
+body > dl:first-of-type { font-size: 0.9rem; color: #666; }

@@ -20,5 +20,6 @@ Projects may use different runtimes or no runtime at all; the monorepo does not 
 
 - [`rw-crm/`](rw-crm/) — reusable RW CRM planning, implementation, and UI-review agents.
 - [`rw-create-task-plan/`](rw-create-task-plan/) — Jira task planning plugin that consumes RW CRM UI planning agents.
+- [`book-summary/`](book-summary/) — skill that summarizes EPUB/PDF books into a templated Markdown + PDF and files them to Google Drive and Obsidian.
 
 Each package is independently installable and owns its source, tests, documentation, and runtime configuration.
