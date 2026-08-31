@@ -8,6 +8,13 @@ The package directory uses the `rw-` prefix for monorepo clarity. The technical 
 codex plugin add create-task-plan@personal
 ```
 
+In Claude Code, add the AI Space marketplace and install the same package independently:
+
+```text
+/plugin marketplace add pbas4/ai-space
+/plugin install create-task-plan@ai-space
+```
+
 ## What it does
 
 1. Resolves and reads a Jira issue through the configured Atlassian Rovo connection.

@@ -62,10 +62,17 @@ For `rw-crm-components`, the PR draft uses the repository template with PR type 
 
 ## Installation
 
-From the personal marketplace:
+From the AI Space marketplace in Claude Code:
+
+```text
+/plugin marketplace add pbas4/ai-space
+/plugin install rw-crm@ai-space
+```
+
+From the Codex marketplace:
 
 ```bash
-codex plugin add rw-crm@personal
+codex plugin add rw-crm@ai-space
 ```
 
 ## Validation

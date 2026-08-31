@@ -1,0 +1,24 @@
+{
+  "name": "ai-space",
+  "interface": { "displayName": "AI Space" },
+  "plugins": [
+    {
+      "name": "rw-crm",
+      "source": { "source": "local", "path": "./plugins/rw-crm" },
+      "policy": { "installation": "AVAILABLE", "authentication": "ON_INSTALL" },
+      "category": "Developer Tools"
+    },
+    {
+      "name": "create-task-plan",
+      "source": { "source": "local", "path": "./plugins/create-task-plan" },
+      "policy": { "installation": "AVAILABLE", "authentication": "ON_INSTALL" },
+      "category": "Productivity"
+    },
+    {
+      "name": "book-summary",
+      "source": { "source": "local", "path": "./plugins/book-summary" },
+      "policy": { "installation": "AVAILABLE", "authentication": "ON_INSTALL" },
+      "category": "Productivity"
+    }
+  ]
+}
