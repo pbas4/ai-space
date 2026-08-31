@@ -39,7 +39,7 @@ const required = [
   'test/fixtures/approved-correction.json',
   'test/fixtures/planner-task.json', 'test/fixtures/plan-review.json', 'test/fixtures/ui-review.json', 'test/fixtures/orchestration.json',
   'test/fixtures/plugin-flow.json', 'test/fixtures/model-escalation.json',
-  'test/corpus/rw-crm-task-corpus.json', 'test/behavior-integration.test.mjs', 'test/heartbeat-controller.test.mjs'
+  'test/corpus/rw-crm-task-corpus.json', 'test/behavior-integration.test.mjs', 'test/heartbeat-controller.test.mjs', 'test/prompt-loop-contract.test.mjs'
 ];
 
 for (const relativePath of required) {

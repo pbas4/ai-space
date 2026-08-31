@@ -4,6 +4,8 @@
 
 **Goal:** Close audit findings 5–14 by making RW CRM host integration, context consistency, validation, repository policy, regression evidence, and long-running execution explicit and safe.
 
+**Execution status:** Tasks 1–9 complete and verified on the dedicated hardening branch; Task 10 prompt-loop contract is ready and remains paused until explicit activation approval.
+
 **Architecture:** Keep the package portable by defining injected host adapters and pure policy/context/report modules. Create one immutable context snapshot per run and thread it through all workers; source or snapshot changes invalidate approvals. A pure heartbeat-controller module decides whether a scheduled run may proceed, while the companion prompt document and Codex heartbeat only orchestrate approved work one task at a time.
 
 **Tech Stack:** Node.js ESM, built-in `node:test`, JSON Schema draft 2020-12 subset evaluated locally, Markdown skills/docs, Python `unittest` for the Create Task Plan consumer, Codex heartbeat automation.

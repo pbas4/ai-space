@@ -1,6 +1,6 @@
 # RW CRM Medium/Low Hardening Prompt Loop
 
-**Status:** prepared; not scheduled or active until the implementation plan is approved and the user explicitly asks to activate it.
+**Status:** ready; not scheduled or active until the implementation plan is approved and the user explicitly asks to activate it.
 
 ## State
 
