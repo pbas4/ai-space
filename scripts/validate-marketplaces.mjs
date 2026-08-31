@@ -20,7 +20,7 @@ for (const plugin of claude.plugins) {
 }
 
 for (const plugin of codex.plugins) {
-  const sourcePath = resolve(root, '.agents/plugins', plugin.source.path);
+  const sourcePath = resolve(root, plugin.source.path);
   await access(resolve(sourcePath, '.codex-plugin/plugin.json'));
   assert(plugin.policy?.installation === 'AVAILABLE', `${plugin.name}: invalid installation policy`);
   assert(plugin.policy?.authentication === 'ON_INSTALL', `${plugin.name}: invalid authentication policy`);
