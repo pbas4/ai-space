@@ -27,7 +27,7 @@
       "name": "book-summary",
       "source": "./packages/book-summary",
       "description": "Summarize EPUB/PDF books into a templated Markdown + PDF and file them to Google Drive and Obsidian.",
-      "version": "0.2.0",
+      "version": "0.3.0",
       "category": "Productivity",
       "repository": "https://github.com/pbas4/ai-space"
     }
