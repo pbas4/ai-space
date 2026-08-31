@@ -1,0 +1,34 @@
+{
+  "type": "object",
+  "required": ["routing", "models", "approvals", "context", "commands", "verification", "findings", "prDraft"],
+  "properties": {
+    "routing": { "type": "object" },
+    "models": { "type": "object" },
+    "approvals": { "type": "object" },
+    "context": {
+      "type": "object",
+      "required": ["snapshotId", "sourceDigest", "sources", "gaps"],
+      "properties": {
+        "snapshotId": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "sourceDigest": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "sources": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["id", "uri", "contentDigest"],
+            "properties": {
+              "id": { "type": "string", "minLength": 1 },
+              "uri": { "type": "string", "minLength": 1 },
+              "contentDigest": { "type": ["string", "null"], "pattern": "^[a-f0-9]{64}$" }
+            }
+          }
+        },
+        "gaps": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "commands": { "type": "array", "items": { "type": "object", "required": ["name", "status"], "properties": { "name": { "type": "string", "minLength": 1 }, "status": { "enum": ["not-run", "passed", "failed", "skipped"] } } } },
+    "verification": { "type": "array", "items": { "type": "object" } },
+    "findings": { "type": "array", "items": { "type": "object" } },
+    "prDraft": { "type": "object" }
+  }
+}

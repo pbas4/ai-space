@@ -6,6 +6,7 @@ import {
   validateEngineerResult,
   validateLedgerEntry
 } from '../src/contracts.mjs';
+import { createContextSnapshot } from '../src/context/context-snapshot.mjs';
 
 const baseRequest = {
   task: 'Add a date picker component',
@@ -47,6 +48,27 @@ test('validates a structured engineer result', () => {
     context: { scope: {}, sources: [], evidence: [], gaps: [], ambiguities: [], libraryDecisions: [] },
     plan: null,
     status: 'needs-context',
+    changedArtifacts: [],
+    verification: { checks: [] },
+    proposedLearningEntry: null
+  });
+  assert.equal(result.valid, true);
+});
+
+test('validates a context reapproval result with its snapshot delta', () => {
+  const contextSnapshot = createContextSnapshot({
+    taskId: 'task-1',
+    now: '2026-08-28T10:00:00.000Z',
+    context: { selectedSources: [], gaps: [], ambiguities: [] }
+  });
+  const result = validateEngineerResult({
+    context: contextSnapshot,
+    contextSnapshot,
+    plan: { id: 'plan-1' },
+    status: 'awaiting-context-reapproval',
+    previousSnapshotId: 'a'.repeat(64),
+    currentSnapshotId: contextSnapshot.id,
+    changes: [{ type: 'gap-changed' }],
     changedArtifacts: [],
     verification: { checks: [] },
     proposedLearningEntry: null

@@ -1,0 +1,31 @@
+{
+  "type": "object",
+  "required": ["id", "taskId", "createdAt", "sourceDigest", "selectedSources", "scope", "libraryDecisions", "gaps", "ambiguities"],
+  "properties": {
+    "id": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "taskId": { "type": "string", "minLength": 1 },
+    "createdAt": { "type": "string", "format": "date-time" },
+    "sourceDigest": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "selectedSources": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "kind", "uri", "bodyDigest", "accessible", "lastSuccessfulRetrievalAt"],
+        "properties": {
+          "id": { "type": "string", "minLength": 1 },
+          "kind": { "type": "string", "minLength": 1 },
+          "uri": { "type": "string", "minLength": 1 },
+          "pageId": { "type": ["string", "null"] },
+          "pageVersion": { "type": ["string", "number", "null"] },
+          "bodyDigest": { "type": ["string", "null"], "pattern": "^[a-f0-9]{64}$" },
+          "accessible": { "type": "boolean" },
+          "lastSuccessfulRetrievalAt": { "type": ["string", "null"] }
+        }
+      }
+    },
+    "scope": { "type": "object" },
+    "libraryDecisions": { "type": "array", "items": { "type": "object" } },
+    "gaps": { "type": "array", "items": { "type": "object" } },
+    "ambiguities": { "type": "array", "items": { "type": "object" } }
+  }
+}

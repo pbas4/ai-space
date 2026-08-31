@@ -178,6 +178,10 @@ class CreateTaskPlanSkillContractTest(unittest.TestCase):
             self.skill,
         )
         self.assertIn("UI-context gap", self.skill)
+
+    def test_carries_shared_audit_evidence(self):
+        for phrase in ("routing evidence", "context snapshot ID", "context gaps", "structured validation evidence"):
+            self.assertIn(phrase, self.skill)
         self.assertIn("continue the read-only planning workflow", self.skill)
 
 

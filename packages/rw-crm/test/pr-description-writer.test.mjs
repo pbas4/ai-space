@@ -21,7 +21,7 @@ test('creates a concise human-sounding PR description from approved work', () =>
 test('uses the rw-crm-components PR template and fills its fields', () => {
   const result = createPrDescription({
     task: 'Fix DatePicker keyboard navigation',
-    repository: 'rw-crm-components',
+    repository: 'git@github.com:realworks/rw-crm-components.git',
     ticketNumber: 'CRM-123',
     additionalNotes: 'Please verify this in Storybook.',
     changedArtifacts: ['libs/ui/data-entry/datepicker/src/lib/datepicker.tsx'],
@@ -39,6 +39,13 @@ test('uses the rw-crm-components PR template and fills its fields', () => {
 
 test('does not apply the repository template to unrelated repositories', () => {
   const result = createPrDescription({ task: 'Fix Button styles', repository: 'crm-web', changedArtifacts: ['src/Button.tsx'] });
+  assert.doesNotMatch(result.body, /## PR Type/);
+  assert.match(result.body, /## Summary/);
+});
+
+test('does not apply the repository template to a partial repository name', () => {
+  const result = createPrDescription({ task: 'Fix Button styles', repositoryName: 'crm-components', changedArtifacts: ['src/Button.tsx'] });
+
   assert.doesNotMatch(result.body, /## PR Type/);
   assert.match(result.body, /## Summary/);
 });

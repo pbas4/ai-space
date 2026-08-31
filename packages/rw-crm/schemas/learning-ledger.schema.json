@@ -1,6 +1,4 @@
 {
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://rw.local/schemas/learning-ledger.schema.json",
   "type": "object",
   "required": ["id", "version", "class", "lesson", "evidence", "scope"],
   "properties": {
@@ -8,9 +6,9 @@
     "version": { "type": "integer", "minimum": 1 },
     "class": { "enum": ["stable-rule", "task-exception"] },
     "lesson": { "type": "string", "minLength": 1 },
-    "evidence": { "type": "array" },
-    "scope": { "type": "array" },
+    "evidence": { "type": "array", "items": {} },
+    "scope": { "type": "array", "items": {} },
     "persisted": { "type": "boolean" },
-    "approvedAt": { "type": "string" }
+    "approvedAt": { "type": "string", "format": "date-time" }
   }
 }

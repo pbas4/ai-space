@@ -1,1 +1,9 @@
-{"type":"object","required":["findings","reviewedPlan","recommendation"]}
+{
+  "type": "object",
+  "required": ["findings", "reviewedPlan", "recommendation"],
+  "properties": {
+    "findings": { "type": "array", "items": {} },
+    "reviewedPlan": { "type": "object" },
+    "recommendation": { "enum": ["approve", "revise", "blocked"] }
+  }
+}

@@ -1,0 +1,14 @@
+[
+  {"id":"figma-component","input":{"task":"Build the customer badge","figmaLinks":["https://figma.example/file/design?node-id=1"],"componentScope":[]},"expectedRouting":"ui-related","expectedPlannerStatus":"available"},
+  {"id":"component-library-bug","input":{"task":"Fix the DatePicker focus ring","figmaLinks":[],"componentScope":["DatePicker"]},"expectedRouting":"ui-related","expectedPlannerStatus":"available"},
+  {"id":"generic-frontend","input":{"task":"Improve the frontend screen layout","figmaLinks":[],"componentScope":[]},"expectedRouting":"possible-ui","expectedPlannerStatus":"available"},
+  {"id":"data-only","input":{"task":"Add an index to the customer table","figmaLinks":[],"componentScope":[]},"expectedRouting":"non-ui","expectedPlannerStatus":"not-applicable"},
+  {"id":"explicit-design-system","input":{"task":"Update the design system token","figmaLinks":[],"componentScope":[]},"expectedRouting":"ui-related","expectedPlannerStatus":"available"},
+  {"id":"accessibility-input","input":{"task":"Improve keyboard access for the search input","figmaLinks":[],"componentScope":[]},"expectedRouting":"possible-ui","expectedPlannerStatus":"available"},
+  {"id":"reusable-component","input":{"task":"Create a reusable component for empty states","figmaLinks":[],"componentScope":[]},"expectedRouting":"ui-related","expectedPlannerStatus":"available"},
+  {"id":"disallowed-figma-host","input":{"task":"Review the design","figmaLinks":["https://untrusted.example/design"],"componentScope":[]},"expectedRouting":"ui-related","expectedPlannerStatus":"unavailable"},
+  {"id":"stale-descendant","input":{"task":"Refresh the CRM form","figmaLinks":[],"componentScope":["Form"],"contextGaps":["stale Confluence descendant"]},"expectedRouting":"ui-related","expectedPlannerStatus":"unavailable"},
+  {"id":"exact-learning-duplicate","input":{"task":"Review learning ledger","figmaLinks":[],"componentScope":["Form"],"learningDuplicate":true},"expectedRouting":"ui-related","expectedPlannerStatus":"available"},
+  {"id":"rw-components-repository","input":{"task":"Fix component behavior","figmaLinks":[],"componentScope":["Button"],"repositoryScope":["rw-crm-components"]},"expectedRouting":"ui-related","expectedPlannerStatus":"available"},
+  {"id":"approval-tampering","input":{"task":"Implement approved Button changes","figmaLinks":[],"componentScope":["Button"],"approvalTampering":true},"expectedRouting":"ui-related","expectedPlannerStatus":"available"}
+]

@@ -96,9 +96,22 @@ export async function refreshSources(sources, fetchSource) {
       continue;
     }
     try {
-      refreshed.push({ ...source, ...(await fetchSource(source)), freshness: 'fresh' });
+      const retrieved = await fetchSource(source);
+      if (typeof retrieved?.body === 'undefined') {
+        refreshed.push({ ...source, bodyUnavailable: true, accessible: false });
+        gaps.push({ sourceId: source.id, reason: 'body-unavailable', impact: 'source body unavailable' });
+        continue;
+      }
+      refreshed.push({
+        ...source,
+        ...retrieved,
+        freshness: 'fresh',
+        bodyUnavailable: false,
+        accessible: true,
+        lastSuccessfulRetrievalAt: retrieved.lastSuccessfulRetrievalAt ?? retrieved.retrievedAt ?? source.lastSuccessfulRetrievalAt ?? null
+      });
     } catch (error) {
-      refreshed.push(source);
+      refreshed.push({ ...source, bodyUnavailable: true, accessible: false });
       gaps.push({ sourceId: source.id, reason: 'refresh-failed', impact: error.message });
     }
   }

@@ -45,6 +45,8 @@ For each task, the package indexes the complete Confluence Best Practices subtre
 
 Tasks are classified as `ui-related`, `possible-ui`, or `non-ui` with evidence. Standalone RW CRM handles `possible-ui`; Create Task Plan auto-invokes it only for `ui-related` work and asks before routing an ambiguous task.
 
+Context snapshots are task-scoped provenance records, not permanent copies of source content. A material refresh of selected sources, scope, library decisions, gaps, or ambiguities requires context reapproval before execution. Host adapters enforce source allowlists before retrieval; they cannot bypass them. Dry runs are read-only, produce redacted audit reports, and never include source bodies or secrets.
+
 ## RW CRM workflow
 
 Standalone use follows:

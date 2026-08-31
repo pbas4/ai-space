@@ -35,6 +35,8 @@ For every `ui-related` issue, and every `possible-ui` issue for which the user s
 
 Require the planner's read-only initial implementation plan with equivalent `status`, `evidence`, `scope`, `files`, `interfaces`, `risks_and_gaps`, `verification`, and `questions` fields. `status` is `available` when the planner returned relevant context, `unavailable` when discovery, invocation, Figma access, or component context failed, and `not-applicable` only for `non-ui` work.
 
+Carry the shared routing evidence, context snapshot ID, context gaps, and any structured validation evidence into the plugin's planning and review records so standalone and plugin behavior remain auditable.
+
 For a non-UI issue, do not invoke the RW UI Components Planner. Continue with the separate non-UI planning workflow unchanged.
 
 When UI context is unavailable, continue the read-only planning workflow. Add an explicit `UI-context gap` risk to the final plan that names the unavailable source, its planning impact, and the follow-up needed to close it. Do not invent component details.
