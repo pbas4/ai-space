@@ -21,6 +21,7 @@ const required = [
   'src/workflow/worker-execution.mjs',
   'schemas/engineer-result.schema.json',
   'schemas/learning-ledger.schema.json',
+  'schemas/dry-run-report.schema.json', 'schemas/verification-evidence.schema.json', 'schemas/finding.schema.json',
   'schemas/approval-receipt.schema.json',
   'schemas/initial-plan.schema.json', 'schemas/plan-review.schema.json', 'schemas/ui-review.schema.json', 'schemas/model-proposal.schema.json',
   'references/workflow.md',

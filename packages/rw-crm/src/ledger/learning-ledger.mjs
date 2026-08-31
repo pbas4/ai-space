@@ -67,11 +67,12 @@ export function approveLearningEntry(ledger, proposalId, approvedAt, decision) {
   const proposal = current.proposals.find((entry) => entry.id === proposalId);
   if (!proposal) throw new Error(`learning proposal not found: ${proposalId}`);
   const duplicates = findLearningDuplicates(current, proposal);
-  if (!['discard', 'create-distinct'].includes(decision) && !(typeof decision === 'string' && decision.startsWith('link:'))) {
+  const hasDuplicates = duplicates.exact.length > 0 || duplicates.overlaps.length > 0;
+  if (hasDuplicates && !['discard', 'create-distinct'].includes(decision) && !(typeof decision === 'string' && decision.startsWith('link:'))) {
     throw new Error('explicit duplicate decision is required before persistence');
   }
   if (decision === 'discard') return rejectLearningEntry(current, proposalId);
-  if (decision.startsWith('link:')) {
+  if (typeof decision === 'string' && decision.startsWith('link:')) {
     const linkedId = decision.slice('link:'.length);
     if (![...duplicates.exact, ...duplicates.overlaps].some((entry) => entry.id === linkedId)) throw new Error(`duplicate lesson not found: ${linkedId}`);
     return rejectLearningEntry(current, proposalId);

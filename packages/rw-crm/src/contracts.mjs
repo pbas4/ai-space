@@ -6,7 +6,8 @@ import { assertSupportedSchema, validateSchema } from './contracts/schema-runtim
 const schemaDirectory = join(dirname(fileURLToPath(import.meta.url)), '../schemas');
 const schemaNames = [
   'approval-receipt', 'context-envelope', 'engineer-result', 'initial-plan',
-  'learning-ledger', 'model-proposal', 'plan-review', 'ui-review', 'context-snapshot'
+  'learning-ledger', 'model-proposal', 'plan-review', 'ui-review', 'context-snapshot',
+  'dry-run-report', 'verification-evidence', 'finding'
 ];
 const schemas = Object.fromEntries(await Promise.all(schemaNames.map(async (name) => {
   const schema = JSON.parse(await readFile(join(schemaDirectory, `${name}.schema.json`), 'utf8'));
@@ -59,6 +60,9 @@ export function validateLedgerEntry(value) {
 export const validateInitialPlan = (value) => validateWithSchema('initial-plan', value);
 export const validatePlanReview = (value) => validateWithSchema('plan-review', value);
 export const validateUiReview = (value) => validateWithSchema('ui-review', value);
+export const validateDryRunReport = (value) => validateWithSchema('dry-run-report', value);
+export const validateVerificationEvidence = (value) => validateWithSchema('verification-evidence', value);
+export const validateFinding = (value) => validateWithSchema('finding', value);
 
 export function validateModelProposal(value) {
   const errors = [...validateWithSchema('model-proposal', value).errors];
