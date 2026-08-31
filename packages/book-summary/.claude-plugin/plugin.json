@@ -1,6 +1,6 @@
 {
   "name": "book-summary",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Summarize EPUB/PDF books into a templated Markdown + PDF and file them to Google Drive and Obsidian.",
   "author": { "name": "pbas" }
 }

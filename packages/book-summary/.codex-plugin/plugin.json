@@ -1,6 +1,6 @@
 {
   "name": "book-summary",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Turn an EPUB or PDF book into a templated summary (Markdown + PDF) and distribute it to Google Drive and an Obsidian vault.",
   "author": { "name": "pbas" },
   "skills": "./skills/",

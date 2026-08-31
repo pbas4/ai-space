@@ -19,14 +19,40 @@ command -v pandoc >/dev/null 2>&1 \
   || { echo "pandoc not found. Run: brew install pandoc" >&2; exit 1; }
 [ -f "$IN" ] || { echo "Input not found: $IN" >&2; exit 1; }
 
-common=( "$IN" --from=gfm+yaml_metadata_block --standalone
-         --metadata pagetitle="$(basename "${IN%.*}")" --output "$OUT" )
+srcdir="$(cd "$(dirname "$IN")" && pwd)"
+work="$(mktemp -d)"
+trap 'rm -rf "$work"' EXIT
+
+# Copy the source into a scratch dir, rewriting Obsidian image embeds
+#   ![[Some Name.jpg|200]]   ->   ![](cover.jpg)
+# to a plain Markdown image pointing at a space-free copy, so pandoc (which
+# URL-encodes paths) can actually find the file. Other lines pass through.
+doc="$work/doc.md"
+n=0
+while IFS= read -r line || [ -n "$line" ]; do
+  if [[ "$line" =~ ^\!\[\[(.+)\]\]$ ]]; then
+    target="${BASH_REMATCH[1]%%|*}"          # drop "|200" sizing hint
+    if [ -f "$srcdir/$target" ]; then
+      ext="${target##*.}"; n=$((n + 1))
+      asset="asset-$n.$ext"; [ "$n" -eq 1 ] && asset="cover.$ext"
+      cp "$srcdir/$target" "$work/$asset"
+      printf '![](%s)\n' "$asset" >> "$doc"
+      continue
+    fi
+  fi
+  printf '%s\n' "$line" >> "$doc"
+done < "$IN"
+
+common=( "$doc" --from=gfm+yaml_metadata_block --standalone
+         --resource-path "$work" --metadata pagetitle="$(basename "${IN%.*}")"
+         --output "$OUT" )
 
 if command -v typst >/dev/null 2>&1; then
+  # linkcolor is fed straight into typst's rgb(): must be hex, not a name.
   pandoc "${common[@]}" \
     --pdf-engine=typst \
     -V fontsize=11pt -V margin-x=20mm -V margin-y=22mm \
-    -V linkcolor=black
+    -V linkcolor=1a1a1a
   engine=typst
 elif command -v weasyprint >/dev/null 2>&1; then
   pandoc "${common[@]}" --pdf-engine=weasyprint --css "$CSS"

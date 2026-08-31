@@ -57,8 +57,19 @@ Point Claude at a book file:
 
 The skill then: checks deps → extracts text (TOC chapter markers, cover) →
 looks up metadata on Open Library → splits into chunks → summarizes per the
-workflow → fills the template → renders the PDF → runs `distribute.sh` → reports
+workflow (per-chunk notes → synthesis) → fills the template → verifies every
+quote against the source → renders the PDF → runs `distribute.sh` → reports
 paths.
+
+**Depth.** Ask for `brief`, `standard` (default), or `deep` — e.g. "summarize
+this book, deep". Same sections either way; only the amount under each heading
+changes, and `deep` adds `Worked examples` + `Apply it`. Recorded in the
+`depth:` frontmatter field.
+
+**Practice-forward books.** For how-to / self-improvement / business /
+productivity / health titles the *Actionable takeaways* section is expanded into
+grouped themes plus a checklist and an anti-patterns list, and
+`practice_forward: true` is set in frontmatter.
 
 ## Scripts (runnable standalone)
 
@@ -70,6 +81,7 @@ paths.
 | `scripts/split.py <book.txt> <dir>` | Split into ordered chunks + `index.json`. `--only 1-3,7`, `--max-words N`. |
 | `scripts/fetch_cover.sh <url> <stem>` | Download a cover (network; confirm with user first). |
 | `scripts/check_existing.sh "<Author> - <Title>"` | Report whether a summary already exists in Drive/vault. |
+| `scripts/verify_quotes.py <summary.md> <book.txt>` | Check every blockquote appears in the source; exits non-zero on a miss. Offline. |
 | `scripts/render_pdf.sh <in.md> <out.pdf>` | Markdown → house-style PDF (typst → weasyprint → wkhtmltopdf). |
 | `scripts/distribute.sh <in.md> <in.pdf>` | Copy to Drive + vault, update MOC. Idempotent. |
 
@@ -81,5 +93,6 @@ cd packages/book-summary && npm test        # or: bash tests/run.sh
 
 Standard-library Python `unittest` + a shell test — no third-party deps. Covers
 EPUB extraction (spine order, TOC markers, metadata, cover), `split.py`
-(marker/window/`--only`), and `distribute.sh` (Drive + vault copy, cover, sorted
+(marker/window/`--only`), `verify_quotes.py` (verbatim pass, reworded fail,
+elision bridging), and `distribute.sh` (Drive + vault copy, cover, sorted
 idempotent MOC).
