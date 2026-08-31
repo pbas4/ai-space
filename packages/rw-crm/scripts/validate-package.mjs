@@ -37,7 +37,8 @@ const required = [
   'test/fixtures/figma-conflict.json',
   'test/fixtures/approved-correction.json',
   'test/fixtures/planner-task.json', 'test/fixtures/plan-review.json', 'test/fixtures/ui-review.json', 'test/fixtures/orchestration.json',
-  'test/fixtures/plugin-flow.json', 'test/fixtures/model-escalation.json'
+  'test/fixtures/plugin-flow.json', 'test/fixtures/model-escalation.json',
+  'test/corpus/rw-crm-task-corpus.json', 'test/behavior-integration.test.mjs'
 ];
 
 for (const relativePath of required) {
