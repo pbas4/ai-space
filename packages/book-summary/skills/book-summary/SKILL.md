@@ -23,9 +23,9 @@ the whole collection. Keep every section, in order, even when one ends up short.
 
 ## Prerequisites
 
-1. **Tools.** Run `scripts/check_deps.sh`. If anything is missing, show the user
-   the install command it prints (`brew install poppler pandoc weasyprint`) and
-   stop until it passes.
+1. **Tools.** Run `scripts/check_deps.sh`. If anything required is missing, show
+   the user the install command it prints (`brew install poppler pandoc typst`)
+   and stop until it passes.
 2. **Config.** Machine-local settings live at `~/.config/book-summary/config.json`
    (override with `$BOOK_SUMMARY_CONFIG`), never in this repo. If it's absent, copy
    `../../config.example.json` there and ask the user to fill `gdrive_dir`. Setting
@@ -46,32 +46,32 @@ Get the input file path (ask if not provided). Supported extensions: `.epub`,
 scripts/extract.sh <input-file> <workdir>/book.txt
 ```
 
-- EPUB → bundled stdlib parser, spine (reading) order preserved; also prints any
-  title/author/date metadata it finds.
+- EPUB → bundled stdlib parser. It follows the spine for reading order, uses the
+  book's own table of contents to insert `## CHAPTER: <title>` markers, extracts
+  the embedded `cover.<ext>` next to `book.txt`, and prints any DC metadata.
 - PDF → `pdftotext -layout`. If the script warns that very little text came out,
-  the PDF is scanned/image-only: tell the user it needs OCR first
-  (`ocrmypdf in.pdf out.pdf`) and stop unless they want a partial summary anyway.
+  the PDF is scanned: tell the user it needs OCR (`ocrmypdf in.pdf out.pdf`) and
+  stop unless they want a partial summary.
 
-Then establish the bibliographic basics — **title, author, publication year, ISBN**
-— from the metadata, the first pages, or by asking the user. These anchor the
-filename and frontmatter, so confirm them before continuing.
+### 3. Read `references/workflow.md` and follow it
 
-### 3. Read and summarize
-
-Read `references/workflow.md` now. It has the chunking strategy for long books,
-the synthesis pass, per-section length targets, and quoting limits. Follow it.
-
-Short version: split by chapter (headings in the extracted text) or ~10k-word
-windows if there are no headings; summarize each chunk; then do one synthesis pass
-across the chunk summaries to write the final sections.
+It covers, in order: resolving bibliographic metadata with
+`scripts/fetch_meta.py` (Open Library, no key), segmenting the text with
+`scripts/split.py chunks/` and reading chunks one at a time, the per-chunk and
+synthesis passes with section length targets, topic-tag taxonomy, cover handling,
+quoting limits, and the filename rule. Don't skip it — the quality of the summary
+depends on that method.
 
 ### 4. Fill the template
 
 Start from `assets/summary-template.md`. Replace every `{{PLACEHOLDER}}`, keep
-every heading in order, and delete any leftover template comments.
+every heading in order, delete leftover template comments and any optional lines
+that don't apply (e.g. the cover embed).
 
-Filename: `<Author> - <Title>.md`, sanitized (strip `/`, `:`, newlines; collapse
-spaces), e.g. `James Clear - Atomic Habits.md`. Write it into `<workdir>/`.
+Filename: `<Author> - <Title>.md`, sanitized. First run
+`scripts/check_existing.sh "<Author> - <Title>"` and, if it reports a match, ask
+the user before overwriting. Write the `.md` (and the copied `cover.<ext>` as
+`<stem>.<ext>`) into `<workdir>/`.
 
 ### 5. Render the PDF
 
@@ -79,8 +79,8 @@ spaces), e.g. `James Clear - Atomic Habits.md`. Write it into `<workdir>/`.
 scripts/render_pdf.sh "<workdir>/<Author> - <Title>.md" "<workdir>/<Author> - <Title>.pdf"
 ```
 
-Uses pandoc + weasyprint with `assets/pdf-style.css` so every summary PDF looks
-identical.
+Uses pandoc with the first available engine (typst → weasyprint → wkhtmltopdf) so
+every summary PDF looks consistent.
 
 ### 6. Distribute
 
@@ -88,10 +88,10 @@ identical.
 scripts/distribute.sh "<workdir>/<Author> - <Title>.md" "<workdir>/<Author> - <Title>.pdf"
 ```
 
-- Copies both files to `gdrive_dir`.
+- Copies the `.md`, `.pdf`, and cover (if present) to `gdrive_dir`.
 - If `obsidian_vault` is set: copies the `.md` into `<vault>/<books_subdir>/`, the
-  `.pdf` into `<vault>/<attachments_subdir>/`, and appends `- [[<Author> - <Title>]]`
-  to the MOC file.
+  `.pdf` and cover into `<vault>/<attachments_subdir>/`, and inserts
+  `- [[<Author> - <Title>]]` into the MOC file, kept sorted and duplicate-free.
 - Idempotent: re-running overwrites the files and won't duplicate the MOC line.
 
 ### 7. Report
@@ -104,5 +104,6 @@ the summary so they know it landed well.
 - Never hand-edit the PDF; if the summary changes, rerun step 5.
 - Machine paths belong in the config file, not this skill — keep the package
   portable and safe to commit.
-- If `weasyprint` proves painful to install on a given machine, an acceptable
-  fallback is `pandoc ... --pdf-engine=wkhtmltopdf`; keep the same CSS.
+- `fetch_meta.py` and `fetch_cover.sh` reach the network (Open Library only).
+  Metadata lookup sends just an ISBN or title/author. Confirm with the user before
+  downloading a cover.

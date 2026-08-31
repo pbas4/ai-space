@@ -1,20 +1,28 @@
 ---
 title: "{{TITLE}}"
+aliases: []
 author: "{{AUTHOR}}"
 year: {{YEAR}}
 isbn: "{{ISBN}}"
+publisher: "{{PUBLISHER}}"
 source_format: "{{SOURCE_FORMAT}}"
 source_file: "{{SOURCE_FILE}}"
 date_summarized: {{DATE}}
 summarized_by: claude
-tags: [book, summary]
+tags: [book, summary{{TOPIC_TAGS}}]
+topics: [{{TOPICS}}]
 rating:
 status: to-review
+cover: "{{COVER}}"
+cssclasses: [book-summary]
 ---
 
 # {{TITLE}}
 
 _{{AUTHOR}} · {{YEAR}}_
+
+<!-- If a cover was saved, embed it here, else delete this line:
+![[{{COVER}}|200]] -->
 
 ## In one paragraph
 
@@ -34,7 +42,8 @@ _{{AUTHOR}} · {{YEAR}}_
 ## Chapter-by-chapter
 
 <!-- One "### N. Chapter title" heading per chapter, 80–200 words under each.
-     If the book has no chapters, use the book's own major sections. -->
+     Follow the titles from the "## CHAPTER:" markers in the extracted text /
+     split index.json. If the book has no chapters, use its major sections. -->
 {{CHAPTERS}}
 
 ## Notable quotes

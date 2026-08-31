@@ -24,12 +24,13 @@ Or install the whole package as a plugin via `.claude-plugin/plugin.json`.
 1. **Tools:**
 
    ```bash
-   brew install poppler pandoc weasyprint
+   brew install poppler pandoc typst
    ```
 
-   `poppler` gives `pdftotext`; `pandoc` + `weasyprint` render the PDF. EPUB
-   parsing uses only the Python standard library. `ocrmypdf` is optional, for
-   scanned PDFs.
+   `poppler` gives `pdftotext`; `pandoc` + `typst` render the PDF (`typst` is a
+   single static binary — `weasyprint` or `wkhtmltopdf` also work if present).
+   EPUB parsing uses only the Python standard library. `ocrmypdf` is optional, for
+   scanned PDFs. Run `skills/book-summary/scripts/check_deps.sh` to verify.
 
 2. **Config** — machine-local, never committed. Copy the example and edit:
 
@@ -43,8 +44,8 @@ Or install the whole package as a plugin via `.claude-plugin/plugin.json`.
    | `gdrive_dir` | Local path of the Google Drive for Desktop folder for summaries. Required. |
    | `obsidian_vault` | Vault root. Leave `""` to skip vault delivery. |
    | `obsidian_books_subdir` | Where `.md` summaries go inside the vault. Default `Books`. |
-   | `obsidian_attachments_subdir` | Where the `.pdf` goes. Default `Books/attachments`. |
-   | `moc_file` | Map-of-Content note that gets a `- [[Author - Title]]` line appended. |
+   | `obsidian_attachments_subdir` | Where the `.pdf` / cover go. Default `Books/attachments`. |
+   | `moc_file` | Map-of-Content note; gets a sorted, dedup'd `- [[Author - Title]]` list. |
 
    Override the config path with `BOOK_SUMMARY_CONFIG=/path/to/config.json`.
 
@@ -54,14 +55,31 @@ Point Claude at a book file:
 
 > Summarize `~/Downloads/atomic-habits.epub` and file it.
 
-The skill then: checks deps → extracts text → summarizes per the workflow →
-fills the template → renders the PDF → runs `distribute.sh` → reports paths.
+The skill then: checks deps → extracts text (TOC chapter markers, cover) →
+looks up metadata on Open Library → splits into chunks → summarizes per the
+workflow → fills the template → renders the PDF → runs `distribute.sh` → reports
+paths.
 
 ## Scripts (runnable standalone)
 
 | script | does |
 |---|---|
-| `scripts/check_deps.sh` | Verify `pdftotext`, `pandoc`, `weasyprint`, `python3`. |
-| `scripts/extract.sh <in> <out.txt>` | EPUB/PDF → plain text. |
-| `scripts/render_pdf.sh <in.md> <out.pdf>` | Markdown → house-style PDF. |
+| `scripts/check_deps.sh` | Verify `pdftotext`, `pandoc`, a PDF engine, `python3`. |
+| `scripts/extract.sh <in> <out.txt>` | EPUB/PDF → plain text (+ `cover.<ext>`, `## CHAPTER:` markers for EPUB). |
+| `scripts/fetch_meta.py --isbn N` / `--title T --author A` | Open Library lookup → JSON (no key). |
+| `scripts/split.py <book.txt> <dir>` | Split into ordered chunks + `index.json`. `--only 1-3,7`, `--max-words N`. |
+| `scripts/fetch_cover.sh <url> <stem>` | Download a cover (network; confirm with user first). |
+| `scripts/check_existing.sh "<Author> - <Title>"` | Report whether a summary already exists in Drive/vault. |
+| `scripts/render_pdf.sh <in.md> <out.pdf>` | Markdown → house-style PDF (typst → weasyprint → wkhtmltopdf). |
 | `scripts/distribute.sh <in.md> <in.pdf>` | Copy to Drive + vault, update MOC. Idempotent. |
+
+## Tests
+
+```bash
+cd packages/book-summary && npm test        # or: bash tests/run.sh
+```
+
+Standard-library Python `unittest` + a shell test — no third-party deps. Covers
+EPUB extraction (spine order, TOC markers, metadata, cover), `split.py`
+(marker/window/`--only`), and `distribute.sh` (Drive + vault copy, cover, sorted
+idempotent MOC).
