@@ -19,6 +19,7 @@ const required = [
   'src/context/context-snapshot.mjs',
   'src/policy/repository-policy.mjs',
   'src/workflow/worker-execution.mjs',
+  'src/automation/heartbeat-controller.mjs',
   'schemas/engineer-result.schema.json',
   'schemas/learning-ledger.schema.json',
   'schemas/dry-run-report.schema.json', 'schemas/verification-evidence.schema.json', 'schemas/finding.schema.json',
@@ -38,7 +39,7 @@ const required = [
   'test/fixtures/approved-correction.json',
   'test/fixtures/planner-task.json', 'test/fixtures/plan-review.json', 'test/fixtures/ui-review.json', 'test/fixtures/orchestration.json',
   'test/fixtures/plugin-flow.json', 'test/fixtures/model-escalation.json',
-  'test/corpus/rw-crm-task-corpus.json', 'test/behavior-integration.test.mjs'
+  'test/corpus/rw-crm-task-corpus.json', 'test/behavior-integration.test.mjs', 'test/heartbeat-controller.test.mjs'
 ];
 
 for (const relativePath of required) {
