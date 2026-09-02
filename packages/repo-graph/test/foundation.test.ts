@@ -10,6 +10,15 @@ test("declares only the approved runtime and build dependencies", async () => {
   assert.deepEqual(pkg.devDependencies, { "@types/node": "22.20.1" });
   assert.deepEqual(pkg.bundleDependencies, ["typescript"]);
   assert.equal(pkg.engines.node, ">=22.13.0");
+  assert.ok(pkg.files.includes(".codex-plugin"));
+  assert.ok(pkg.files.includes("skills"));
+});
+
+test("categorizes the bundled plugin as a developer tool", async () => {
+  const manifest = JSON.parse(
+    await readFile(".codex-plugin/plugin.json", "utf8"),
+  );
+  assert.equal(manifest.interface.category, "Developer Tools");
 });
 
 test("redacts complete quoted absolute paths containing spaces", () => {

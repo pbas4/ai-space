@@ -336,6 +336,42 @@ test("parses explicit index and update commands with dependency-free options", (
   assert.equal(parseCliArgs(["unknown"]).ok, false);
 });
 
+test("parses connect paths and rejects indexing-only options", () => {
+  assert.deepEqual(parseCliArgs(["connect"]), {
+    ok: true,
+    value: { command: "connect", path: ".", format: "text" },
+    diagnostics: [],
+  });
+  assert.deepEqual(parseCliArgs(["connect", "fixture", "--format", "json"]), {
+    ok: true,
+    value: { command: "connect", path: "fixture", format: "json" },
+    diagnostics: [],
+  });
+  assert.equal(parseCliArgs(["connect", "--budget", "10"]).ok, false);
+  assert.equal(parseCliArgs(["connect", "--depth", "2"]).ok, false);
+  assert.equal(parseCliArgs(["connect", "one", "two"]).ok, false);
+});
+
+test("main connect creates graph, agent skill, guidance, and ignore entry", async (t) => {
+  const repositoryRoot = await fixtureRepository(t);
+  const before = await snapshotTree(repositoryRoot, [".repo-graph", ".agents", "AGENTS.md", ".gitignore"]);
+  let stdout = "";
+  let stderr = "";
+  const exitCode = await main(["connect", repositoryRoot], {
+    cwd: process.cwd(),
+    stdout: (value) => { stdout += value; },
+    stderr: (value) => { stderr += value; },
+  });
+  assert.equal(exitCode, ExitCode.Ok);
+  assert.equal(stderr, "");
+  assert.match(stdout, /Connected repository/u);
+  await access(path.join(repositoryRoot, ".repo-graph", "index.sqlite"));
+  await access(path.join(repositoryRoot, ".agents", "skills", "repo-graph", "SKILL.md"));
+  await access(path.join(repositoryRoot, "AGENTS.md"));
+  await access(path.join(repositoryRoot, ".gitignore"));
+  assert.deepEqual(await snapshotTree(repositoryRoot, [".repo-graph", ".agents", "AGENTS.md", ".gitignore"]), before);
+});
+
 test("main renders stable JSON and maps invalid local input to exit code 2", async (t) => {
   const repositoryRoot = await fixtureRepository(t);
   let stdout = "";

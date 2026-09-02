@@ -36,8 +36,10 @@ async function runNpm(args, options) {
 function verifyTarballListing(files) {
   const paths = new Set(files.map(({ path }) => path));
   const required = [
+    ".codex-plugin/plugin.json",
     "dist/src/cli/main.js",
     "assets/skill/SKILL.md",
+    "skills/repo-graph/SKILL.md",
     "DEPENDENCIES.md",
     "THIRD_PARTY_LICENSES/TypeScript.txt",
     "node_modules/typescript/LICENSE.txt",

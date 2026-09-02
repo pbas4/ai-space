@@ -13,6 +13,7 @@ import type { IndexSummary } from "../indexer/full.js";
 
 const TOOL_VERSION = "0.1.0";
 const HELP = `Usage: repo-graph index [path] [--format text|json]
+       repo-graph connect [path] [--format text|json]
        repo-graph update [path] [--format text|json]
        repo-graph query <question> [--budget 1500] [--format text|json]
        repo-graph explain <selector> [--budget 1500] [--format text|json]
@@ -25,6 +26,7 @@ const HELP = `Usage: repo-graph index [path] [--format text|json]
        repo-graph skill uninstall [path]
 
 Commands:
+  connect [path]       Build/update the graph and install agent instructions
   index [path]        Atomically build a fresh repository-local graph index
   update [path]       Reuse an unchanged index; otherwise perform an atomic full rebuild
   query <question>    Search the indexed repository graph
@@ -106,6 +108,22 @@ function renderSummary(summary: IndexSummary, format: OutputFormat): string {
     `Unresolved edges: ${summary.unresolvedEdges}`,
     `Diagnostics: ${summary.diagnostics}`,
     `Database: ${summary.database}`,
+    "",
+  ].join("\n");
+}
+
+function renderConnectSummary(summary: {
+  repository: { root: string };
+  index: IndexSummary & { reused: boolean };
+  skill: { paths: string[] };
+  reused: boolean;
+}, format: OutputFormat): string {
+  if (format === "json") return `${JSON.stringify(summary, null, 2)}\n`;
+  return [
+    `Connected repository: ${sanitize(summary.repository.root)}`,
+    `Index: ${summary.index.reused ? "reused" : "created"}`,
+    `Graph skill: ${summary.skill.paths.length > 0 ? "installed" : "already installed"}`,
+    `Reused: ${summary.reused}`,
     "",
   ].join("\n");
 }
@@ -411,6 +429,20 @@ export async function main(
     if (parsed.value.command === "version") {
       io.stdout(`${TOOL_VERSION}\n`);
       return ExitCode.Ok;
+    }
+
+    if (parsed.value.command === "connect") {
+      const { connectRepository } = await import("../commands/connect.js");
+      const result = await connectRepository(parsed.value.path, io.cwd);
+      if (!result.ok) {
+        renderDiagnostics(result.diagnostics, io.stderr);
+        return result.exitCode;
+      }
+      io.stdout(renderConnectSummary(result.value, parsed.value.format));
+      renderDiagnostics(result.diagnostics, io.stderr);
+      return result.diagnostics.some((diagnostic) => diagnostic.level !== "info")
+        ? ExitCode.PartialExtraction
+        : ExitCode.Ok;
     }
 
     if (parsed.value.command !== "index" && parsed.value.command !== "update") {

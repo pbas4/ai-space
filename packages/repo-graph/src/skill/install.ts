@@ -4,6 +4,7 @@ import {
   readFile,
   realpath,
   rm,
+  rmdir,
   stat,
   writeFile,
 } from "node:fs/promises";
@@ -27,6 +28,10 @@ export interface SkillChange {
   operation: "install" | "uninstall";
   changed: boolean;
   paths: string[];
+}
+
+export interface SkillInstallOptions {
+  writeFile?: (file: string, content: string) => Promise<void>;
 }
 
 function failure(code: string, message: string): Result<SkillChange> {
@@ -184,14 +189,39 @@ function withIgnoreEntry(content: string): string {
   return `${content}${content.endsWith("\n") ? "" : "\n"}${IGNORE_ENTRY}\n`;
 }
 
-async function writeWhenChanged(file: string, before: string | undefined, after: string): Promise<boolean> {
-  if (before === after) return false;
-  await writeFile(file, after, "utf8");
-  return true;
+async function defaultWriteFile(file: string, content: string): Promise<void> {
+  await writeFile(file, content, "utf8");
+}
+
+async function rollbackWrites(
+  writes: readonly { file: string; before: string | undefined }[],
+  createdDirectories: readonly string[],
+): Promise<void> {
+  let failed = false;
+  for (const { file, before } of [...writes].reverse()) {
+    try {
+      if (before === undefined) {
+        await rm(file, { force: true });
+      } else {
+        await defaultWriteFile(file, before);
+      }
+    } catch {
+      failed = true;
+    }
+  }
+  for (const directory of [...createdDirectories].reverse()) {
+    try {
+      await rmdir(directory);
+    } catch {
+      // Preserve directories that are no longer empty or cannot be removed safely.
+    }
+  }
+  if (failed) throw new Error("skill install rollback failed");
 }
 
 export async function installProjectSkill(
   repo: LocalRepository,
+  options: SkillInstallOptions = {},
 ): Promise<Result<SkillChange>> {
   if (!await isSafeRepository(repo)) {
     return invalidFailure(
@@ -203,6 +233,8 @@ export async function installProjectSkill(
   const agentsFile = join(repo.root, "AGENTS.md");
   const ignoreFile = join(repo.root, ".gitignore");
   const skillFile = join(repo.root, SKILL_RELATIVE_PATH);
+  const written: { file: string; before: string | undefined }[] = [];
+  const createdDirectories: string[] = [];
   try {
     await Promise.all([
       assertSafeExistingPath(agentsFile, false),
@@ -216,6 +248,19 @@ export async function installProjectSkill(
     const agents = installManagedBlock(agentsBefore ?? "");
     if (!agents.ok) return agents;
 
+    const directoryPaths = [
+      join(repo.root, ".agents"),
+      join(repo.root, ".agents", "skills"),
+      join(repo.root, SKILL_DIRECTORY),
+    ];
+    for (const directory of directoryPaths) {
+      try {
+        await lstat(directory);
+      } catch (error) {
+        if (isMissing(error)) createdDirectories.push(directory);
+        else throw error;
+      }
+    }
     const skillDirectory = await prepareSkillDirectory(repo.root);
     const canonicalSkillDirectory = await realpath(skillDirectory);
     if (relative(await realpath(repo.root), canonicalSkillDirectory) !== SKILL_DIRECTORY) {
@@ -228,14 +273,17 @@ export async function installProjectSkill(
     const skillBefore = await readOptionalFile(skillFile);
     const ignoreAfter = withIgnoreEntry(ignoreBefore ?? "");
     const changedPaths: string[] = [];
-    if (await writeWhenChanged(skillFile, skillBefore, skill)) {
-      changedPaths.push(SKILL_RELATIVE_PATH);
-    }
-    if (await writeWhenChanged(agentsFile, agentsBefore, agents.value)) {
-      changedPaths.push("AGENTS.md");
-    }
-    if (await writeWhenChanged(ignoreFile, ignoreBefore, ignoreAfter)) {
-      changedPaths.push(".gitignore");
+    const writer = options.writeFile ?? defaultWriteFile;
+    const changes = [
+      { file: ignoreFile, before: ignoreBefore, after: ignoreAfter, path: ".gitignore" },
+      { file: skillFile, before: skillBefore, after: skill, path: SKILL_RELATIVE_PATH },
+      { file: agentsFile, before: agentsBefore, after: agents.value, path: "AGENTS.md" },
+    ];
+    for (const change of changes) {
+      if (change.before === change.after) continue;
+      written.push({ file: change.file, before: change.before });
+      await writer(change.file, change.after);
+      changedPaths.push(change.path);
     }
     return {
       ok: true,
@@ -243,6 +291,14 @@ export async function installProjectSkill(
       diagnostics: [],
     };
   } catch {
+    try {
+      await rollbackWrites(written, createdDirectories);
+    } catch {
+      return failure(
+        "SKILL_INSTALL_ROLLBACK_FAILED",
+        "The repository-local agent skill could not be installed or rolled back safely.",
+      );
+    }
     return failure(
       "SKILL_INSTALL_FAILED",
       "The repository-local agent skill could not be installed safely.",
@@ -274,7 +330,8 @@ export async function uninstallProjectSkill(
     if (!agents.ok) return agents;
 
     const changedPaths: string[] = [];
-    if (agentsBefore !== undefined && await writeWhenChanged(agentsFile, agentsBefore, agents.value)) {
+    if (agentsBefore !== undefined && agentsBefore !== agents.value) {
+      await defaultWriteFile(agentsFile, agents.value);
       changedPaths.push("AGENTS.md");
     }
     try {

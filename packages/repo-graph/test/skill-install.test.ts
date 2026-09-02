@@ -27,6 +27,10 @@ const skillAsset = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
   "../../assets/skill/SKILL.md",
 );
+const bundledSkill = path.resolve(
+  path.dirname(fileURLToPath(import.meta.url)),
+  "../../skills/repo-graph/SKILL.md",
+);
 const startMarker = "<!-- repo-graph:start -->";
 const endMarker = "<!-- repo-graph:end -->";
 
@@ -129,6 +133,36 @@ test("skill install upgrades owned content without changing surrounding instruct
   );
 });
 
+test("skill install rolls back earlier writes after a deterministic late failure", async (t) => {
+  const { root, repo } = await fixtureRepository(t);
+  const originalAgents = "# Team rules\nKeep this line.\n";
+  await writeFile(path.join(root, "AGENTS.md"), originalAgents);
+  const attempted: string[] = [];
+
+  const result = await installProjectSkill(repo, {
+    writeFile: async (file, content) => {
+      attempted.push(path.relative(repo.root, file));
+      if (file === path.join(repo.root, "AGENTS.md")) {
+        throw new Error("injected late write failure");
+      }
+      await writeFile(file, content, "utf8");
+    },
+  });
+
+  assert.equal(result.ok, false);
+  assert.deepEqual(attempted, [
+    ".gitignore",
+    path.join(".agents", "skills", "repo-graph", "SKILL.md"),
+    "AGENTS.md",
+  ]);
+  assert.equal(await readFile(path.join(root, "AGENTS.md"), "utf8"), originalAgents);
+  assert.equal(await missing(path.join(root, ".gitignore")), true);
+  assert.equal(
+    await missing(path.join(root, ".agents/skills/repo-graph/SKILL.md")),
+    true,
+  );
+});
+
 test("skill uninstall removes only owned skill content", async (t) => {
   const { root, repo } = await fixtureRepository(t);
   const originalAgents = "# Team rules\nKeep this line.\n";
@@ -160,6 +194,10 @@ test("skill uninstall removes only owned skill content", async (t) => {
 
 test("skill contains graph-first source-authoritative local instructions", async () => {
   const skill = await readFile(skillAsset, "utf8");
+  const bundled = await readFile(bundledSkill, "utf8");
+
+  assert.equal(bundled, skill);
+  assert.match(skill, /connect once, then ask the agent normally/iu);
 
   assert.doesNotMatch(
     skill,
@@ -173,6 +211,8 @@ test("skill contains graph-first source-authoritative local instructions", async
   assert.match(skill, /source span/iu);
   assert.match(skill, /uncertain edge/iu);
   assert.match(skill, /local search/iu);
+  assert.match(skill, /repo-graph.*unavailable/iu);
+  assert.match(skill, /without.*package manager|do not.*package manager/iu);
   assert.match(skill, /graph.*navigation context/iu);
   assert.match(skill, /source.*authoritative/iu);
 });

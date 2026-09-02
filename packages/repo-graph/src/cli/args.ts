@@ -7,6 +7,7 @@ export type OutputFormat = "text" | "json";
 export type CliArguments =
   | { command: "help" }
   | { command: "version" }
+  | { command: "connect"; path: string; format: OutputFormat }
   | { command: "index"; path: string; format: OutputFormat }
   | { command: "update"; path: string; format: OutputFormat }
   | {
@@ -73,7 +74,7 @@ export function parseCliArgs(args: readonly string[]): Result<CliArguments> {
     return invalidArguments("The --format option must be text or json.");
   }
   const [command, ...positionals] = parsed.positionals;
-  if (command === "index" || command === "update") {
+  if (command === "connect" || command === "index" || command === "update") {
     if (positionals.length > 1) {
       return invalidArguments(`The ${command} command accepts at most one repository path.`);
     }
@@ -159,5 +160,5 @@ export function parseCliArgs(args: readonly string[]): Result<CliArguments> {
     };
   }
 
-  return invalidArguments("Expected the index, update, explain, path, or impact command.");
+  return invalidArguments("Expected the connect, index, update, explain, path, or impact command.");
 }

@@ -5,8 +5,10 @@
   "type": "module",
   "bin": { "repo-graph": "dist/src/cli/main.js" },
   "files": [
+    ".codex-plugin",
     "dist/src",
     "assets",
+    "skills",
     "DEPENDENCIES.md",
     "THIRD_PARTY_LICENSES/TypeScript.txt"
   ],
