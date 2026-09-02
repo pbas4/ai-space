@@ -1,0 +1,13 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "baseUrl": ".",
+    "paths": {
+      "external-package": ["../external-package/index.d.ts"]
+    },
+    "strict": true
+  },
+  "include": ["src/**/*"]
+}

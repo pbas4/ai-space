@@ -8,6 +8,7 @@ Projects live under [`packages/`](packages/). Each project owns its own source, 
 
 - [`packages/rw-crm/`](packages/rw-crm/) — reusable RW CRM planning, implementation, and UI-review Codex plugin.
 - [`packages/rw-create-task-plan/`](packages/rw-create-task-plan/) — Realworks-oriented Create Task Plan plugin with RW CRM UI planning integration.
+- [`packages/repo-graph/`](packages/repo-graph/) — offline repository intelligence and source-backed codebase navigation for coding agents.
 
 ## Working with a project
 

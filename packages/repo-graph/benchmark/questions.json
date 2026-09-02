@@ -1,0 +1,42 @@
+[
+  {
+    "enabled": false,
+    "question": "How is a core business capability structured?",
+    "repositoryPath": ".",
+    "relevantFiles": [],
+    "relevantSymbols": [],
+    "naiveBaselineFiles": []
+  },
+  {
+    "enabled": false,
+    "question": "Which modules depend on a shared domain type?",
+    "repositoryPath": ".",
+    "relevantFiles": [],
+    "relevantSymbols": [],
+    "naiveBaselineFiles": []
+  },
+  {
+    "enabled": false,
+    "question": "What is the call flow for a representative user action?",
+    "repositoryPath": ".",
+    "relevantFiles": [],
+    "relevantSymbols": [],
+    "naiveBaselineFiles": []
+  },
+  {
+    "enabled": false,
+    "question": "Which tests cover a critical service?",
+    "repositoryPath": ".",
+    "relevantFiles": [],
+    "relevantSymbols": [],
+    "naiveBaselineFiles": []
+  },
+  {
+    "enabled": false,
+    "question": "What breaks if a shared interface changes?",
+    "repositoryPath": ".",
+    "relevantFiles": [],
+    "relevantSymbols": [],
+    "naiveBaselineFiles": []
+  }
+]
