@@ -5,7 +5,7 @@
     "name": "pbas4",
     "url": "https://github.com/pbas4"
   },
-  "description": "Independent AI Space plugins for CRM workflows and Jira task planning.",
+  "description": "Independent AI Space plugins for CRM workflows, Jira task planning, and book/document summarization.",
   "plugins": [
     {
       "name": "rw-crm",
@@ -26,8 +26,8 @@
     {
       "name": "book-summary",
       "source": "./packages/book-summary",
-      "description": "Summarize EPUB and PDF books into Markdown and PDF files.",
-      "version": "0.1.0",
+      "description": "Summarize a book or document (EPUB/PDF/DOCX/HTML/TXT/URL) into a templated Markdown + PDF via model-split subagents, and file it to Google Drive and Obsidian.",
+      "version": "0.3.0",
       "category": "Productivity",
       "repository": "https://github.com/pbas4/ai-space"
     }

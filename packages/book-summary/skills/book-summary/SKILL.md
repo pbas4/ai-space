@@ -1,25 +1,40 @@
 ---
 name: book-summary
 description: >-
-  Use whenever the user wants a book turned into written notes — they point at an
-  .epub or .pdf book file, paste a book's path, say "summarize this book", "make me
-  a summary of <book>", "give me book notes / a book breakdown", or "add this book
-  to my second brain / Obsidian / knowledge vault". Produces a structured summary in
-  BOTH Markdown and PDF from a fixed template, then files both copies in the
-  configured Google Drive folder and (optionally) an Obsidian vault. Trigger even if
-  the user mentions only one side — just the summary ("break down Atomic Habits for
-  me"), or just the delivery ("push my book notes to Drive").
+  Use whenever the user wants a book or long document turned into written notes —
+  they point at an .epub / .pdf / .docx / .html / .txt / .md file or a URL, paste a
+  path, say "summarize this book", "make me a summary of <book>", "give me book
+  notes / a book breakdown", or "add this book to my second brain / Obsidian /
+  knowledge vault". Produces a structured summary in BOTH Markdown and PDF from a
+  fixed template, then files both copies in the configured Google Drive folder and
+  (optionally) an Obsidian vault. Trigger even if the user mentions only one side —
+  just the summary ("break down Atomic Habits for me"), or just the delivery ("push
+  my book notes to Drive").
 ---
 
 # Book Summary
 
-Turn an EPUB or PDF book into a consistent, structured summary in two formats
+Turn a book or long document into a consistent, structured summary in two formats
 (Markdown + PDF) and file it where the user keeps their reading notes.
 
 The Markdown file is the source of truth. The PDF is always regenerated from it,
 so the two never drift. The template's fixed section list is load-bearing: it lets
 the user compare any two books at a glance and lets Obsidian queries work across
 the whole collection. Keep every section, in order, even when one ends up short.
+
+## How the work is split
+
+This skill **orchestrates**; two bundled subagents do the heavy lifting so the
+main session's context stays clean and each part runs on the right model:
+
+- **`book-chunk-summarizer`** (model: Sonnet) — one Task per chunk, in parallel,
+  each returning terse notes for its slice. Cheap; high volume.
+- **`book-synthesizer`** (model: Opus) — one Task that turns all the notes into
+  the finished templated Markdown. Reasoning-heavy; low volume.
+
+Run the fan-out and synthesis through the Task tool with those `subagent_type`s.
+Everything else (extraction, metadata, rendering, distribution) is scripts you run
+directly.
 
 ## Prerequisites
 
@@ -28,82 +43,126 @@ the whole collection. Keep every section, in order, even when one ends up short.
    and stop until it passes.
 2. **Config.** Machine-local settings live at `~/.config/book-summary/config.json`
    (override with `$BOOK_SUMMARY_CONFIG`), never in this repo. If it's absent, copy
-   `../../config.example.json` there and ask the user to fill `gdrive_dir`. Setting
-   `obsidian_vault` is optional and enables vault delivery.
+   `../../config.example.json` there and ask the user to fill `gdrive_dir`.
+   Optional keys: `obsidian_vault` (enables vault delivery + real backlinks),
+   `default_depth` (`quick`/`standard`/`deep`), `kindle_clippings` (path to a
+   Kindle `My Clippings.txt`).
 
 ## Procedure
 
 Work in a scratch directory (e.g. `mktemp -d`). Do these steps in order.
 
-### 1. Identify the source
+### 1. Identify source and depth
 
-Get the input file path (ask if not provided). Supported extensions: `.epub`,
-`.pdf`. Record which one — it goes in the summary's frontmatter.
+- Get the input (ask if not provided): a local `.epub/.pdf/.docx/.html/.txt/.md`
+  file, or an `http(s)://` URL. Record the kind for `source_format`
+  (`epub/pdf/docx/html/txt/url`).
+- Pick **depth**: the user's explicit ask, else `default_depth` from config, else
+  `standard`. For a short input (< ~5k words, typical of an article/URL), default
+  to `quick` unless the user asked otherwise.
+  - `quick` — one synthesis pass, no chunk fan-out; short output.
+  - `standard` — the full template.
+  - `deep` — finer chunking, longer chapters, plus a Teaching outline.
 
 ### 2. Extract the text
 
 ```
-scripts/extract.sh <input-file> <workdir>/book.txt
+scripts/extract.sh <input> <workdir>/book.txt
 ```
 
-- EPUB → bundled stdlib parser. It follows the spine for reading order, uses the
-  book's own table of contents to insert `## CHAPTER: <title>` markers, extracts
-  the embedded `cover.<ext>` next to `book.txt`, and prints any DC metadata.
-- PDF → `pdftotext -layout`. If the script warns that very little text came out,
-  the PDF is scanned: tell the user it needs OCR (`ocrmypdf in.pdf out.pdf`) and
-  stop unless they want a partial summary.
+EPUB uses the bundled stdlib parser (spine order, `## CHAPTER:` markers from the
+real TOC, `cover.<ext>` written next to `book.txt`). PDF uses `pdftotext -layout`;
+DOCX/HTML/URL go through pandoc. If the script warns almost no text came out, tell
+the user why (scanned PDF → OCR; JS-rendered page → save as a file) and stop unless
+they want a partial summary.
 
-### 3. Read `references/workflow.md` and follow it
+### 3. Metadata
 
-It covers, in order: resolving bibliographic metadata with
-`scripts/fetch_meta.py` (Open Library, no key), segmenting the text with
-`scripts/split.py chunks/` and reading chunks one at a time, the per-chunk and
-synthesis passes with section length targets, topic-tag taxonomy, cover handling,
-quoting limits, and the filename rule. Don't skip it — the quality of the summary
-depends on that method.
+```
+scripts/fetch_meta.py --isbn <isbn>            # or: --title "<t>" --author "<a>"
+```
 
-### 4. Fill the template
+Save the JSON to `<workdir>/meta.json`. Confirm shaky fields with the user. For a
+non-book document, fill what you can and leave the rest blank.
 
-Start from `assets/summary-template.md`. Replace every `{{PLACEHOLDER}}`, keep
-every heading in order, delete leftover template comments and any optional lines
-that don't apply (e.g. the cover embed).
+### 4. Reader highlights (optional — feature depends on the user having them)
 
-Filename: `<Author> - <Title>.md`, sanitized. First run
-`scripts/check_existing.sh "<Author> - <Title>"` and, if it reports a match, ask
-the user before overwriting. Write the `.md` (and the copied `cover.<ext>` as
-`<stem>.<ext>`) into `<workdir>/`.
+If the user passed a Kindle `My Clippings.txt` / Readwise export, or
+`kindle_clippings` is set in config:
 
-### 5. Render the PDF
+```
+scripts/highlights.py --kindle <clippings.txt> --title "<title>" --author "<a>" \
+  --out <workdir>/highlights.md
+```
+
+(`--readwise-md` / `--readwise-csv` also accepted.) If it finds nothing for this
+title, skip — don't force it.
+
+### 5. Segment (skip for `quick`)
+
+```
+scripts/split.py <workdir>/book.txt <workdir>/chunks/          # --max-words 5000 for deep
+```
+
+Read `<workdir>/chunks/index.json` to see the shape.
+
+### 6. Fan out chunk notes (skip for `quick`)
+
+For each chunk (or a small batch of adjacent chunks), spawn a
+`book-chunk-summarizer` Task **in parallel**. Give each: the chunk file path(s),
+the title(s) from `index.json`, the book title/author, and the depth. Concatenate
+every agent's returned notes, in chunk order, into `<workdir>/notes.md`.
+
+### 7. Vault backlinks (only if `obsidian_vault` is set)
+
+```
+scripts/vault_index.py "<obsidian_vault>"
+scripts/vault_related.py --index "<obsidian_vault>/.book-summary-index.json" \
+  --topics "<comma,topics>" --title "<title>" --exclude "<Author> - <Title>" \
+  > <workdir>/related.md
+```
+
+Topics come from your read of the book + `meta.json` `subjects`. If `related.md`
+is empty, that's fine.
+
+### 8. Synthesize
+
+Spawn **one** `book-synthesizer` Task. Give it the paths to: `assets/summary-template.md`,
+`references/workflow.md`, `<workdir>/notes.md` (or `<workdir>/book.txt` for
+`quick`), `meta.json`, `highlights.md` and `related.md` if they exist; plus the
+output path `<workdir>/<Author> - <Title>.md`, the `source_format`, `source_file`,
+today's date, and the depth. It writes the filled Markdown and returns the path.
+
+Filename: `<Author> - <Title>.md`, sanitized (strip `/ \ : * ? " < > |` and
+newlines; collapse spaces). Before the agent writes, run
+`scripts/check_existing.sh "<Author> - <Title>"`; if it reports a match, ask the
+user before overwriting.
+
+### 9. Render the PDF
 
 ```
 scripts/render_pdf.sh "<workdir>/<Author> - <Title>.md" "<workdir>/<Author> - <Title>.pdf"
 ```
 
-Uses pandoc with the first available engine (typst → weasyprint → wkhtmltopdf) so
-every summary PDF looks consistent.
-
-### 6. Distribute
+### 10. Distribute
 
 ```
 scripts/distribute.sh "<workdir>/<Author> - <Title>.md" "<workdir>/<Author> - <Title>.pdf"
 ```
 
-- Copies the `.md`, `.pdf`, and cover (if present) to `gdrive_dir`.
-- If `obsidian_vault` is set: copies the `.md` into `<vault>/<books_subdir>/`, the
-  `.pdf` and cover into `<vault>/<attachments_subdir>/`, and inserts
-  `- [[<Author> - <Title>]]` into the MOC file, kept sorted and duplicate-free.
-- Idempotent: re-running overwrites the files and won't duplicate the MOC line.
+Copies `.md`, `.pdf`, and cover to `gdrive_dir`; if `obsidian_vault` is set, also
+into the vault (`.md` in books subdir, `.pdf`/cover in attachments) and inserts a
+sorted, deduped `- [[<Author> - <Title>]]` line in the MOC. Idempotent.
 
-### 7. Report
+### 11. Report
 
 Give the user the absolute path of every file written, and a 2–3 sentence taste of
-the summary so they know it landed well.
+the summary.
 
 ## Notes
 
-- Never hand-edit the PDF; if the summary changes, rerun step 5.
-- Machine paths belong in the config file, not this skill — keep the package
-  portable and safe to commit.
-- `fetch_meta.py` and `fetch_cover.sh` reach the network (Open Library only).
-  Metadata lookup sends just an ISBN or title/author. Confirm with the user before
-  downloading a cover.
+- Never hand-edit the PDF; if the summary changes, rerun step 9.
+- Machine paths belong in the config file, not this skill.
+- `fetch_meta.py`, `fetch_cover.sh`, and URL extraction reach the network
+  (Open Library, the cover host, the given URL). Metadata lookup sends only an
+  ISBN or title/author. Confirm with the user before downloading a cover.

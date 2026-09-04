@@ -9,6 +9,7 @@ echo "== python unit tests =="
 echo
 echo "== shell tests =="
 bash "$HERE/test_distribute.sh"
+bash "$HERE/test_extract_more.sh"
 
 echo
 echo "all book-summary tests passed"

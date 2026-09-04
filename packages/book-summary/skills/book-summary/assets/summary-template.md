@@ -5,7 +5,7 @@ author: "{{AUTHOR}}"
 year: {{YEAR}}
 isbn: "{{ISBN}}"
 publisher: "{{PUBLISHER}}"
-source_format: "{{SOURCE_FORMAT}}"
+source_format: "{{SOURCE_FORMAT}}"   # epub | pdf | docx | html | txt | url
 source_file: "{{SOURCE_FILE}}"
 date_summarized: {{DATE}}
 summarized_by: claude
@@ -42,8 +42,9 @@ _{{AUTHOR}} · {{YEAR}}_
 ## Chapter-by-chapter
 
 <!-- One "### N. Chapter title" heading per chapter, 80–200 words under each.
-     Follow the titles from the "## CHAPTER:" markers in the extracted text /
-     split index.json. If the book has no chapters, use its major sections. -->
+     Follow the titles from the "## CHAPTER:" markers / split index.json.
+     No chapters (article, report)? Rename this heading "Section-by-section"
+     and follow the source's own headings. Omit entirely at quick depth. -->
 {{CHAPTERS}}
 
 ## Notable quotes
@@ -64,8 +65,12 @@ _{{AUTHOR}} · {{YEAR}}_
 
 ## How this connects
 
-<!-- Links to related ideas or other vault notes as [[wikilinks]]. -->
+<!-- Only [[wikilinks]] from related.md (they resolve in the vault), or plain-prose
+     bullets naming related books/ideas if there is no related.md. -->
 {{CONNECTIONS}}
+
+<!-- deep depth only: append a "## Teaching outline" section here — a nested bullet
+     outline someone could teach the book from. Omit at quick/standard depth. -->
 
 ---
 _Generated with the `book-summary` skill on {{DATE}}._
