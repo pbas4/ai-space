@@ -25,8 +25,7 @@ common=( "$IN" --from=gfm+yaml_metadata_block --standalone
 if command -v typst >/dev/null 2>&1; then
   pandoc "${common[@]}" \
     --pdf-engine=typst \
-    -V fontsize=11pt -V margin-x=20mm -V margin-y=22mm \
-    -V linkcolor=black
+    -V fontsize=11pt -V margin-x=20mm -V margin-y=22mm
   engine=typst
 elif command -v weasyprint >/dev/null 2>&1; then
   pandoc "${common[@]}" --pdf-engine=weasyprint --css "$CSS"

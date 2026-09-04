@@ -5,7 +5,7 @@
   "obsidian_attachments_subdir": "Books/attachments",
   "moc_file": "Books/Books MOC.md",
   "default_tags": ["book", "summary"],
-  "default_depth": "standard",
+  "default_depth": "",
   "kindle_clippings": "",
   "author": ""
 }

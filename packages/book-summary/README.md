@@ -69,7 +69,7 @@ ln -s "$PWD/packages/book-summary/skills/book-summary" \
    | `obsidian_vault` | Vault root. `""` skips vault delivery **and** real backlinks. |
    | `obsidian_books_subdir` / `obsidian_attachments_subdir` | Where `.md` / `.pdf` + cover land. Defaults `Books` / `Books/attachments`. |
    | `moc_file` | Map-of-Content note; gets a sorted, dedup'd `- [[Author - Title]]` list. |
-   | `default_depth` | `quick` / `standard` / `deep`. Default `standard`. |
+   | `default_depth` | `quick` / `standard` / `deep` to skip the prompt; `""` (default) makes the skill ask each run. |
    | `kindle_clippings` | Path to a Kindle `My Clippings.txt`, so highlights are folded in automatically. `""` to disable. |
 
    Override the config path with `BOOK_SUMMARY_CONFIG=/path/to/config.json`.

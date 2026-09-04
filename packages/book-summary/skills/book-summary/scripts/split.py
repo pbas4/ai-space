@@ -49,7 +49,18 @@ def parse_ranges(spec: str):
 
 
 def windows(title, text, max_words):
-    paras = re.split(r"\n\s*\n", text)
+    # break on blank lines, but hard-split any single paragraph that alone
+    # exceeds the target (rare, but keeps one giant unbroken block from
+    # becoming one giant chunk)
+    paras = []
+    for p in re.split(r"\n\s*\n", text):
+        w = p.split()
+        if len(w) > max_words:
+            for k in range(0, len(w), max_words):
+                paras.append(" ".join(w[k:k + max_words]))
+        else:
+            paras.append(p)
+
     cur, count, out = [], 0, []
     for p in paras:
         w = len(p.split())
@@ -66,6 +77,42 @@ def windows(title, text, max_words):
             for i, t in enumerate(out)]
 
 
+def consolidate(segs, target):
+    """Merge consecutive small segments so each group is close to `target` words.
+
+    Keeps a "## <title>" line at the top of every original piece it merges in, so
+    the real section boundaries survive inside the chunk for later passes. The
+    group's index title is its first piece's title, with "(+N sections)" when it
+    absorbed more.
+    """
+    out = []
+    titles, bodies, words = [], [], 0
+
+    def flush():
+        nonlocal titles, bodies, words
+        if bodies:
+            head = titles[0] or "Section"
+            if len(titles) > 1:
+                head = "%s (+%d sections)" % (head, len(titles) - 1)
+            out.append((head, "\n\n".join(bodies)))
+        titles, bodies, words = [], [], 0
+
+    for title, body in segs:
+        body = body.strip()
+        if not body:
+            continue
+        w = len(body.split())
+        if words and words + w > target and words >= target * 0.5:
+            flush()
+        titles.append(title)
+        bodies.append(("## %s\n\n%s" % (title, body)) if title else body)
+        words += w
+        if words >= target:
+            flush()
+    flush()
+    return out
+
+
 def segment(text, max_words):
     marks = list(MARKER.finditer(text))
     if len(marks) >= 2:
@@ -76,7 +123,7 @@ def segment(text, max_words):
         pre = text[: marks[0].start()].strip()
         if len(pre.split()) > 200:
             segs.insert(0, ("Front matter", pre))
-        return segs
+        return consolidate(segs, max_words)
 
     lines = text.split("\n")
     idx = [i for i, ln in enumerate(lines) if HEADING.match(ln) and len(ln.strip()) < 90]
@@ -88,8 +135,8 @@ def segment(text, max_words):
                 segs.append(("Front matter", head))
         for a, b in zip(idx, idx[1:]):
             title = lines[a].strip()
-            segs.append((title, "\n".join(lines[a:b]).strip()))
-        return segs
+            segs.append((title, "\n".join(lines[a + 1:b]).strip()))
+        return consolidate(segs, max_words)
 
     return [(None, text)]
 

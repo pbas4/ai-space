@@ -57,12 +57,18 @@ Work in a scratch directory (e.g. `mktemp -d`). Do these steps in order.
 - Get the input (ask if not provided): a local `.epub/.pdf/.docx/.html/.txt/.md`
   file, or an `http(s)://` URL. Record the kind for `source_format`
   (`epub/pdf/docx/html/txt/url`).
-- Pick **depth**: the user's explicit ask, else `default_depth` from config, else
-  `standard`. For a short input (< ~5k words, typical of an article/URL), default
-  to `quick` unless the user asked otherwise.
-  - `quick` — one synthesis pass, no chunk fan-out; short output.
-  - `standard` — the full template.
-  - `deep` — finer chunking, longer chapters, plus a Teaching outline.
+- Settle on **depth** in this order:
+  1. If the user named one in their request (quick / standard / deep), use it.
+  2. Else if `default_depth` in config is a non-empty value, use it silently.
+  3. Else **ask the user** — present the three options and what each produces
+     (table below). Do not silently default. For a short input (< ~5k words,
+     e.g. an article or URL) recommend `quick` in that prompt.
+
+  | depth | produces |
+  |---|---|
+  | `quick` | one synthesis pass, no chunk fan-out; ~350–500 words (In one paragraph + Key ideas + Takeaways) |
+  | `standard` | the full template |
+  | `deep` | finer chunking, longer chapters, plus a Teaching outline |
 
 ### 2. Extract the text
 
