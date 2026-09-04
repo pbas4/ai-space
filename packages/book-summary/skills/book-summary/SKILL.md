@@ -36,6 +36,15 @@ Run the fan-out and synthesis through the Task tool with those `subagent_type`s.
 Everything else (extraction, metadata, rendering, distribution) is scripts you run
 directly.
 
+**Depth.** The user may ask for `quick`, `standard` (default), or `deep`. `deep`
+is meant to read as an analytical study, not a longer summary — see step 1 and
+`workflow.md`.
+
+**Practice-forward books.** For how-to / self-improvement / business /
+productivity / health / management titles, *Actionable takeaways* is expanded
+into grouped themes with a checklist and anti-patterns, and
+`practice_forward: true` is set in frontmatter. See `workflow.md` § Practice-forward books.
+
 ## Prerequisites
 
 1. **Tools.** Run `scripts/check_deps.sh`. If anything required is missing, show
@@ -89,7 +98,9 @@ scripts/fetch_meta.py --isbn <isbn>            # or: --title "<t>" --author "<a>
 ```
 
 Save the JSON to `<workdir>/meta.json`. Confirm shaky fields with the user. For a
-non-book document, fill what you can and leave the rest blank.
+non-book document, fill what you can and leave the rest blank. This is also what
+tells you whether the book is practice-forward (`workflow.md` § Practice-forward
+books) — it feeds the topic tags that decide it.
 
 ### 4. Reader highlights (optional — feature depends on the user having them)
 
@@ -144,13 +155,24 @@ newlines; collapse spaces). Before the agent writes, run
 `scripts/check_existing.sh "<Author> - <Title>"`; if it reports a match, ask the
 user before overwriting.
 
-### 9. Render the PDF
+### 9. Verify the quotes
+
+```
+scripts/verify_quotes.py "<workdir>/<Author> - <Title>.md" "<workdir>/book.txt"
+```
+
+Every `> ...` blockquote must appear verbatim in `book.txt` (offline, no
+network). For any `FAIL`, fix the wording, drop the quote, or demote it to a
+plain paraphrase, then re-run until it exits 0 — see `workflow.md` § Quote
+verification. Don't skip this: it's the guard against a hallucinated quote.
+
+### 10. Render the PDF
 
 ```
 scripts/render_pdf.sh "<workdir>/<Author> - <Title>.md" "<workdir>/<Author> - <Title>.pdf"
 ```
 
-### 10. Distribute
+### 11. Distribute
 
 ```
 scripts/distribute.sh "<workdir>/<Author> - <Title>.md" "<workdir>/<Author> - <Title>.pdf"
@@ -160,15 +182,21 @@ Copies `.md`, `.pdf`, and cover to `gdrive_dir`; if `obsidian_vault` is set, als
 into the vault (`.md` in books subdir, `.pdf`/cover in attachments) and inserts a
 sorted, deduped `- [[<Author> - <Title>]]` line in the MOC. Idempotent.
 
-### 11. Report
+### 12. Report
 
 Give the user the absolute path of every file written, and a 2–3 sentence taste of
 the summary.
 
 ## Notes
 
-- Never hand-edit the PDF; if the summary changes, rerun step 9.
-- Machine paths belong in the config file, not this skill.
+- Never hand-edit the PDF; if the summary changes, rerun step 10.
+- Machine paths belong in the config file, not this skill — keep the package
+  portable and safe to commit.
 - `fetch_meta.py`, `fetch_cover.sh`, and URL extraction reach the network
   (Open Library, the cover host, the given URL). Metadata lookup sends only an
-  ISBN or title/author. Confirm with the user before downloading a cover.
+  ISBN or title/author. Confirm with the user before downloading a cover. Every
+  other script — including `verify_quotes.py` — is offline.
+- `verify_quotes.py` gates on quotes only; it can't judge whether the prose is
+  faithful. The per-chunk notes file (step 6 / `workflow.md` § Inputs) is what
+  keeps the body honest — the chunk agents write it from the source, not from
+  the synthesizer's memory of the book.

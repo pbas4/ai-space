@@ -4,19 +4,25 @@
   "plugins": [
     {
       "name": "rw-crm",
-      "source": { "source": "local", "path": "./plugins/rw-crm" },
+      "source": { "source": "local", "path": "./packages/rw-crm" },
+      "description": "Reusable RW CRM planning, component implementation, and UI review workflows.",
+      "version": "0.1.0",
       "policy": { "installation": "AVAILABLE", "authentication": "ON_INSTALL" },
       "category": "Developer Tools"
     },
     {
       "name": "create-task-plan",
-      "source": { "source": "local", "path": "./plugins/create-task-plan" },
+      "source": { "source": "local", "path": "./packages/rw-create-task-plan" },
+      "description": "Analyze Jira tasks, route UI work through the read-only RW UI Components Planner, and execute approved plans safely on protected task branches.",
+      "version": "0.2.2+codex.20260831000000",
       "policy": { "installation": "AVAILABLE", "authentication": "ON_INSTALL" },
       "category": "Productivity"
     },
     {
       "name": "book-summary",
-      "source": { "source": "local", "path": "./plugins/book-summary" },
+      "source": { "source": "local", "path": "./packages/book-summary" },
+      "description": "Turn a book or document (EPUB/PDF/DOCX/HTML/TXT/URL) into a templated summary (Markdown + PDF) and distribute it to Google Drive and an Obsidian vault.",
+      "version": "0.4.0",
       "policy": { "installation": "AVAILABLE", "authentication": "ON_INSTALL" },
       "category": "Productivity"
     }

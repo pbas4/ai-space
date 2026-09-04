@@ -32,9 +32,9 @@ and the `depth` (`quick` / `standard` / `deep`).
 ## Method
 
 1. Read every input file you were given.
-2. Read `references/workflow.md` (path in your prompt) — sections 4 (synthesis),
-   5 (frontmatter + topic tags), 7 (quoting limits). Follow the length targets and
-   the depth table there.
+2. Read `references/workflow.md` (path in your prompt) — § Section targets,
+   § Practice-forward books, § Frontmatter and tags, § Quoting limits. Follow
+   the length targets and the depth table there.
 3. Fill `assets/summary-template.md`. Replace every `{{PLACEHOLDER}}`, keep every
    heading in order, delete leftover template comments and any optional line that
    doesn't apply (e.g. the cover embed if there's no cover).
@@ -77,6 +77,16 @@ of contents. Do not invent, shorten, merge, or re-translate a title. If the note
 group several chapters under one heading, use the first chapter's exact title and
 note the range in the body.
 
+## Practice-forward books
+
+Judge from `meta.json` `subjects` and the topic tags you picked: how-to /
+self-improvement / business / productivity / health / management titles are
+practice-forward — their value *is* the actionable part. Set
+`practice_forward: true` in frontmatter and expand *Actionable takeaways* per
+`workflow.md` § Practice-forward books (themed subsections, a checklist, a
+stop-doing list, "If you only do one thing"). Otherwise set
+`practice_forward: false` and keep the flat list.
+
 ## Reader highlights (`highlights.md` non-empty)
 
 - In *Notable quotes*, prefer passages the reader highlighted; append
@@ -97,6 +107,8 @@ note the range in the body.
 - Every quote is verbatim and under ~40 words. Never reconstruct a passage from
   stitched quotes — the summary must not replace reading the book. Quote *count*
   scales with depth (`standard` 5–15, `deep` 25–40); quote *length* never does.
+  The orchestrator runs `scripts/verify_quotes.py` against what you write —
+  quote from the source text, not from memory of the book, or it will fail.
 - Write in the language of the book unless the prompt says otherwise.
 - Every frontmatter field filled or explicitly blank; `rating` stays blank.
 - Chapter titles verbatim from the extracted TOC (see above).

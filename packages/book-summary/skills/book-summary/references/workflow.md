@@ -14,9 +14,12 @@ brackets only if the user's working language differs.
 ## Inputs you're working from
 
 - `notes.md` — per-chunk notes in reading order (from `book-chunk-summarizer`).
-  For `quick` depth you get `book.txt` directly instead.
+  For `quick` depth you get `book.txt` directly instead. Compose the final
+  sections from this file, not from memory of the book — write the notes down
+  as you read each chunk, don't skip straight to synthesis.
 - `meta.json` — Open Library metadata, or `{}` on a miss. Seeds frontmatter and
-  topic tags (`subjects`).
+  topic tags (`subjects`) — also what tells you whether a book is
+  practice-forward (see below).
 - `highlights.md` — the reader's own highlighted passages, if any (see below).
 - `related.md` — real vault notes to link in *How this connects*, if any.
 
@@ -24,6 +27,8 @@ brackets only if the user's working language differs.
 
 The three depths are meant to feel **clearly different**, not just longer. `quick`
 is a skeleton, `standard` is a solid summary, `deep` is an analytical study.
+Record the chosen mode in the `depth:` frontmatter field so the vault stays
+queryable.
 
 | Depth | Chunk fan-out | Sections | Rough length |
 |---|---|---|---|
@@ -44,9 +49,9 @@ is an output of doing the analysis, not a target to hit.
 | In one paragraph | 4–6 sentences: thesis + intended reader | 2–3 paragraphs: thesis, the *structure* of the argument (how the parts build), and who it is / isn't for |
 | Why read this book | 2–4 bullets | 3–6 bullets, each naming the concrete transferable tool or reframe |
 | Key ideas | 5–10 bullets, each a *claim* not a topic | the load-bearing claims only — aim 15–25, ~35 max; each = the claim + a clause on *why it holds or where it's shaky*; group under `### <theme>` sub-headings when there are more than ~12 |
-| Chapter-by-chapter | 80–200 w/section | 200–400 w/section: state the *move* the argument makes here, its evidence, and every named example — not just the topic |
+| Chapter-by-chapter | 80–200 w/section | 200–400 w/section: state the *move* the argument makes here, its evidence, and every named example — not just the topic; prefer the book's real chapters over grouping into parts when there's a manageable number of them |
 | Notable quotes | 5–15, attributed, <40 words each | 25–40 (~45 max), attributed, <40 words each, grouped under `### <theme>` sub-headings |
-| Actionable takeaways | 3–8 imperative items | 6–12 items, each a bolded action + 1–2 sentences of how |
+| Actionable takeaways | 3–8 imperative items, or expanded (see *Practice-forward books*) | 6–12 items, each a bolded action + 1–2 sentences of how |
 | Critiques & open questions | 2–5 bullets | 6–12 bullets: weak evidence, dated claims, overreach, internal contradictions, unanswered questions — be specific and unsparing |
 | How this connects | 2–5 bullets | 4–8 bullets, each drawing the actual distinction, not just naming a title |
 
@@ -68,6 +73,44 @@ Follow source order. For an article with no chapters, retitle the section
   teach the book from: per session, the topics, one workshop/exercise, and where
   useful a "not in the book" discussion prompt.
 
+## Practice-forward books
+
+Judge from `meta.json`'s Open Library `subjects` and the topic tags you picked
+(`self-help`, `business`, `productivity`, `health`, `management`, and often
+`finance`): if the book is a how-to / self-improvement / business /
+productivity / health / management title, its value *is* the actionable part.
+Set `practice_forward: true` in frontmatter and expand **Actionable
+takeaways** — keep the exact H2, then under it:
+
+- Group the actions under `### <Theme>` subsections (3–6 themes).
+- Each item: the instruction → the principle behind it → a concrete first step
+  for this week.
+- Add `### Checklist / decision rules` — the book's own tests written as yes/no
+  prompts the reader can run against a real situation.
+- Add `### Stop doing` — the anti-patterns the book names.
+- End with `**If you only do one thing:** …`.
+- Aim for 8–20 items total; in `deep` mode fold in the book's own worked
+  numbers/examples.
+
+For everything else, set `practice_forward: false` and keep the flat list from
+the *Section targets* table.
+
+## Quote verification
+
+After the draft is written — before `check_existing.sh` / `render_pdf.sh` — run:
+
+```
+scripts/verify_quotes.py "<workdir>/<Author> - <Title>.md" "<workdir>/book.txt"
+```
+
+It normalizes whitespace, quote marks and dashes, splits on `[...]` elisions, and
+checks each blockquote against `book.txt`. For any `FAIL`: fix the wording to
+match the source, drop the quote, or demote it to a plain (non-blockquote)
+paraphrase. Do not ship a summary with a failing quote — re-run until it exits 0.
+Offline, no network. Translated editions: it checks against the extracted text,
+so it catches quotes you reworded but not translation drift — still quote from
+`book.txt` verbatim, not from memory of the original-language edition.
+
 ## Reader highlights (`highlights.md` non-empty)
 
 - In *Notable quotes*, prefer passages the reader highlighted and append
@@ -87,7 +130,8 @@ Follow source order. For an article with no chapters, retitle the section
 
 Fill every field. `source_format` is one of `epub`/`pdf`/`docx`/`html`/`txt`/`url`;
 `source_file` is the original filename or URL; `date_summarized` is today's date
-(ISO). Leave `rating` blank — the user's to set.
+(ISO); `depth` is the mode from the *Depth* section above; `practice_forward` is
+the boolean from *Practice-forward books*. Leave `rating` blank — the user's to set.
 
 **Topic tags.** Add 1–3 `book/<topic>` tags to `tags` and mirror them in `topics:`.
 Controlled vocabulary so the vault stays queryable — pick from: `finance`,
@@ -111,7 +155,9 @@ book/psychology` (leading comma included); `{{TOPICS}}` to `finance, psychology`
 Every quote stays **under ~40 words** and is verbatim from the source. Never
 include long passages, and never reconstruct a section of the book from
 stitched-together quotes — the summary must not substitute for reading it. Within
-those rules, `standard` uses 5–15 quotes and `deep` uses 25–40 (~45 max).
+those rules, `standard` uses 5–15 quotes and `deep` uses 25–40 (~45 max). This is
+also what `scripts/verify_quotes.py` enforces mechanically — see *Quote
+verification* above.
 
 ## Filename
 

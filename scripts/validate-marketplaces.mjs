@@ -20,8 +20,11 @@ for (const plugin of claude.plugins) {
 }
 
 for (const plugin of codex.plugins) {
-  const sourcePath = resolve(root, '.agents/plugins', plugin.source.path);
+  const sourcePath = resolve(root, plugin.source.path);
+  const manifest = await readJson(`${plugin.source.path}/.codex-plugin/plugin.json`);
   await access(resolve(sourcePath, '.codex-plugin/plugin.json'));
+  assert(plugin.version === manifest.version, `${plugin.name}: marketplace version must match Codex manifest`);
+  assert(plugin.description === manifest.description, `${plugin.name}: marketplace description must match Codex manifest`);
   assert(plugin.policy?.installation === 'AVAILABLE', `${plugin.name}: invalid installation policy`);
   assert(plugin.policy?.authentication === 'ON_INSTALL', `${plugin.name}: invalid authentication policy`);
   assert(typeof plugin.category === 'string', `${plugin.name}: category is required`);

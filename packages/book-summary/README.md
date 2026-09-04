@@ -82,7 +82,8 @@ ln -s "$PWD/packages/book-summary/skills/book-summary" \
 
 Flow: check deps → extract → Open Library metadata → (optional) reader highlights →
 split → fan out `book-chunk-summarizer` Tasks → (optional) vault backlinks →
-`book-synthesizer` Task → render PDF → `distribute.sh` → report paths.
+`book-synthesizer` Task → verify every quote against the source → render PDF →
+`distribute.sh` → report paths.
 
 ### Depth
 
@@ -93,8 +94,22 @@ split → fan out `book-chunk-summarizer` Tasks → (optional) vault backlinks �
 | `deep` | An analytical study: finer chunking, 15–25 load-bearing Key ideas and 25–40 Notable quotes (both themed), 200–400-word chapter treatments, 6–12 critique points, plus deep-only **Contexto y contraargumento** (steelman + rebuttal), **Glosario**, and **Teaching outline** sections. Typically 5000–9000 words. |
 
 The three depths are meant to read as clearly different documents, not the same
-summary at three lengths. If a run doesn't match, that's a synthesizer prompt
-issue — check `references/workflow.md` § Depth / Section targets.
+summary at three lengths. Recorded in the `depth:` frontmatter field. If a run
+doesn't match, that's a synthesizer prompt issue — check
+`references/workflow.md` § Depth / Section targets.
+
+### Practice-forward books
+
+For how-to / self-improvement / business / productivity / health / management
+titles, *Actionable takeaways* is expanded into grouped themes plus a checklist
+and an anti-patterns list, and `practice_forward: true` is set in frontmatter —
+see `references/workflow.md` § Practice-forward books.
+
+### Quote verification
+
+Every blockquote in the finished summary is checked against the extracted
+source text with `scripts/verify_quotes.py` before rendering — an offline
+guard against a misquoted or hallucinated line.
 
 ### Reader highlights (feature #2)
 
@@ -122,6 +137,7 @@ with links that resolve — no invented `[[wikilinks]]`.
 | `scripts/vault_related.py --index J --topics a,b --title T` | Rank related notes → `- [[link]]` lines that resolve. |
 | `scripts/fetch_cover.sh <url> <stem>` | Download a cover (network; confirm with user first). |
 | `scripts/check_existing.sh "<Author> - <Title>"` | Report whether a summary already exists in Drive/vault. |
+| `scripts/verify_quotes.py <summary.md> <book.txt>` | Check every blockquote appears in the source; exits non-zero on a miss. Offline. |
 | `scripts/render_pdf.sh <in.md> <out.pdf>` | Markdown → house-style PDF (typst → weasyprint → wkhtmltopdf). |
 | `scripts/distribute.sh <in.md> <in.pdf>` | Copy to Drive + vault, update MOC. Idempotent. |
 
@@ -131,8 +147,10 @@ with links that resolve — no invented `[[wikilinks]]`.
 cd packages/book-summary && npm test        # or: bash tests/run.sh
 ```
 
-Standard-library Python `unittest` + shell tests — no third-party deps. Covers EPUB
-extraction (spine order, TOC markers, metadata, cover), `split.py`, `distribute.sh`
-(Drive + vault copy, cover, sorted idempotent MOC), `highlights.py` (Kindle +
-Readwise parsing, filtering, dedupe), `vault_index`/`vault_related` (overlap
-ranking, self-exclusion), and `extract.sh` (txt/md/html dispatch).
+Standard-library Python `unittest` + shell tests — no third-party deps. Covers
+EPUB extraction (spine order, TOC markers, metadata, cover), `split.py`
+(marker/window/`--only`), `verify_quotes.py` (verbatim pass, reworded fail,
+elision bridging), `distribute.sh` (Drive + vault copy, cover, sorted idempotent
+MOC), `highlights.py` (Kindle + Readwise parsing, filtering, dedupe),
+`vault_index`/`vault_related` (overlap ranking, self-exclusion), and
+`extract.sh` (txt/md/html dispatch).
