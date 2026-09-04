@@ -5,7 +5,7 @@ author: "{{AUTHOR}}"
 year: {{YEAR}}
 isbn: "{{ISBN}}"
 publisher: "{{PUBLISHER}}"
-source_format: "{{SOURCE_FORMAT}}"
+source_format: "{{SOURCE_FORMAT}}"   # epub | pdf | docx | html | txt | url
 source_file: "{{SOURCE_FILE}}"
 date_summarized: {{DATE}}
 summarized_by: claude
@@ -28,8 +28,8 @@ _{{AUTHOR}} · {{YEAR}}_
 
 ## In one paragraph
 
-<!-- 4–6 sentences: what the book argues and who it is for. No hedging.
-     brief: 3–4 sentences. deep: 5–7. -->
+<!-- standard: 4–6 sentences — the thesis and who it's for. No hedging.
+     deep: 2–3 paragraphs — thesis, how the argument is built, who it's for/not for. -->
 {{ELEVATOR}}
 
 ## Why read this book
@@ -39,31 +39,36 @@ _{{AUTHOR}} · {{YEAR}}_
 
 ## Key ideas
 
-<!-- One idea each, stated as a claim, not a topic.
-     brief: 5 bullets. standard: 5–10. deep: 8–15. -->
+<!-- standard: 5–10 bullets, one claim each (not a topic).
+     deep: the load-bearing claims only (aim 15–25, ~35 max), each claim + a
+     clause on why it holds or where it's weak; group under "### <theme>" past ~12. -->
 {{KEY_IDEAS}}
 
 ## Chapter-by-chapter
 
-<!-- One "### N. Chapter title" heading per chapter.
-     Follow the titles from the "## CHAPTER:" markers in the extracted text /
-     split index.json. If the book has no chapters, use its major sections.
-     brief: 1–2 sentences per chapter (or per part). standard: 80–200 words.
-     deep: 150–300 words, and prefer real chapters over grouping into parts. -->
+<!-- One "### N. Chapter title" heading per chapter, titles VERBATIM from the
+     "## CHAPTER:" markers / split index.json — never invent, shorten, or
+     re-translate them. No chapters (article, report)? Rename this heading
+     "Section-by-section" and follow the source's own headings.
+     standard: 80–200 words/section.
+     deep: 200–400 words/section — the argumentative move, its evidence, every
+     named example; prefer the book's real chapters over grouping into parts
+     when there are a manageable number of them.
+     Omit this section entirely at quick depth. -->
 {{CHAPTERS}}
 
 ## Notable quotes
 
-<!-- Each on its own blockquote line, attributed with chapter/section, under
-     ~40 words. Quote verbatim — every quote must survive scripts/verify_quotes.py.
-     Use [...] for elisions. Do NOT blockquote paraphrases.
-     brief: 3–5. standard: 5–15. deep: 10–20. -->
+<!-- Each on its own blockquote line, attributed with chapter/section, <40
+     words, verbatim from the source (no paraphrases as blockquotes; use
+     "[...]" for elisions) — every quote must pass `scripts/verify_quotes.py`.
+     standard: 5–15.  deep: 25–40 (~45 max), grouped under "### <theme>". -->
 {{QUOTES}}
 
 ## Actionable takeaways
 
 <!-- Concrete things to try, phrased as instructions.
-     Plain books: a flat list, standard 3–8 items (brief 3, deep 6–10).
+     Plain books: a flat list. standard: 3–8 items. deep: 6–12.
 
      Practice-forward books (practice_forward: true — self-help, business,
      productivity, health, management, or a how-to): this section carries the
@@ -74,33 +79,39 @@ _{{AUTHOR}} · {{YEAR}}_
        - "### Checklist / decision rules" — the book's tests as yes/no prompts.
        - "### Stop doing" — the anti-patterns the book names.
        - A closing "**If you only do one thing:** ..." line.
-     Target 8–20 items total for practice-forward books (brief mode: keep the
-     themes but ~1 item each; deep mode: add worked numbers/examples inline). -->
+     Target 8–20 items total for practice-forward books (deep mode: fold in the
+     book's own worked numbers/examples). -->
 {{TAKEAWAYS}}
 
 ## Critiques & open questions
 
-<!-- Where the argument is weak, unsupported, dated, or contested.
-     Always write something. brief: 2. standard: 2–5. deep: 4–8. -->
+<!-- Where the argument is weak, unsupported, dated, or contested. Always write
+     something. standard: 2–5 bullets. deep: 6–12, specific and unsparing. -->
 {{CRITIQUE}}
 
 ## How this connects
 
-<!-- Links to related ideas or other vault notes as [[wikilinks]]. -->
+<!-- Only [[wikilinks]] from related.md (they resolve in the vault), or plain-prose
+     bullets naming related books/ideas if there is no related.md.
+     standard: 2–5 bullets.  deep: 4–8, each drawing the actual distinction. -->
 {{CONNECTIONS}}
 
-<!-- DEEP MODE ONLY. In brief/standard delete everything from here to the ---.
-     In deep, keep both H2s and replace the guidance with content.
+<!-- deep depth ONLY — append these three sections here, in this order, then the
+     closing "---". Omit them entirely at quick/standard depth.
 
-## Worked examples
+## Contexto y contraargumento
+### A favor
+<!-- one paragraph: the strongest good-faith case for the book -->
+### En contra
+<!-- one paragraph: the rebuttal -->
 
-One or two of the book's own case studies or scenarios, walked through with its
-own numbers and terms so the mechanism is concrete.
+## Glosario
+<!-- every term the book coins or repurposes, one line each:
+     **término** — definición en una frase -->
 
-## Apply it
-
-A short protocol the reader could run this month: sequenced steps, what to
-measure, and the first checkpoint.
+## Teaching outline
+<!-- 3–6 sessions someone could teach from; per session: topics as nested bullets,
+     one workshop/exercise, and a "no está en el libro" discussion prompt where useful -->
 -->
 
 ---

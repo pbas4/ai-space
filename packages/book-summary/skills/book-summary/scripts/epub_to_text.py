@@ -189,17 +189,33 @@ def main() -> int:
             toc_by_path.setdefault(join(base, href), []).append((frag, title))
 
         # --- cover image -----------------------------------------------------
+        # Only accept a manifest item that is actually a raster/vector image —
+        # some EPUBs point <meta name="cover"> or an id="cover" at the cover
+        # *page* (XHTML), which is not what we want next to book.txt.
+        def is_image(mid):
+            href, _props, mtype = items[mid]
+            return mtype.startswith("image/") or bool(
+                re.search(r"\.(jpe?g|png|gif|webp|svg)$", href, re.I)
+            )
+
         cover_line = None
         cover_id = next(
-            (k for k, v in items.items() if "cover-image" in v[1].split()), None
+            (k for k, v in items.items()
+             if "cover-image" in v[1].split() and is_image(k)), None
         )
         if not cover_id:
             meta_cover = re.search(r'<meta\b[^>]*name="cover"[^>]*content="([^"]+)"', opf)
-            if meta_cover and meta_cover.group(1) in items:
+            if meta_cover and meta_cover.group(1) in items and is_image(meta_cover.group(1)):
                 cover_id = meta_cover.group(1)
         if not cover_id:
             cover_id = next(
-                (k for k in items if k.lower() in ("cover", "coverimage")), None
+                (k for k in items if k.lower() in ("cover", "coverimage") and is_image(k)),
+                None,
+            )
+        if not cover_id:
+            cover_id = next(
+                (k for k, v in items.items()
+                 if is_image(k) and "cover" in v[0].lower()), None
             )
         if cover_id:
             chref = href_by_id[cover_id]

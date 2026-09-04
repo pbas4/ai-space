@@ -8,7 +8,7 @@ Projects live under [`packages/`](packages/). Each project owns its own source, 
 
 - [`packages/rw-crm/`](packages/rw-crm/) — reusable RW CRM planning, implementation, and UI-review Codex plugin.
 - [`packages/rw-create-task-plan/`](packages/rw-create-task-plan/) — Realworks-oriented Create Task Plan plugin with RW CRM UI planning integration.
-- [`packages/book-summary/`](packages/book-summary/) — summarize EPUB/PDF books into a templated Markdown + PDF and file them to Google Drive and Obsidian.
+- [`packages/book-summary/`](packages/book-summary/) — summarize a book or document (EPUB/PDF/DOCX/HTML/TXT/URL) into a templated Markdown + PDF via model-split subagents, and file it to Google Drive and Obsidian.
 
 ## Working with a project
 

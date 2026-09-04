@@ -1,6 +1,19 @@
 {
   "name": "book-summary",
-  "version": "0.3.0",
-  "description": "Summarize EPUB/PDF books into a templated Markdown + PDF and file them to Google Drive and Obsidian.",
-  "author": { "name": "pbas" }
+  "version": "0.4.0",
+  "description": "Summarize a book or document (EPUB/PDF/DOCX/HTML/TXT/URL) into a templated Markdown + PDF via model-split subagents, and file it to Google Drive and Obsidian.",
+  "author": {
+    "name": "pbas"
+  },
+  "keywords": [
+    "books",
+    "summary",
+    "epub",
+    "pdf",
+    "obsidian",
+    "google-drive",
+    "second-brain"
+  ],
+  "skills": "./skills/",
+  "agents": "./agents/"
 }

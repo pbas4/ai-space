@@ -27,6 +27,8 @@ if [ "$engine_ok" -eq 0 ]; then
 fi
 
 echo
+if have curl; then echo "optional curl: ok (URL input)"
+else echo "optional curl: missing — only needed to summarize an http(s) URL (ships with macOS)"; fi
 if have ocrmypdf; then echo "optional ocrmypdf: ok (scanned PDFs)"
 else echo "optional ocrmypdf: missing — only needed for scanned PDFs: brew install ocrmypdf"; fi
 

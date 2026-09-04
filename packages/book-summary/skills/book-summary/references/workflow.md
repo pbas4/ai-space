@@ -1,97 +1,86 @@
 # Summarizing workflow
 
-Guidance for step 3 of `SKILL.md`: turning extracted `book.txt` into the filled
-template. The goal is a summary that is genuinely useful six months later —
-specific, honest about weak spots, structured identically to every other summary
-in the collection.
+How to turn the collected notes into the filled template. Read by the
+`book-synthesizer` agent and by anyone running the skill by hand. The goal is a
+summary that is genuinely useful six months later — specific, honest about weak
+spots, structured identically to every other summary in the collection.
 
 ## Language
 
-Write the summary in the same language as the book, unless the user asks for a
-specific language. Keep quotes in the original language; add a short English gloss
-in brackets only if the user's working language differs.
+Write the summary in the same language as the source, unless the user asks for a
+specific language. Keep quotes in the original language; add a short gloss in
+brackets only if the user's working language differs.
 
-## 0. Depth mode
+## Inputs you're working from
 
-The user may ask for `brief`, `standard`, or `deep` (default `standard`). It
-never changes which sections exist or their order — only how much goes under
-each, per the per-mode targets in the template comments and the table below.
+- `notes.md` — per-chunk notes in reading order (from `book-chunk-summarizer`).
+  For `quick` depth you get `book.txt` directly instead. Compose the final
+  sections from this file, not from memory of the book — write the notes down
+  as you read each chunk, don't skip straight to synthesis.
+- `meta.json` — Open Library metadata, or `{}` on a miss. Seeds frontmatter and
+  topic tags (`subjects`) — also what tells you whether a book is
+  practice-forward (see below).
+- `highlights.md` — the reader's own highlighted passages, if any (see below).
+- `related.md` — real vault notes to link in *How this connects*, if any.
 
-- **brief** — a one-page briefing. Every heading stays; content is trimmed to its
-  targets. Still rendered and distributed like any other.
-- **standard** — the default described throughout this file.
-- **deep** — fuller treatment, real chapters rather than parts, and the two
-  extra trailing sections (`## Worked examples`, `## Apply it`) kept in.
+## Depth
 
-Record the mode in the `depth:` frontmatter field so the vault stays queryable.
+The three depths are meant to feel **clearly different**, not just longer. `quick`
+is a skeleton, `standard` is a solid summary, `deep` is an analytical study.
+Record the chosen mode in the `depth:` frontmatter field so the vault stays
+queryable.
 
-## 1. Resolve the metadata first
+| Depth | Chunk fan-out | Sections | Rough length |
+|---|---|---|---|
+| `quick` | none — synthesize straight from `book.txt` | frontmatter, `# Title`, *In one paragraph*, *Key ideas* (5–8), *Actionable takeaways*. Delete the rest. | 350–500 words |
+| `standard` | yes | the full template, `standard` column below | 900–1600 words |
+| `deep` | yes, finer (`split.py --max-words 5000`) | the full template at the `deep` column below, **plus** three deep-only sections appended before the closing `---`: `## Contexto y contraargumento` (steelman + rebuttal), `## Glosario` (the book's coined terms, one line each), `## Teaching outline` (nested bullets someone could teach from) | 5000–9000 words |
 
-Run `scripts/fetch_meta.py`:
+At `deep`, *Key ideas* and *Notable quotes* scale with the book but have **soft
+ceilings**: keep *Key ideas* to the **load-bearing claims** (aim 15–25, stop
+around 35 even for a very dense book — if you have more, some aren't "key"), and
+*Notable quotes* to **25–40** (stop at ~45). A thin book earns far fewer. Length
+is an output of doing the analysis, not a target to hit.
 
-- `--isbn <isbn>` if the extraction header or copyright page gave one, else
-- `--title "<title>" --author "<surname>"`.
+## Section targets
 
-It returns JSON (title, authors, year, publishers, subjects, `cover_url`,
-`openlibrary_url`) from Open Library, or `{}` on a miss. Use it to fill
-frontmatter and to seed topic tags from `subjects`. Confirm anything shaky with
-the user rather than guessing. If it returns `{}`, fall back to the EPUB metadata
-header and the first pages of `book.txt`.
-
-## 2. Segment the text
-
-Run `scripts/split.py book.txt chunks/`. It splits on `## CHAPTER:` markers
-(added by `epub_to_text.py` from the EPUB's real TOC) when present, otherwise on
-heading-like lines, otherwise into ~8,000-word windows. It writes
-`chunks/000-*.txt` … and `chunks/index.json` (n, file, title, words).
-
-- Read `chunks/index.json` to see the shape of the book.
-- Read the chunk files **one at a time** — do not load `book.txt` whole for a
-  long book; that is what the split is for.
-- `--only 1-3,7` restricts output to specific chunks if the user asked for just
-  certain chapters. `--max-words N` tunes window size.
-
-## 3. Summarize each chunk — to a notes file
-
-Write working notes to `chunks/notes.md` as you read, one block per chunk. Do
-**not** compose the final sections from memory of the book — compose them in
-step 4 from this file. For each chunk record:
-
-- 2–4 sentences of what it argues or covers.
-- The single most important claim or turn in the argument.
-- Up to 2 verbatim quotable lines, each with the chunk number/title so you can
-  attribute and re-locate it.
-- For practice-forward books (see step 4a): every concrete instruction, rule,
-  checklist item, or worked number the chunk gives.
-
-Keep it terse. `notes.md` is scaffolding, not a deliverable.
-
-## 4. Synthesis pass
-
-Read `chunks/notes.md` whole and write the final sections:
-
-| Section | Standard target | Notes |
+| Section | `standard` | `deep` |
 |---|---|---|
-| In one paragraph | 4–6 sentences | The thesis and the intended reader. State it plainly. |
-| Why read this book | 2–4 bullets | The concrete payoff. If the book does not earn it, say so in Critiques instead. |
-| Key ideas | 5–10 bullets | Each a *claim* ("Habits form via a cue-routine-reward loop"), not a topic ("Habits"). |
-| Chapter-by-chapter | 80–200 words per chapter | `### N. Title`, using the titles from `index.json`. Follow book order. |
-| Notable quotes | 5–15 quotes | Blockquote each, attribute with chapter/section, keep under ~40 words. Verbatim (step 4b). |
-| Actionable takeaways | 3–8 items, or expanded (step 4a) | Instructions the reader can act on this week. |
-| Critiques & open questions | 2–5 bullets | Weak evidence, dated claims, overreach, unanswered questions. Always write something. |
-| How this connects | 2–5 bullets | Related books/ideas as `[[wikilinks]]`; Obsidian resolves them once filed. |
+| In one paragraph | 4–6 sentences: thesis + intended reader | 2–3 paragraphs: thesis, the *structure* of the argument (how the parts build), and who it is / isn't for |
+| Why read this book | 2–4 bullets | 3–6 bullets, each naming the concrete transferable tool or reframe |
+| Key ideas | 5–10 bullets, each a *claim* not a topic | the load-bearing claims only — aim 15–25, ~35 max; each = the claim + a clause on *why it holds or where it's shaky*; group under `### <theme>` sub-headings when there are more than ~12 |
+| Chapter-by-chapter | 80–200 w/section | 200–400 w/section: state the *move* the argument makes here, its evidence, and every named example — not just the topic; prefer the book's real chapters over grouping into parts when there's a manageable number of them |
+| Notable quotes | 5–15, attributed, <40 words each | 25–40 (~45 max), attributed, <40 words each, grouped under `### <theme>` sub-headings |
+| Actionable takeaways | 3–8 imperative items, or expanded (see *Practice-forward books*) | 6–12 items, each a bolded action + 1–2 sentences of how |
+| Critiques & open questions | 2–5 bullets | 6–12 bullets: weak evidence, dated claims, overreach, internal contradictions, unanswered questions — be specific and unsparing |
+| How this connects | 2–5 bullets | 4–8 bullets, each drawing the actual distinction, not just naming a title |
 
-`brief` and `deep` scale these per the template comments. In `deep`, also fill
-the trailing `## Worked examples` and `## Apply it` sections; in `brief`/
-`standard`, delete them.
+**Section / chapter titles** come **verbatim** from the `## CHAPTER:` markers in
+`notes.md` / `chunks/index.json` (the book's own table of contents). Do not
+invent, shorten, or re-translate them. `### N. <title exactly as extracted>`.
+Follow source order. For an article with no chapters, retitle the section
+**Section-by-section** and follow the source's own headings.
 
-### 4a. Practice-forward books
+### `deep`-only sections
 
-If the book is a how-to / self-improvement / business / productivity / health /
-management title — judge from the Open Library `subjects` and the topic tags
+- `## Contexto y contraargumento` — first a **steelman** (`### A favor`): the
+  strongest good-faith case for the book, as a proponent would put it. Then
+  `### En contra`: the rebuttal. This is separate from *Critiques*, which stays a
+  list; this is two short argued paragraphs.
+- `## Glosario` — every term the book coins or repurposes, one line each
+  (`**término** — definición en una frase`). Alphabetical or in order of appearance.
+- `## Teaching outline` — a nested bullet outline of 3–6 sessions someone could
+  teach the book from: per session, the topics, one workshop/exercise, and where
+  useful a "not in the book" discussion prompt.
+
+## Practice-forward books
+
+Judge from `meta.json`'s Open Library `subjects` and the topic tags you picked
 (`self-help`, `business`, `productivity`, `health`, `management`, and often
-`finance`) — its value *is* the actionable part. Set `practice_forward: true`
-and expand **Actionable takeaways** (keep the exact H2):
+`finance`): if the book is a how-to / self-improvement / business /
+productivity / health / management title, its value *is* the actionable part.
+Set `practice_forward: true` in frontmatter and expand **Actionable
+takeaways** — keep the exact H2, then under it:
 
 - Group the actions under `### <Theme>` subsections (3–6 themes).
 - Each item: the instruction → the principle behind it → a concrete first step
@@ -100,14 +89,15 @@ and expand **Actionable takeaways** (keep the exact H2):
   prompts the reader can run against a real situation.
 - Add `### Stop doing` — the anti-patterns the book names.
 - End with `**If you only do one thing:** …`.
-- Aim for 8–20 items total. In `brief` mode keep the themes but ~1 item each; in
-  `deep` mode fold in the book's worked numbers.
+- Aim for 8–20 items total; in `deep` mode fold in the book's own worked
+  numbers/examples.
 
-For everything else set `practice_forward: false` and keep the flat list.
+For everything else, set `practice_forward: false` and keep the flat list from
+the *Section targets* table.
 
-### 4b. Verify every quote
+## Quote verification
 
-After the draft is written, run:
+After the draft is written — before `check_existing.sh` / `render_pdf.sh` — run:
 
 ```
 scripts/verify_quotes.py "<workdir>/<Author> - <Title>.md" "<workdir>/book.txt"
@@ -115,64 +105,69 @@ scripts/verify_quotes.py "<workdir>/<Author> - <Title>.md" "<workdir>/book.txt"
 
 It normalizes whitespace, quote marks and dashes, splits on `[...]` elisions, and
 checks each blockquote against `book.txt`. For any `FAIL`: fix the wording to
-match the source, or drop the quote, or demote it to a plain (non-blockquote)
-paraphrase. Do not ship a summary with a failing quote. Re-run until it exits 0.
+match the source, drop the quote, or demote it to a plain (non-blockquote)
+paraphrase. Do not ship a summary with a failing quote — re-run until it exits 0.
+Offline, no network. Translated editions: it checks against the extracted text,
+so it catches quotes you reworded but not translation drift — still quote from
+`book.txt` verbatim, not from memory of the original-language edition.
 
-Translated editions: the check runs against the extracted text, so it catches
-quotes you reworded but not translation drift — still quote from `book.txt`
-verbatim.
+## Reader highlights (`highlights.md` non-empty)
 
-## 5. Frontmatter and tags
+- In *Notable quotes*, prefer passages the reader highlighted and append
+  ` — reader-highlighted` to those lines.
+- Let the highlights steer emphasis in *Key ideas* and *Actionable takeaways*
+  toward what the reader cared about — without dropping a central idea they
+  happened not to mark. The summary should still stand on its own.
 
-Fill every field. `source_format` is `epub`/`pdf`; `source_file` is the original
-filename; `date_summarized` is today's date (ISO); `depth` is the mode from step
-0; `practice_forward` is the boolean from step 4a. Leave `rating` blank — the
-user's to set.
+## How this connects
 
-**Topic tags.** Add 1–3 `book/<topic>` tags to the `tags` list and mirror them in
-`topics:`. Use a small controlled vocabulary so the vault stays queryable — pick
-from: `finance`, `economics`, `business`, `productivity`, `psychology`,
-`philosophy`, `science`, `technology`, `history`, `biography`, `politics`,
-`health`, `writing`, `design`, `management`, `self-help`, `fiction`. Add a new
-one only if none fit. Seed the choice from Open Library `subjects`.
+- If `related.md` was provided, fill this section **only** with the `[[links]]` it
+  lists — those notes exist in the vault. Never invent a wikilink; an unresolved
+  `[[link]]` is a dead end.
+- If not, use 2–5 bullets naming related books/ideas in plain prose.
 
-`{{TOPIC_TAGS}}` in the template expands to `, book/finance, book/psychology`
-(leading comma included); `{{TOPICS}}` to `finance, psychology`.
+## Frontmatter and tags
 
-## 6. Cover image
+Fill every field. `source_format` is one of `epub`/`pdf`/`docx`/`html`/`txt`/`url`;
+`source_file` is the original filename or URL; `date_summarized` is today's date
+(ISO); `depth` is the mode from the *Depth* section above; `practice_forward` is
+the boolean from *Practice-forward books*. Leave `rating` blank — the user's to set.
 
-- EPUB: `epub_to_text.py` already wrote `cover.<ext>` next to `book.txt` when the
-  file had one — no network. Copy it to `<stem>.<ext>` beside the summary `.md`
-  so `distribute.sh` picks it up, set `cover:` frontmatter to the filename, and
+**Topic tags.** Add 1–3 `book/<topic>` tags to `tags` and mirror them in `topics:`.
+Controlled vocabulary so the vault stays queryable — pick from: `finance`,
+`economics`, `business`, `productivity`, `psychology`, `philosophy`, `science`,
+`technology`, `history`, `biography`, `politics`, `health`, `writing`, `design`,
+`management`, `self-help`, `fiction`. Add a new one only if none fit. Seed from
+Open Library `subjects`. `{{TOPIC_TAGS}}` expands to `, book/finance,
+book/psychology` (leading comma included); `{{TOPICS}}` to `finance, psychology`.
+
+## Cover image
+
+- EPUB: `epub_to_text.py` already wrote `cover.<ext>` next to `book.txt`. Copy it
+  to `<stem>.<ext>` beside the summary `.md`, set `cover:` frontmatter, and
   uncomment the `![[...]]` embed line.
-- PDF / no embedded cover: if `fetch_meta.py` returned a `cover_url`, ask the user
-  before downloading, then `scripts/fetch_cover.sh "<url>" "<dir>/<stem>"`.
-- No cover: delete the `cover:` line and the embed line from the template.
+- Other formats: if `meta.json` has a `cover_url`, ask the user before downloading,
+  then `scripts/fetch_cover.sh "<url>" "<dir>/<stem>"`.
+- No cover: delete the `cover:` line and the embed line.
 
-## 7. Quoting limits
+## Quoting limits
 
-Total quoted material across the whole summary stays well under a page — a dozen
-short excerpts at most. Never include long passages, and never reconstruct a
-section of the book from stitched-together quotes.
+Every quote stays **under ~40 words** and is verbatim from the source. Never
+include long passages, and never reconstruct a section of the book from
+stitched-together quotes — the summary must not substitute for reading it. Within
+those rules, `standard` uses 5–15 quotes and `deep` uses 25–40 (~45 max). This is
+also what `scripts/verify_quotes.py` enforces mechanically — see *Quote
+verification* above.
 
-## 8. Filename
+## Filename
 
 `<Author> - <Title>.md`, author as printed (first name first). Strip
-`/ \ : * ? " < > |` and newlines; collapse runs of spaces.
+`/ \ : * ? " < > |` and newlines; collapse runs of spaces. The PDF and cover take
+the same stem. For a document with no clear author, use the site or publication
+name, else just the title.
 
-- `James Clear - Atomic Habits.md`
-- `Donella H. Meadows - Thinking in Systems.md`
+## Scanned PDFs
 
-The PDF and cover take the same stem.
-
-Before writing, run `scripts/check_existing.sh "<Author> - <Title>"`. If it reports
-an existing file, ask the user whether to overwrite (a re-run will clobber their
-`rating`/`status` edits) or pick a new name.
-
-## 9. Scanned PDFs
-
-If `extract.sh` warns almost no text came out, the PDF is images. Offer:
-
-- `ocrmypdf input.pdf ocr.pdf` then rerun from `ocr.pdf` (`brew install ocrmypdf`).
-- Proceed with the sparse text (note the gap in Critiques).
-- Supply a different file.
+If `extract.sh` warned almost no text came out, offer: `ocrmypdf input.pdf ocr.pdf`
+then rerun; proceed with the sparse text (note the gap in Critiques); or supply a
+different file.
