@@ -27,7 +27,7 @@
       "name": "book-summary",
       "source": "./packages/book-summary",
       "description": "Summarize a book or document (EPUB/PDF/DOCX/HTML/TXT/URL) into a templated Markdown + PDF via model-split subagents, and file it to Google Drive and Obsidian.",
-      "version": "0.3.0",
+      "version": "0.3.1",
       "category": "Productivity",
       "repository": "https://github.com/pbas4/ai-space"
     }

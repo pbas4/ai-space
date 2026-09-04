@@ -44,13 +44,37 @@ and the `depth` (`quick` / `standard` / `deep`).
 
 ## Depth
 
+The depths must read as **clearly different documents**, not the same summary at
+three lengths. Follow the `## Depth` and `## Section targets` tables in
+`workflow.md` exactly.
+
 - **quick** — you were handed `book.txt`, not `notes.md`. Produce only:
   frontmatter, `# Title`, *In one paragraph*, *Key ideas* (5–8), *Actionable
-  takeaways*. Delete the other section headings. Target ~350–500 words total.
-- **standard** — the full template, section lengths per `workflow.md`.
-- **deep** — full template with longer *Chapter-by-chapter* (up to ~250 words per
-  chapter) and an extra `## Teaching outline` section appended before the final
-  `---`: a nested bullet outline someone could teach the book from.
+  takeaways*. Delete the other section headings. ~350–500 words total.
+- **standard** — the full template at the `standard` column: *Key ideas* 5–10,
+  *Notable quotes* 5–15, *Chapter-by-chapter* 80–200 w/section, no deep-only
+  sections. ~900–1600 words.
+- **deep** — an analytical study, not a longer summary:
+  - *In one paragraph* → 2–3 paragraphs (thesis + how the argument is built).
+  - *Key ideas* — **uncapped**; as many as the book earns (often 15–30), each with
+    a clause on why it holds or where it's weak; `### <theme>` sub-headings past ~12.
+  - *Chapter-by-chapter* — 200–400 w/section: the argumentative *move*, its
+    evidence, every named example.
+  - *Notable quotes* — **uncapped** (often 25–50), grouped under `### <theme>`.
+  - *Critiques* — 6–12 specific, unsparing points.
+  - Then append, before the closing `---`: `## Contexto y contraargumento`
+    (`### A favor` steelman paragraph, then `### En contra` rebuttal),
+    `## Glosario` (every coined term, one line each), `## Teaching outline`
+    (3–6 teachable sessions with an exercise each).
+  Do not pad — length is a by-product of doing the above thoroughly.
+
+## Section / chapter titles
+
+Take every `### N. <title>` in *Chapter-by-chapter* **verbatim** from the
+`## CHAPTER:` markers in `notes.md` / `chunks/index.json` — the book's own table
+of contents. Do not invent, shorten, merge, or re-translate a title. If the notes
+group several chapters under one heading, use the first chapter's exact title and
+note the range in the body.
 
 ## Reader highlights (`highlights.md` non-empty)
 
@@ -69,7 +93,9 @@ and the `depth` (`quick` / `standard` / `deep`).
 
 ## Non-negotiables
 
-- Total quoted material well under a page; a dozen short excerpts at most. Never
-  reconstruct a passage from stitched quotes.
+- Every quote is verbatim and under ~40 words. Never reconstruct a passage from
+  stitched quotes — the summary must not replace reading the book. Quote *count*
+  scales with depth (`standard` 5–15, `deep` 25–50); quote *length* never does.
 - Write in the language of the book unless the prompt says otherwise.
 - Every frontmatter field filled or explicitly blank; `rating` stays blank.
+- Chapter titles verbatim from the extracted TOC (see above).

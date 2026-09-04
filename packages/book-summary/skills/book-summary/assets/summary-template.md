@@ -36,7 +36,9 @@ _{{AUTHOR}} · {{YEAR}}_
 
 ## Key ideas
 
-<!-- 5–10 bullets. One idea each, stated as a claim, not a topic. -->
+<!-- standard: 5–10 bullets, one claim each (not a topic).
+     deep: uncapped — as many as the book earns (often 15–30), each claim + a
+     clause on why it holds or where it's weak; group under "### <theme>" past ~12. -->
 {{KEY_IDEAS}}
 
 ## Chapter-by-chapter
@@ -49,8 +51,8 @@ _{{AUTHOR}} · {{YEAR}}_
 
 ## Notable quotes
 
-<!-- 5–15 short quotes, each on its own blockquote line, attributed with
-     chapter/section. Keep each quote under ~40 words. -->
+<!-- Each on its own blockquote line, attributed with chapter/section, <40 words.
+     standard: 5–15.  deep: uncapped (often 25–50), grouped under "### <theme>". -->
 {{QUOTES}}
 
 ## Actionable takeaways
@@ -66,11 +68,27 @@ _{{AUTHOR}} · {{YEAR}}_
 ## How this connects
 
 <!-- Only [[wikilinks]] from related.md (they resolve in the vault), or plain-prose
-     bullets naming related books/ideas if there is no related.md. -->
+     bullets naming related books/ideas if there is no related.md.
+     standard: 2–5 bullets.  deep: 4–8, each drawing the actual distinction. -->
 {{CONNECTIONS}}
 
-<!-- deep depth only: append a "## Teaching outline" section here — a nested bullet
-     outline someone could teach the book from. Omit at quick/standard depth. -->
+<!-- deep depth ONLY — append these three sections here, in this order, then the
+     closing "---". Omit them entirely at quick/standard depth.
+
+## Contexto y contraargumento
+### A favor
+<!-- one paragraph: the strongest good-faith case for the book -->
+### En contra
+<!-- one paragraph: the rebuttal -->
+
+## Glosario
+<!-- every term the book coins or repurposes, one line each:
+     **término** — definición en una frase -->
+
+## Teaching outline
+<!-- 3–6 sessions someone could teach from; per session: topics as nested bullets,
+     one workshop/exercise, and a "no está en el libro" discussion prompt where useful -->
+-->
 
 ---
 _Generated with the `book-summary` skill on {{DATE}}._

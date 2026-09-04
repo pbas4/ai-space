@@ -89,8 +89,12 @@ split → fan out `book-chunk-summarizer` Tasks → (optional) vault backlinks �
 | Depth | What you get |
 |---|---|
 | `quick` | One pass, no fan-out. In-one-paragraph + Key ideas + Takeaways. ~350–500 words. Default for short inputs / URLs. |
-| `standard` | The full template. |
-| `deep` | Finer chunking, longer chapters, plus a **Teaching outline**. |
+| `standard` | The full template. Key ideas 5–10, quotes 5–15, 80–200-word chapter treatments. ~900–1600 words. |
+| `deep` | An analytical study: finer chunking, **uncapped** Key ideas and Notable quotes, 200–400-word chapter treatments, 6–12 critique points, plus deep-only **Contexto y contraargumento** (steelman + rebuttal), **Glosario**, and **Teaching outline** sections. Typically 4000–8000+ words. |
+
+The three depths are meant to read as clearly different documents, not the same
+summary at three lengths. If a run doesn't match, that's a synthesizer prompt
+issue — check `references/workflow.md` § Depth / Section targets.
 
 ### Reader highlights (feature #2)
 

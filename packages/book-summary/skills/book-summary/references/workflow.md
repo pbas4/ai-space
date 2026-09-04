@@ -22,24 +22,49 @@ brackets only if the user's working language differs.
 
 ## Depth
 
-| Depth | Chunk fan-out | Sections produced | Rough length |
+The three depths are meant to feel **clearly different**, not just longer. `quick`
+is a skeleton, `standard` is a solid summary, `deep` is an analytical study.
+
+| Depth | Chunk fan-out | Sections | Rough length |
 |---|---|---|---|
 | `quick` | none — synthesize straight from `book.txt` | frontmatter, `# Title`, *In one paragraph*, *Key ideas* (5–8), *Actionable takeaways*. Delete the rest. | 350–500 words |
-| `standard` | yes | the full template, lengths in the table below | 900–1500 words |
-| `deep` | yes, finer (`split.py --max-words 5000`) | full template; *Chapter-by-chapter* up to ~250 words per chapter; append a `## Teaching outline` (nested bullets someone could teach from) before the closing `---` | 2000–3500 words |
+| `standard` | yes | the full template, `standard` column below | 900–1600 words |
+| `deep` | yes, finer (`split.py --max-words 5000`) | the full template at the `deep` column below, **plus** three deep-only sections appended before the closing `---`: `## Contexto y contraargumento` (steelman + rebuttal), `## Glosario` (the book's coined terms, one line each), `## Teaching outline` (nested bullets someone could teach from) | 4000–8000+ words |
 
-## Section targets (`standard`)
+At `deep`, **do not cap** *Key ideas* or *Notable quotes* — include as many as the
+book genuinely earns. A dense 300-page argument might yield 20–30 key ideas and
+30–50 quotes; a thin one, far fewer. Length is an output, not a target.
 
-| Section | Target length | Notes |
+## Section targets
+
+| Section | `standard` | `deep` |
 |---|---|---|
-| In one paragraph | 4–6 sentences | The thesis and the intended reader. State it plainly. |
-| Why read this book | 2–4 bullets | The concrete payoff. If the book doesn't earn it, say so in Critiques instead. |
-| Key ideas | 5–10 bullets | Each a *claim* ("Habits form via a cue-routine-reward loop"), not a topic ("Habits"). |
-| Chapter-by-chapter | 80–200 words per chapter | `### N. Title`, using titles from `chunks/index.json` / the notes. Follow source order. For an article or a document with no chapters, retitle this **Section-by-section** and follow its own headings. |
-| Notable quotes | 5–15 quotes | Blockquote each, attribute with chapter/section, keep under ~40 words each. |
-| Actionable takeaways | 3–8 items | Instructions the reader can act on this week. |
-| Critiques & open questions | 2–5 bullets | Weak evidence, dated claims, overreach, unanswered questions. Always write something. |
-| How this connects | 2–5 bullets | See below. |
+| In one paragraph | 4–6 sentences: thesis + intended reader | 2–3 paragraphs: thesis, the *structure* of the argument (how the parts build), and who it is / isn't for |
+| Why read this book | 2–4 bullets | 3–6 bullets, each naming the concrete transferable tool or reframe |
+| Key ideas | 5–10 bullets, each a *claim* not a topic | **uncapped** (typ. 15–30); each = the claim + a clause on *why it holds or where it's shaky*; group under `### <theme>` sub-headings when there are more than ~12 |
+| Chapter-by-chapter | 80–200 w/section | 200–400 w/section: state the *move* the argument makes here, its evidence, and every named example — not just the topic |
+| Notable quotes | 5–15, attributed, <40 words each | **uncapped** (typ. 25–50), attributed, <40 words each, grouped under `### <theme>` sub-headings |
+| Actionable takeaways | 3–8 imperative items | 6–12 items, each a bolded action + 1–2 sentences of how |
+| Critiques & open questions | 2–5 bullets | 6–12 bullets: weak evidence, dated claims, overreach, internal contradictions, unanswered questions — be specific and unsparing |
+| How this connects | 2–5 bullets | 4–8 bullets, each drawing the actual distinction, not just naming a title |
+
+**Section / chapter titles** come **verbatim** from the `## CHAPTER:` markers in
+`notes.md` / `chunks/index.json` (the book's own table of contents). Do not
+invent, shorten, or re-translate them. `### N. <title exactly as extracted>`.
+Follow source order. For an article with no chapters, retitle the section
+**Section-by-section** and follow the source's own headings.
+
+### `deep`-only sections
+
+- `## Contexto y contraargumento` — first a **steelman** (`### A favor`): the
+  strongest good-faith case for the book, as a proponent would put it. Then
+  `### En contra`: the rebuttal. This is separate from *Critiques*, which stays a
+  list; this is two short argued paragraphs.
+- `## Glosario` — every term the book coins or repurposes, one line each
+  (`**término** — definición en una frase`). Alphabetical or in order of appearance.
+- `## Teaching outline` — a nested bullet outline of 3–6 sessions someone could
+  teach the book from: per session, the topics, one workshop/exercise, and where
+  useful a "not in the book" discussion prompt.
 
 ## Reader highlights (`highlights.md` non-empty)
 
@@ -81,8 +106,11 @@ book/psychology` (leading comma included); `{{TOPICS}}` to `finance, psychology`
 
 ## Quoting limits
 
-Total quoted material stays well under a page — a dozen short excerpts at most.
-Never include long passages, and never reconstruct a section from stitched quotes.
+Every quote stays **under ~40 words** and is verbatim from the source. Never
+include long passages, and never reconstruct a section of the book from
+stitched-together quotes — the summary must not substitute for reading it. Within
+those rules, `deep` may use many short quotes (25–50 is fine for a full-length
+book); `standard` uses 5–15.
 
 ## Filename
 

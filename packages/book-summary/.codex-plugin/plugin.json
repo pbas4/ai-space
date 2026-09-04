@@ -1,8 +1,10 @@
 {
   "name": "book-summary",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Turn a book or document (EPUB/PDF/DOCX/HTML/TXT/URL) into a templated summary (Markdown + PDF) and distribute it to Google Drive and an Obsidian vault.",
-  "author": { "name": "pbas" },
+  "author": {
+    "name": "pbas"
+  },
   "skills": "./skills/",
   "interface": {
     "displayName": "Book Summary",
@@ -10,7 +12,10 @@
     "longDescription": "Extracts text from an EPUB or PDF book, writes a structured summary from a fixed template in both Markdown and PDF, then copies both files to a configured Google Drive folder and (optionally) into an Obsidian vault with a Map-of-Content link.",
     "developerName": "pbas",
     "category": "Productivity",
-    "capabilities": ["Interactive", "Write"],
+    "capabilities": [
+      "Interactive",
+      "Write"
+    ],
     "defaultPrompt": "Summarize this book file into Markdown and PDF and file it in Drive and my vault."
   }
 }
