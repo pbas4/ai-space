@@ -37,7 +37,7 @@ _{{AUTHOR}} · {{YEAR}}_
 ## Key ideas
 
 <!-- standard: 5–10 bullets, one claim each (not a topic).
-     deep: uncapped — as many as the book earns (often 15–30), each claim + a
+     deep: the load-bearing claims only (aim 15–25, ~35 max), each claim + a
      clause on why it holds or where it's weak; group under "### <theme>" past ~12. -->
 {{KEY_IDEAS}}
 
@@ -52,7 +52,7 @@ _{{AUTHOR}} · {{YEAR}}_
 ## Notable quotes
 
 <!-- Each on its own blockquote line, attributed with chapter/section, <40 words.
-     standard: 5–15.  deep: uncapped (often 25–50), grouped under "### <theme>". -->
+     standard: 5–15.  deep: 25–40 (~45 max), grouped under "### <theme>". -->
 {{QUOTES}}
 
 ## Actionable takeaways

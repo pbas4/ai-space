@@ -1,6 +1,6 @@
 {
   "name": "book-summary",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "Summarize a book or document (EPUB/PDF/DOCX/HTML/TXT/URL) into a templated Markdown + PDF via model-split subagents, and file it to Google Drive and Obsidian.",
   "author": {
     "name": "pbas"

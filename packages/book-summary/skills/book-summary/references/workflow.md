@@ -29,11 +29,13 @@ is a skeleton, `standard` is a solid summary, `deep` is an analytical study.
 |---|---|---|---|
 | `quick` | none — synthesize straight from `book.txt` | frontmatter, `# Title`, *In one paragraph*, *Key ideas* (5–8), *Actionable takeaways*. Delete the rest. | 350–500 words |
 | `standard` | yes | the full template, `standard` column below | 900–1600 words |
-| `deep` | yes, finer (`split.py --max-words 5000`) | the full template at the `deep` column below, **plus** three deep-only sections appended before the closing `---`: `## Contexto y contraargumento` (steelman + rebuttal), `## Glosario` (the book's coined terms, one line each), `## Teaching outline` (nested bullets someone could teach from) | 4000–8000+ words |
+| `deep` | yes, finer (`split.py --max-words 5000`) | the full template at the `deep` column below, **plus** three deep-only sections appended before the closing `---`: `## Contexto y contraargumento` (steelman + rebuttal), `## Glosario` (the book's coined terms, one line each), `## Teaching outline` (nested bullets someone could teach from) | 5000–9000 words |
 
-At `deep`, **do not cap** *Key ideas* or *Notable quotes* — include as many as the
-book genuinely earns. A dense 300-page argument might yield 20–30 key ideas and
-30–50 quotes; a thin one, far fewer. Length is an output, not a target.
+At `deep`, *Key ideas* and *Notable quotes* scale with the book but have **soft
+ceilings**: keep *Key ideas* to the **load-bearing claims** (aim 15–25, stop
+around 35 even for a very dense book — if you have more, some aren't "key"), and
+*Notable quotes* to **25–40** (stop at ~45). A thin book earns far fewer. Length
+is an output of doing the analysis, not a target to hit.
 
 ## Section targets
 
@@ -41,9 +43,9 @@ book genuinely earns. A dense 300-page argument might yield 20–30 key ideas an
 |---|---|---|
 | In one paragraph | 4–6 sentences: thesis + intended reader | 2–3 paragraphs: thesis, the *structure* of the argument (how the parts build), and who it is / isn't for |
 | Why read this book | 2–4 bullets | 3–6 bullets, each naming the concrete transferable tool or reframe |
-| Key ideas | 5–10 bullets, each a *claim* not a topic | **uncapped** (typ. 15–30); each = the claim + a clause on *why it holds or where it's shaky*; group under `### <theme>` sub-headings when there are more than ~12 |
+| Key ideas | 5–10 bullets, each a *claim* not a topic | the load-bearing claims only — aim 15–25, ~35 max; each = the claim + a clause on *why it holds or where it's shaky*; group under `### <theme>` sub-headings when there are more than ~12 |
 | Chapter-by-chapter | 80–200 w/section | 200–400 w/section: state the *move* the argument makes here, its evidence, and every named example — not just the topic |
-| Notable quotes | 5–15, attributed, <40 words each | **uncapped** (typ. 25–50), attributed, <40 words each, grouped under `### <theme>` sub-headings |
+| Notable quotes | 5–15, attributed, <40 words each | 25–40 (~45 max), attributed, <40 words each, grouped under `### <theme>` sub-headings |
 | Actionable takeaways | 3–8 imperative items | 6–12 items, each a bolded action + 1–2 sentences of how |
 | Critiques & open questions | 2–5 bullets | 6–12 bullets: weak evidence, dated claims, overreach, internal contradictions, unanswered questions — be specific and unsparing |
 | How this connects | 2–5 bullets | 4–8 bullets, each drawing the actual distinction, not just naming a title |
@@ -109,8 +111,7 @@ book/psychology` (leading comma included); `{{TOPICS}}` to `finance, psychology`
 Every quote stays **under ~40 words** and is verbatim from the source. Never
 include long passages, and never reconstruct a section of the book from
 stitched-together quotes — the summary must not substitute for reading it. Within
-those rules, `deep` may use many short quotes (25–50 is fine for a full-length
-book); `standard` uses 5–15.
+those rules, `standard` uses 5–15 quotes and `deep` uses 25–40 (~45 max).
 
 ## Filename
 

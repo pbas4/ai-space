@@ -68,7 +68,7 @@ Work in a scratch directory (e.g. `mktemp -d`). Do these steps in order.
   |---|---|
   | `quick` | one synthesis pass, no chunk fan-out; ~350–500 words (In one paragraph + Key ideas + Takeaways) |
   | `standard` | the full template; ~900–1600 words |
-  | `deep` | an analytical study: finer chunking, uncapped Key ideas and Notable quotes, 200–400-word chapter treatments, 6–12 critique points, plus deep-only *Contexto y contraargumento*, *Glosario*, and *Teaching outline* sections; typically 4000–8000+ words |
+  | `deep` | an analytical study: finer chunking, 15–25 load-bearing Key ideas and 25–40 Notable quotes (both themed), 200–400-word chapter treatments, 6–12 critique points, plus deep-only *Contexto y contraargumento*, *Glosario*, and *Teaching outline* sections; typically 5000–9000 words |
 
 ### 2. Extract the text
 

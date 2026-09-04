@@ -56,11 +56,12 @@ three lengths. Follow the `## Depth` and `## Section targets` tables in
   sections. ~900–1600 words.
 - **deep** — an analytical study, not a longer summary:
   - *In one paragraph* → 2–3 paragraphs (thesis + how the argument is built).
-  - *Key ideas* — **uncapped**; as many as the book earns (often 15–30), each with
-    a clause on why it holds or where it's weak; `### <theme>` sub-headings past ~12.
+  - *Key ideas* — the load-bearing claims only: aim 15–25, ~35 max (if you have
+    more, some aren't "key"); each with a clause on why it holds or where it's
+    weak; `### <theme>` sub-headings past ~12.
   - *Chapter-by-chapter* — 200–400 w/section: the argumentative *move*, its
     evidence, every named example.
-  - *Notable quotes* — **uncapped** (often 25–50), grouped under `### <theme>`.
+  - *Notable quotes* — 25–40 (~45 max), grouped under `### <theme>`.
   - *Critiques* — 6–12 specific, unsparing points.
   - Then append, before the closing `---`: `## Contexto y contraargumento`
     (`### A favor` steelman paragraph, then `### En contra` rebuttal),
@@ -95,7 +96,7 @@ note the range in the body.
 
 - Every quote is verbatim and under ~40 words. Never reconstruct a passage from
   stitched quotes — the summary must not replace reading the book. Quote *count*
-  scales with depth (`standard` 5–15, `deep` 25–50); quote *length* never does.
+  scales with depth (`standard` 5–15, `deep` 25–40); quote *length* never does.
 - Write in the language of the book unless the prompt says otherwise.
 - Every frontmatter field filled or explicitly blank; `rating` stays blank.
 - Chapter titles verbatim from the extracted TOC (see above).
