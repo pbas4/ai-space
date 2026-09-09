@@ -1,0 +1,28 @@
+{
+  "name": "react-vertical-slices",
+  "version": "0.1.0",
+  "description": "Design, migrate, implement, and review capability-based React architecture.",
+  "author": {
+    "name": "Pol"
+  },
+  "repository": "https://github.com/pbas4/ai-space",
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "React Vertical Slices",
+    "shortDescription": "Apply capability-based React architecture.",
+    "longDescription": "Design new React features, migrate existing code, implement approved structural changes, and review capability ownership and dependency boundaries.",
+    "developerName": "Pol",
+    "category": "Developer Tools",
+    "capabilities": [
+      "Architecture analysis",
+      "Migration planning",
+      "Approved implementation",
+      "Boundary review"
+    ],
+    "defaultPrompt": [
+      "Design a vertical slice for this React feature.",
+      "Review this React feature's slice boundaries.",
+      "Plan a safe migration to vertical slices."
+    ]
+  }
+}

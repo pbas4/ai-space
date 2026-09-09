@@ -1,0 +1,6 @@
+interface:
+  display_name: "React Vertical Slices"
+  short_description: "Apply capability-based React architecture."
+  default_prompt: "Use $react-vertical-slices to design or review this React feature."
+policy:
+  allow_implicit_invocation: true
