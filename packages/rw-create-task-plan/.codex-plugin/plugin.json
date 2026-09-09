@@ -1,6 +1,6 @@
 {
   "name": "create-task-plan",
-  "version": "0.2.1+codex.20260826085815",
+  "version": "0.2.2+codex.20260831000000",
   "description": "Analyze Jira tasks, route UI work through the read-only RW UI Components Planner, and execute approved plans safely on protected task branches.",
   "author": {
     "name": "Pol"

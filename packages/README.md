@@ -2,6 +2,11 @@
 
 Each directory under this folder is an independently usable project within the AI Space monorepo.
 
+All packages are independently installable from the AI Space marketplaces:
+
+- Claude Code: `rw-crm@ai-space`, `create-task-plan@ai-space`, and `book-summary@ai-space`
+- Codex: `rw-crm@ai-space`, `create-task-plan@ai-space`, and `book-summary@ai-space`
+
 ## Project conventions
 
 - Use one directory per project: `packages/<project-name>/`.
@@ -14,8 +19,8 @@ Projects may use different runtimes or no runtime at all; the monorepo does not 
 ## Packages
 
 - [`rw-crm/`](rw-crm/) — reusable RW CRM planning, implementation, and UI-review agents.
-- [`rw-create-task-plan/`](rw-create-task-plan/) — Jira task planning plugin that consumes RW CRM UI planning agents.
-- [`book-summary/`](book-summary/) — skill that summarizes EPUB/PDF books into a templated Markdown + PDF and files them to Google Drive and Obsidian.
 - [`react-vertical-slices/`](react-vertical-slices/) — cross-client skill for capability-based React architecture and migration.
+- [`rw-create-task-plan/`](rw-create-task-plan/) — Jira task planning plugin that consumes the installed `rw-crm:rw-crm-components-planner` skill for UI planning; install both plugins for that handoff.
+- [`book-summary/`](book-summary/) — skill that summarizes a book or document (EPUB/PDF/DOCX/HTML/TXT/URL) into a templated Markdown + PDF via model-split subagents, and files it to Google Drive and Obsidian.
 
 Each package is independently installable and owns its source, tests, documentation, and runtime configuration.

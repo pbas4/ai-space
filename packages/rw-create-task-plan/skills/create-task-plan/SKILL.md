@@ -31,7 +31,7 @@ Use this skill only when the user supplies a Jira URL, an issue key such as `PRO
 
 ## RW UI Components Planner consultation
 
-For every `ui-related` issue, and every `possible-ui` issue for which the user selected RW CRM planning, discover the installed `rw-crm:rw-crm-components-planner` before gap synthesis and invoke it once through its documented read-only interface when available. Provide Jira key, URL, issue type, title, description, acceptance criteria, labels, attachments, links, related issues, UI-classification evidence, and every detected Figma URL or design reference. Do not invoke the RW CRM Components Engineer or any implementation agent during planning.
+For every `ui-related` issue, and every `possible-ui` issue for which the user selected RW CRM planning, discover the installed `rw-crm:rw-crm-components-planner` skill and invoke it as a read-only subagent before gap synthesis. This is the concrete cross-plugin handoff: delegate to the namespaced skill, pass the task context below, and consume its returned structured finding. If that skill is not available in the current runtime, record the planner as unavailable; do not substitute a guessed agent name, MCP tool, or implementation worker. Provide Jira key, URL, issue type, title, description, acceptance criteria, labels, attachments, links, related issues, UI-classification evidence, and every detected Figma URL or design reference. Do not invoke the RW CRM Components Engineer or any implementation agent during planning.
 
 Require the planner's read-only initial implementation plan with equivalent `status`, `evidence`, `scope`, `files`, `interfaces`, `risks_and_gaps`, `verification`, and `questions` fields. `status` is `available` when the planner returned relevant context, `unavailable` when discovery, invocation, Figma access, or component context failed, and `not-applicable` only for `non-ui` work.
 
@@ -39,7 +39,7 @@ Carry the shared routing evidence, context snapshot ID, context gaps, and any st
 
 For a non-UI issue, do not invoke the RW UI Components Planner. Continue with the separate non-UI planning workflow unchanged.
 
-When UI context is unavailable, continue the read-only planning workflow. Add an explicit `UI-context gap` risk to the final plan that names the unavailable source, its planning impact, and the follow-up needed to close it. Do not invent component details.
+When UI context is unavailable, continue the read-only planning workflow. Add an explicit `UI-context gap` risk to the final plan that names the unavailable source, its planning impact, and the follow-up needed to close it. Do not invent component details. The two plugins must be installed in the same runtime; Install both `rw-crm@ai-space` and `create-task-plan@ai-space` before retrying a missing handoff.
 
 ## Git preparation
 

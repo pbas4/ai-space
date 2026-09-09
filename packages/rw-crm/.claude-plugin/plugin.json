@@ -1,0 +1,9 @@
+{
+  "name": "rw-crm",
+  "version": "0.1.0",
+  "description": "Reusable RW CRM planning, component implementation, and UI review workflows.",
+  "author": {
+    "name": "RW CRM"
+  },
+  "skills": "./skills/"
+}
