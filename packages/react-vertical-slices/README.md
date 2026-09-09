@@ -15,6 +15,23 @@ differently.
   `/react-vertical-slices:react-vertical-slices`.
 - Claude Code personal skill: invoke `/react-vertical-slices`.
 
+## Install from the AI Space marketplace
+
+Add the marketplace once, then install the plugin:
+
+```text
+/plugin marketplace add pbas4/ai-space
+/plugin install react-vertical-slices@ai-space
+```
+
+If the marketplace was already added before this plugin was published, refresh
+it first:
+
+```text
+/plugin marketplace update ai-space
+/plugin install react-vertical-slices@ai-space
+```
+
 ## Local development
 
 Load the complete package in Claude Code for one session:
