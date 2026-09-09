@@ -43,7 +43,7 @@ class ReactVerticalSlicesContractTest(unittest.TestCase):
 
         for manifest in (claude, codex):
             self.assertEqual("react-vertical-slices", manifest["name"])
-            self.assertEqual("0.1.0", manifest["version"])
+            self.assertEqual("0.1.1", manifest["version"])
             self.assertEqual("Pol", manifest["author"]["name"])
 
         self.assertEqual("./skills/", codex["skills"])
