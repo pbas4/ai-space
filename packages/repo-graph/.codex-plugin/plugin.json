@@ -1,0 +1,22 @@
+{
+  "name": "repo-graph",
+  "version": "0.1.0",
+  "description": "Local, offline repository intelligence for coding agents.",
+  "author": { "name": "Pol" },
+  "license": "MIT",
+  "keywords": ["repository graph", "codebase navigation", "offline", "developer tools"],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Repository Graph",
+    "shortDescription": "Connect local repositories once, then ask agents normally.",
+    "longDescription": "Builds a local repository graph that coding agents can use to understand files, symbols, dependencies, paths, and change impact without sending source code over the network.",
+    "developerName": "Pol",
+    "category": "Developer Tools",
+    "capabilities": ["Local repository analysis", "Offline operation", "Source-backed navigation"],
+    "defaultPrompt": [
+      "Connect this local repository, then use its graph to explain the codebase.",
+      "Use the local repository graph to answer this question in normal language.",
+      "Use the local repository graph before editing this repository."
+    ]
+  }
+}
