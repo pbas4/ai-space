@@ -9,6 +9,7 @@ Projects live under [`packages/`](packages/). Each project owns its own source, 
 - [`packages/rw-crm/`](packages/rw-crm/) — reusable RW CRM planning, implementation, and UI-review Codex plugin.
 - [`packages/rw-create-task-plan/`](packages/rw-create-task-plan/) — Realworks-oriented Create Task Plan plugin with RW CRM UI planning integration.
 - [`packages/book-summary/`](packages/book-summary/) — summarize EPUB/PDF books into a templated Markdown + PDF and file them to Google Drive and Obsidian.
+- [`packages/react-vertical-slices/`](packages/react-vertical-slices/) — design, migrate, implement, and review capability-based React architecture in Codex and Claude Code.
 
 ## Working with a project
 
