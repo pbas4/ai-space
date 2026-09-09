@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createInitialPlan } from '../src/planning/components-planner.mjs';
+import { createContextSnapshot } from '../src/context/context-snapshot.mjs';
 
 test('creates a bounded read-only initial plan from context and ledger', async () => {
   const calls = [];
@@ -22,4 +23,30 @@ test('reports ambiguous context without attempting implementation', async () => 
   });
   assert.equal(result.plan.approvalStatus, 'awaiting-approval');
   assert.equal(result.plan.risks[0].type, 'ambiguous-context');
+});
+
+test('uses a supplied context snapshot without rediscovering context', async () => {
+  const contextSnapshot = createContextSnapshot({
+    taskId: 'Add DatePicker',
+    now: '2026-08-28T10:00:00.000Z',
+    context: {
+      selectedSources: [],
+      scope: { components: ['LibraryDatePicker'], screens: [], routes: [] },
+      libraryDecisions: [{ authority: 'ui-library', decision: 'use library radius' }],
+      gaps: [],
+      ambiguities: []
+    }
+  });
+  const result = await createInitialPlan({
+    request: { task: 'Add DatePicker', componentScope: ['DatePicker'] },
+    contextSnapshot
+  }, {
+    contextAdapter: { async discover() { throw new Error('supplied snapshot must not trigger discovery'); } },
+    ledger: { async consult(_request, context) { assert.equal(context, contextSnapshot); return []; } }
+  });
+
+  assert.equal(result.context, contextSnapshot);
+  assert.equal(result.plan.goal, 'Add DatePicker');
+  assert.deepEqual(result.plan.scope.components, ['LibraryDatePicker']);
+  assert.deepEqual(result.plan.libraryDecisions, [{ authority: 'ui-library', decision: 'use library radius' }]);
 });

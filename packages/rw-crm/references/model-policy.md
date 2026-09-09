@@ -6,4 +6,6 @@ The native selection prompt offers `Recommended`, `Light`, `Medium`, `High`, and
 
 The PR Description Writer is the fixed exception: it always uses `gpt-5.6-luna` with light reasoning because its output is a concise communication draft, not implementation or analysis. Its assignment is not changed by task complexity or ordinary per-agent overrides.
 
+Model proposals and dry-run reports expose assignments and verification evidence without source bodies or credentials. A dry run never executes a worker, changes files, or bypasses source allowlists.
+
 After confirmation, the workflow passes an immutable execution context containing the approved model and reasoning assignment to each worker. A host that cannot honor that assignment must report the gap and stop before invoking that worker; this package records and validates execution assignments but does not itself select the Codex runtime model.

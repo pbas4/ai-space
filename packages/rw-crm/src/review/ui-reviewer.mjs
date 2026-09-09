@@ -3,8 +3,8 @@ function normalizeFinding(finding, index) {
   return { id: finding.id ?? `review-${index + 1}`, ...finding, severity, blocking: severity === 'critical' };
 }
 
-export async function reviewImplementation({ request, approvedPlan, changedArtifacts }, { contextAdapter, evidenceAdapter, checklist }) {
-  const context = await contextAdapter.discover(request);
+export async function reviewImplementation({ request, approvedPlan, changedArtifacts, contextSnapshot = null }, { contextAdapter, evidenceAdapter, checklist }) {
+  const context = contextSnapshot ?? await contextAdapter.discover(request);
   const evidence = await evidenceAdapter.inspect({ request, approvedPlan, changedArtifacts, context, checklist });
   const findings = (evidence.findings ?? []).map(normalizeFinding);
   for (const decision of context.libraryDecisions ?? []) {

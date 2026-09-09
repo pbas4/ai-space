@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { reviewImplementation } from '../src/review/ui-reviewer.mjs';
+import { createContextSnapshot } from '../src/context/context-snapshot.mjs';
 
 const input = { request: { task: 'Fix DatePicker', componentScope: ['DatePicker'] }, approvedPlan: { id: 'p1' }, changedArtifacts: ['packages/ui/DatePicker.mjs'] };
 const contextAdapter = { async discover() { return { gaps: [], ambiguities: [], libraryDecisions: [] }; } };
@@ -21,6 +22,28 @@ test('blocks critical findings but reports lower severity findings', async () =>
 
 test('records UI library authority for Figma conflicts and reviews non-visual changes', async () => {
   const result = await reviewImplementation({ ...input, changedArtifacts: ['packages/ui/date-utils.mjs'] }, { contextAdapter: { async discover() { return { gaps: [], ambiguities: [], libraryDecisions: [{ figma: '8px', library: '4px', authority: 'ui-library' }] }; } }, evidenceAdapter: { async inspect() { return { findings: [], checks: [] }; } }, checklist: [] });
+  assert.equal(result.completion, 'pass-with-findings');
+  assert.equal(result.findings[0].category, 'library-decision');
+});
+
+test('uses a supplied context snapshot without rediscovering context', async () => {
+  const contextSnapshot = createContextSnapshot({
+    taskId: 'Fix DatePicker',
+    now: '2026-08-28T10:00:00.000Z',
+    context: {
+      selectedSources: [],
+      scope: { components: ['DatePicker'], screens: [], routes: [] },
+      libraryDecisions: [{ topic: 'radius', figma: '8px', library: '4px', authority: 'ui-library' }],
+      gaps: [],
+      ambiguities: []
+    }
+  });
+  const result = await reviewImplementation({ ...input, contextSnapshot }, {
+    contextAdapter: { async discover() { throw new Error('supplied snapshot must not trigger discovery'); } },
+    evidenceAdapter: { async inspect({ context }) { assert.equal(context, contextSnapshot); return { findings: [], checks: [] }; } },
+    checklist: []
+  });
+
   assert.equal(result.completion, 'pass-with-findings');
   assert.equal(result.findings[0].category, 'library-decision');
 });

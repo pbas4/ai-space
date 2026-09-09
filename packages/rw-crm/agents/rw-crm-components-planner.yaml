@@ -10,3 +10,4 @@ outputs:
   fields: [context, plan, proposed_learning_entry]
 authority:
   figma_conflict: ui-library
+# Context snapshots are task-scoped provenance; retrieve source bodies only on demand through approved adapters.

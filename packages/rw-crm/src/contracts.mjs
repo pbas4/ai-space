@@ -1,16 +1,30 @@
-const VALID_STATUSES = new Set([
-  'needs-context',
-  'awaiting-plan-approval',
-  'awaiting-edit-approval',
-  'implemented',
-  'blocked'
-]);
+import { readFile } from 'node:fs/promises';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { assertSupportedSchema, validateSchema } from './contracts/schema-runtime.mjs';
+
+const schemaDirectory = join(dirname(fileURLToPath(import.meta.url)), '../schemas');
+const schemaNames = [
+  'approval-receipt', 'context-envelope', 'engineer-result', 'initial-plan',
+  'learning-ledger', 'model-proposal', 'plan-review', 'ui-review', 'context-snapshot',
+  'dry-run-report', 'verification-evidence', 'finding'
+];
+const schemas = Object.fromEntries(await Promise.all(schemaNames.map(async (name) => {
+  const schema = JSON.parse(await readFile(join(schemaDirectory, `${name}.schema.json`), 'utf8'));
+  assertSupportedSchema(schema);
+  return [name, schema];
+})));
+
+const VALID_STATUSES = new Set(['needs-context', 'awaiting-plan-approval', 'awaiting-edit-approval', 'awaiting-context-reapproval', 'implemented', 'blocked']);
 const VALID_LEDGER_CLASSES = new Set(['stable-rule', 'task-exception']);
-const MODEL_ASSIGNMENT_ROLES = ['planner', 'planReviewer', 'engineer', 'uiReviewer', 'prWriter', 'orchestrator'];
-const ALLOWED_MODELS = new Set(['gpt-5.6-luna', 'gpt-5.6-terra', 'gpt-5.6-sol']);
-const ALLOWED_REASONING = new Set(['light', 'medium', 'high']);
 
 const result = (errors) => ({ valid: errors.length === 0, errors });
+
+export function validateWithSchema(schemaName, value) {
+  const schema = schemas[schemaName];
+  if (!schema) throw new Error(`Unknown package schema: ${schemaName}`);
+  return validateSchema(schema, value);
+}
 
 export function createContextEnvelope(input) {
   return {
@@ -19,98 +33,46 @@ export function createContextEnvelope(input) {
     repositoryScope: [...(input.repositoryScope ?? [])],
     figmaLinks: [...(input.figmaLinks ?? [])],
     constraints: [...(input.constraints ?? [])],
-    approvals: {
-      plan: input.approvals?.plan ?? null,
-      codeEdits: input.approvals?.codeEdits ?? null
-    }
+    approvals: { plan: input.approvals?.plan ?? null, codeEdits: input.approvals?.codeEdits ?? null }
   };
 }
 
-export function validateContextEnvelope(value) {
-  const errors = [];
-  if (!value || typeof value !== 'object') return result(['context envelope must be an object']);
-  if (typeof value.task !== 'string' || value.task.trim() === '') errors.push('task is required');
-  for (const field of ['componentScope', 'repositoryScope', 'figmaLinks', 'constraints']) {
-    if (!Array.isArray(value[field])) errors.push(`${field} must be an array`);
-  }
-  if (!value.approvals || typeof value.approvals !== 'object') errors.push('approvals is required');
-  if (value.approvals && (!('plan' in value.approvals) || !('codeEdits' in value.approvals))) errors.push('approvals must include plan and codeEdits');
-  return result(errors);
-}
-
+export const validateContextEnvelope = (value) => validateWithSchema('context-envelope', value);
+export const validateContextSnapshot = (value) => validateWithSchema('context-snapshot', value);
 export function validateEngineerResult(value) {
-  const errors = [];
-  if (!value || typeof value !== 'object') return result(['engineer result must be an object']);
-  for (const field of ['context', 'verification']) if (!value[field]) errors.push(`${field} is required`);
-  if (!VALID_STATUSES.has(value.status)) errors.push('status is invalid');
-  if (!Array.isArray(value.changedArtifacts)) errors.push('changedArtifacts must be an array');
-  if (!('plan' in value)) errors.push('plan is required');
-  if (!('proposedLearningEntry' in value)) errors.push('proposedLearningEntry is required');
+  const errors = [...validateWithSchema('engineer-result', value).errors];
+  if (value?.status === 'awaiting-context-reapproval') {
+    if (!value.contextSnapshot) errors.push('$.contextSnapshot is required when status is awaiting-context-reapproval');
+    else errors.push(...validateContextSnapshot(value.contextSnapshot).errors.map((error) => `$.contextSnapshot${error.slice(1)}`));
+    for (const field of ['previousSnapshotId', 'currentSnapshotId', 'changes']) {
+      if (!(field in value)) errors.push(`$.${field} is required when status is awaiting-context-reapproval`);
+    }
+  }
   return result(errors);
 }
 
 export function validateLedgerEntry(value) {
-  const errors = [];
-  if (!value || typeof value !== 'object') return result(['ledger entry must be an object']);
-  for (const field of ['id', 'lesson']) if (typeof value[field] !== 'string' || value[field] === '') errors.push(`${field} is required`);
-  if (!Number.isInteger(value.version) || value.version < 1) errors.push('version must be a positive integer');
-  if (!VALID_LEDGER_CLASSES.has(value.class)) errors.push('class is invalid');
-  if (!Array.isArray(value.evidence)) errors.push('evidence must be an array');
-  if (!Array.isArray(value.scope)) errors.push('scope must be an array');
-  if (value.persisted && typeof value.approvedAt !== 'string') errors.push('approvedAt is required for persisted entries');
+  const errors = [...validateWithSchema('learning-ledger', value).errors];
+  if (value?.persisted && typeof value.approvedAt !== 'string') errors.push('$.approvedAt is required for persisted entries');
   return result(errors);
 }
 
-export function validateInitialPlan(value) {
-  const errors = [];
-  if (!value || typeof value !== 'object') return result(['initial plan must be an object']);
-  for (const field of ['id', 'goal']) if (typeof value[field] !== 'string' || value[field] === '') errors.push(`${field} is required`);
-  for (const field of ['files', 'interfaces', 'risks', 'verification', 'libraryDecisions']) if (!Array.isArray(value[field])) errors.push(`${field} must be an array`);
-  if (!value.scope || typeof value.scope !== 'object') errors.push('scope is required');
-  if (value.approvalStatus !== 'awaiting-approval') errors.push('initial plans must await approval');
-  return result(errors);
-}
-
-export function validatePlanReview(value) {
-  const errors = [];
-  if (!value || typeof value !== 'object') return result(['plan review must be an object']);
-  if (!Array.isArray(value.findings)) errors.push('findings must be an array');
-  if (!value.reviewedPlan || typeof value.reviewedPlan !== 'object') errors.push('reviewedPlan is required');
-  if (!new Set(['approve', 'revise', 'blocked']).has(value.recommendation)) errors.push('recommendation is invalid');
-  return result(errors);
-}
-
-export function validateUiReview(value) {
-  const errors = [];
-  if (!value || typeof value !== 'object') return result(['UI review must be an object']);
-  if (!Array.isArray(value.findings)) errors.push('findings must be an array');
-  if (!value.verification || typeof value.verification !== 'object') errors.push('verification is required');
-  if (!new Set(['pass', 'blocked', 'pass-with-findings']).has(value.completion)) errors.push('completion is invalid');
-  return result(errors);
-}
+export const validateInitialPlan = (value) => validateWithSchema('initial-plan', value);
+export const validatePlanReview = (value) => validateWithSchema('plan-review', value);
+export const validateUiReview = (value) => validateWithSchema('ui-review', value);
+export const validateDryRunReport = (value) => validateWithSchema('dry-run-report', value);
+export const validateVerificationEvidence = (value) => validateWithSchema('verification-evidence', value);
+export const validateFinding = (value) => validateWithSchema('finding', value);
 
 export function validateModelProposal(value) {
-  const errors = [];
-  if (!value || typeof value !== 'object') return result(['model proposal must be an object']);
-  if (typeof value.proposalId !== 'string' || value.proposalId === '') errors.push('proposalId is required');
-  if (!new Set(['luna', 'terra', 'sol']).has(value.tier)) errors.push('tier is invalid');
-  if (!value.assignments || typeof value.assignments !== 'object') errors.push('assignments is required');
-  else for (const role of MODEL_ASSIGNMENT_ROLES) {
-    const assignment = value.assignments[role];
-    if (!ALLOWED_MODELS.has(assignment?.model) || !ALLOWED_REASONING.has(assignment?.reasoning)) errors.push(`assignment is invalid for ${role}`);
-  }
-  if (!Array.isArray(value.reasons)) errors.push('reasons must be an array');
-  if (!new Set(['awaiting-confirmation', 'approved', 'rejected']).has(value.status)) errors.push('status is invalid');
+  const errors = [...validateWithSchema('model-proposal', value).errors];
+  if (value?.status === 'approved' && !value.approval) errors.push('$.approval is required when status is approved');
   return result(errors);
 }
 
 export function validateApprovalReceipt(value, { requireEditSetHash = false } = {}) {
-  const errors = [];
-  if (!value || typeof value !== 'object') return result(['approval receipt must be an object']);
-  for (const field of ['planId', 'planHash', 'approvedBy', 'approvedAt']) if (typeof value[field] !== 'string' || value[field] === '') errors.push(`${field} is required`);
-  if (!/^[a-f0-9]{64}$/.test(value.planHash ?? '')) errors.push('planHash must be a SHA-256 digest');
-  if (requireEditSetHash && !/^[a-f0-9]{64}$/.test(value.editSetHash ?? '')) errors.push('editSetHash must be a SHA-256 digest');
-  if (value.approvedAt && (Number.isNaN(Date.parse(value.approvedAt)) || new Date(value.approvedAt).toISOString() !== value.approvedAt)) errors.push('approvedAt must be an ISO-8601 timestamp');
+  const errors = [...validateWithSchema('approval-receipt', value).errors];
+  if (requireEditSetHash && !/^[a-f0-9]{64}$/.test(value?.editSetHash ?? '')) errors.push('$.editSetHash must be a SHA-256 digest');
   return result(errors);
 }
 

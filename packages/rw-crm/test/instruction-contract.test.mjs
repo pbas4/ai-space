@@ -49,3 +49,16 @@ test('RW CRM target-repository verification uses direct Jest and prohibits Nx', 
   assert.match(text, /never invoke Nx/i);
   assert.match(text, /Nx-wrapped/i);
 });
+
+test('user-facing guidance names the planner and documents snapshot safety', async () => {
+  const [plannerSkill, workflow, adapter, readme] = await Promise.all([
+    read('skills/rw-crm-components-planner/SKILL.md'),
+    read('references/workflow.md'),
+    read('src/adapters/README.md'),
+    read('README.md')
+  ]);
+  assert.doesNotMatch(plannerSkill, /RW UI Components Planner/);
+  assert.match(workflow, /awaiting-context-reapproval/);
+  assert.match(adapter, /createCodexHostAdapter/);
+  for (const phrase of ['task-scoped', 'material refresh', 'allowlist', 'dry run', 'redacted']) assert.match(`${workflow}\n${adapter}\n${readme}`, new RegExp(phrase, 'i'));
+});

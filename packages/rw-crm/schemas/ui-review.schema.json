@@ -1,1 +1,9 @@
-{"type":"object","required":["findings","verification","completion"]}
+{
+  "type": "object",
+  "required": ["findings", "verification", "completion"],
+  "properties": {
+    "findings": { "type": "array", "items": {} },
+    "verification": { "type": "object" },
+    "completion": { "enum": ["pass", "blocked", "pass-with-findings"] }
+  }
+}

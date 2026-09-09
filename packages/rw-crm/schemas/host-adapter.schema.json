@@ -1,0 +1,12 @@
+{
+  "type": "object",
+  "required": ["discoverCandidates", "retrieveSource", "refreshContext", "proposeImplementation", "applyImplementation", "verify"],
+  "properties": {
+    "discoverCandidates": {},
+    "retrieveSource": {},
+    "refreshContext": {},
+    "proposeImplementation": {},
+    "applyImplementation": {},
+    "verify": {}
+  }
+}

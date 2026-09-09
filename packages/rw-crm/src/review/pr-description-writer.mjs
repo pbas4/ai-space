@@ -1,9 +1,6 @@
-const MODEL = { model: 'gpt-5.6-luna', reasoning: 'light' };
+import { resolveRepositoryPolicy } from '../policy/repository-policy.mjs';
 
-function isRwCrmComponents({ repository, repositoryName, repositoryScope = [], changedArtifacts = [] }) {
-  const values = [repository, repositoryName, ...repositoryScope, ...changedArtifacts].filter(Boolean).join(' ').toLowerCase();
-  return values.includes('rw-crm-components');
-}
+const MODEL = { model: 'gpt-5.6-luna', reasoning: 'light' };
 
 function inferPrType(task, explicitType) {
   const value = (explicitType ?? '').toLowerCase();
@@ -31,7 +28,8 @@ export function createPrDescription({ task, repository, repositoryName, reposito
   const component = task.match(/\b[A-Z][A-Za-z]*[A-Z][A-Za-z]*\b/)?.[0] ?? pathComponent.replace(/^./, (letter) => letter.toUpperCase());
   const checks = (verification.checks ?? []).filter((check) => check.status === 'passed').map((check) => check.name);
   const checkSummary = checks.length ? checks.join(', ') : 'the recorded verification checks';
-  const body = isRwCrmComponents({ repository, repositoryName, repositoryScope, changedArtifacts })
+  const repositoryPolicy = resolveRepositoryPolicy({ repository, repositoryName, repositoryScope, changedArtifacts });
+  const body = repositoryPolicy.prTemplate === 'rw-crm-components'
     ? renderRwCrmComponentsTemplate({ task, description, prType: inferPrType(task, prType), ticketNumber: ticketNumber ?? ticket_number, additionalNotes })
     : `## Summary\n\nThis change addresses ${task.toLowerCase()}.\n\n## Why\n\nIt keeps the component experience consistent and reliable for users.\n\n## Verification\n\nVerified with ${checkSummary}. UI review: ${uiReview.completion ?? 'completed'}.\n\n## Notes\n\nThe change follows the existing component conventions.`;
   return {

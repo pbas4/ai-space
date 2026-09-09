@@ -1,1 +1,25 @@
-{"type":"object","required":["proposalId","tier","preset","assignments","selectionOptions","reasons","status"],"properties":{"tier":{"enum":["luna","terra","sol"]},"preset":{"enum":["recommended","light","medium","high","individual"]},"assignments":{"type":"object","required":["planner","planReviewer","engineer","uiReviewer","prWriter","orchestrator"]},"reasons":{"type":"array"},"status":{"enum":["awaiting-confirmation","approved","rejected"]}}}
+{
+  "type": "object",
+  "required": ["proposalId", "tier", "preset", "assignments", "selectionOptions", "reasons", "status"],
+  "properties": {
+    "proposalId": { "type": "string", "minLength": 1 },
+    "tier": { "enum": ["luna", "terra", "sol"] },
+    "preset": { "enum": ["recommended", "light", "medium", "high", "individual"] },
+    "assignments": {
+      "type": "object",
+      "required": ["planner", "planReviewer", "engineer", "uiReviewer", "prWriter", "orchestrator"],
+      "properties": {
+        "planner": { "type": "object", "required": ["model", "reasoning"], "properties": { "model": { "enum": ["gpt-5.6-luna", "gpt-5.6-terra", "gpt-5.6-sol"] }, "reasoning": { "enum": ["light", "medium", "high"] } } },
+        "planReviewer": { "type": "object", "required": ["model", "reasoning"], "properties": { "model": { "enum": ["gpt-5.6-luna", "gpt-5.6-terra", "gpt-5.6-sol"] }, "reasoning": { "enum": ["light", "medium", "high"] } } },
+        "engineer": { "type": "object", "required": ["model", "reasoning"], "properties": { "model": { "enum": ["gpt-5.6-luna", "gpt-5.6-terra", "gpt-5.6-sol"] }, "reasoning": { "enum": ["light", "medium", "high"] } } },
+        "uiReviewer": { "type": "object", "required": ["model", "reasoning"], "properties": { "model": { "enum": ["gpt-5.6-luna", "gpt-5.6-terra", "gpt-5.6-sol"] }, "reasoning": { "enum": ["light", "medium", "high"] } } },
+        "prWriter": { "type": "object", "required": ["model", "reasoning"], "properties": { "model": { "enum": ["gpt-5.6-luna", "gpt-5.6-terra", "gpt-5.6-sol"] }, "reasoning": { "enum": ["light", "medium", "high"] } } },
+        "orchestrator": { "type": "object", "required": ["model", "reasoning"], "properties": { "model": { "enum": ["gpt-5.6-luna", "gpt-5.6-terra", "gpt-5.6-sol"] }, "reasoning": { "enum": ["light", "medium", "high"] } } }
+      }
+    },
+    "selectionOptions": { "type": "array", "items": {} },
+    "reasons": { "type": "array", "items": { "type": "string" } },
+    "status": { "enum": ["awaiting-confirmation", "approved", "rejected"] },
+    "approval": { "type": "object", "required": ["approvedBy", "approvedAt"], "properties": { "approvedBy": { "type": "string", "minLength": 1 }, "approvedAt": { "type": "string", "format": "date-time" } } }
+  }
+}

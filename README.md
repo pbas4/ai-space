@@ -9,6 +9,7 @@ Projects live under [`packages/`](packages/). Each project owns its own source, 
 - [`packages/rw-crm/`](packages/rw-crm/) — reusable RW CRM planning, implementation, and UI-review Codex plugin.
 - [`packages/rw-create-task-plan/`](packages/rw-create-task-plan/) — Realworks-oriented Create Task Plan plugin with RW CRM UI planning integration.
 - [`packages/repo-graph/`](packages/repo-graph/) — offline repository intelligence and source-backed codebase navigation for coding agents.
+- [`packages/book-summary/`](packages/book-summary/) — summarize a book or document (EPUB/PDF/DOCX/HTML/TXT/URL) into a templated Markdown + PDF via model-split subagents, and file it to Google Drive and Obsidian.
 
 ## Working with a project
 
@@ -20,6 +21,27 @@ cd ai-space
 ```
 
 Then work inside the relevant project directory. Project-specific commands are documented in that project’s README or package manifest.
+
+## Plugin marketplaces
+
+This repository is also a dual-host plugin marketplace. Add it to Claude Code and install either plugin independently:
+
+```text
+/plugin marketplace add pbas4/ai-space
+/plugin install rw-crm@ai-space
+/plugin install create-task-plan@ai-space
+/plugin install book-summary@ai-space
+```
+
+Codex uses the repository marketplace at `.agents/plugins/marketplace.json`:
+
+```bash
+codex plugin add rw-crm@ai-space
+codex plugin add create-task-plan@ai-space
+codex plugin add book-summary@ai-space
+```
+
+Push changes to `main` to publish marketplace updates.
 
 For a focused checkout containing only one project, use sparse checkout:
 

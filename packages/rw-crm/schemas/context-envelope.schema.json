@@ -1,6 +1,4 @@
 {
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://rw.local/schemas/context-envelope.schema.json",
   "type": "object",
   "required": ["task", "componentScope", "repositoryScope", "figmaLinks", "constraints", "approvals"],
   "properties": {
@@ -12,10 +10,7 @@
     "approvals": {
       "type": "object",
       "required": ["plan", "codeEdits"],
-      "properties": {
-        "plan": { "type": ["object", "null"] },
-        "codeEdits": { "type": ["object", "null"] }
-      }
+      "properties": { "plan": { "type": ["object", "null"] }, "codeEdits": { "type": ["object", "null"] } }
     }
   }
 }

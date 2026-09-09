@@ -1,1 +1,15 @@
-{"type":"object","required":["id","goal","scope","files","interfaces","risks","verification","libraryDecisions","approvalStatus"]}
+{
+  "type": "object",
+  "required": ["id", "goal", "scope", "files", "interfaces", "risks", "verification", "libraryDecisions", "approvalStatus"],
+  "properties": {
+    "id": { "type": "string", "minLength": 1 },
+    "goal": { "type": "string", "minLength": 1 },
+    "scope": { "type": "object" },
+    "files": { "type": "array", "items": { "type": "string" } },
+    "interfaces": { "type": "array", "items": { "type": "string" } },
+    "risks": { "type": "array", "items": {} },
+    "verification": { "type": "array", "items": { "type": "string" } },
+    "libraryDecisions": { "type": "array", "items": {} },
+    "approvalStatus": { "enum": ["awaiting-approval"] }
+  }
+}
