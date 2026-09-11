@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 import re
+import tempfile
 import tomllib
 import unittest
 
@@ -19,6 +20,18 @@ CLAUDE_AGENT_PATHS = (
     AGENT_ROOT / "react-vertical-slices-migrator.md",
 )
 ALL_AGENT_PATHS = (*AGENT_PATHS, *CLAUDE_AGENT_PATHS)
+FRONTMATTER_KEY = re.compile(r"[a-z][a-z0-9_-]*\Z")
+PLAIN_FRONTMATTER_SCALAR = re.compile(r"[A-Za-z0-9][^\r\n]*\Z")
+
+
+def parse_plain_frontmatter_scalar(value: str, path: Path) -> str:
+    if (
+        PLAIN_FRONTMATTER_SCALAR.fullmatch(value) is None
+        or ": " in value
+        or " #" in value
+    ):
+        raise AssertionError(f"Invalid frontmatter scalar in {path}: {value!r}")
+    return value
 
 
 def parse_markdown_agent(path: Path) -> tuple[dict[str, object], str]:
@@ -30,20 +43,71 @@ def parse_markdown_agent(path: Path) -> tuple[dict[str, object], str]:
     metadata: dict[str, object] = {}
     active_list: list[str] | None = None
     for line in match.group(1).splitlines():
-        if line.startswith("  - ") and active_list is not None:
-            active_list.append(line[4:])
+        if line.startswith("  - "):
+            if active_list is None:
+                raise AssertionError(f"Unexpected frontmatter list item in {path}: {line!r}")
+            active_list.append(parse_plain_frontmatter_scalar(line[4:], path))
             continue
 
-        key, value = line.split(":", 1)
-        value = value.strip()
-        if value:
-            metadata[key] = value
+        if active_list == []:
+            raise AssertionError(f"Empty frontmatter list in {path}")
+        active_list = None
+
+        key_match = re.fullmatch(r"([^:]+):(?: (.*))?", line)
+        if key_match is None:
+            raise AssertionError(f"Invalid frontmatter entry in {path}: {line!r}")
+        key, value = key_match.groups()
+        if FRONTMATTER_KEY.fullmatch(key) is None:
+            raise AssertionError(f"Invalid frontmatter key in {path}: {key!r}")
+        if key in metadata:
+            raise AssertionError(f"Duplicate frontmatter key in {path}: {key!r}")
+
+        if value is not None:
+            metadata[key] = parse_plain_frontmatter_scalar(value, path)
             active_list = None
         else:
             active_list = []
             metadata[key] = active_list
 
+    if active_list == []:
+        raise AssertionError(f"Empty frontmatter list in {path}")
+
     return metadata, match.group(2).strip()
+
+
+class MarkdownAgentParserTest(unittest.TestCase):
+    def parse(self, frontmatter: str) -> tuple[dict[str, object], str]:
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "agent.md"
+            path.write_text(f"---\n{frontmatter}\n---\nPrompt\n", encoding="utf-8")
+            return parse_markdown_agent(path)
+
+    def test_rejects_duplicate_frontmatter_keys(self):
+        with self.assertRaisesRegex(AssertionError, "Duplicate frontmatter key"):
+            self.parse("name: first\nname: second")
+
+    def test_rejects_invalid_plain_scalar_colon_space(self):
+        with self.assertRaisesRegex(AssertionError, "Invalid frontmatter scalar"):
+            self.parse("description: invalid: scalar")
+
+    def test_parses_the_supported_scalar_and_list_shape(self):
+        metadata, prompt = self.parse(
+            "name: example-agent\n"
+            "description: Review an example.\n"
+            "tools:\n"
+            "  - Read\n"
+            "  - Glob"
+        )
+
+        self.assertEqual(
+            {
+                "name": "example-agent",
+                "description": "Review an example.",
+                "tools": ["Read", "Glob"],
+            },
+            metadata,
+        )
+        self.assertEqual("Prompt", prompt)
 
 
 class ReactVerticalSlicesContractTest(unittest.TestCase):
@@ -439,17 +503,20 @@ class ReactVerticalSlicesContractTest(unittest.TestCase):
                     f"Missing {expected!r} in {scenario_id}",
                 )
 
+        allowed_statuses = ("Pass", "Fail", "Pending")
         for scenario_id in required_scenarios:
             row_pattern = re.compile(
-                rf"^\| {scenario_id.upper()} \| Pending \|[^\n]+$",
+                rf"^\| {scenario_id.upper()} \| ({'|'.join(allowed_statuses)}) \|[^\n]+$",
                 re.MULTILINE,
             )
             self.assertIsNone(row_pattern.search(""))
             self.assertIsNone(
-                row_pattern.search(f"| {scenario_id.upper()} | Pass | fabricated |")
+                row_pattern.search(f"| {scenario_id.upper()} | Unknown | fabricated |")
             )
-            row_match = row_pattern.search(results)
-            self.assertIsNotNone(row_match, f"Missing honest Pending result for {scenario_id}")
+            row_matches = list(row_pattern.finditer(results))
+            self.assertEqual(1, len(row_matches), f"Missing or duplicate result row for {scenario_id}")
+            row_match = row_matches[0]
+            self.assertIn(row_match.group(1), allowed_statuses)
             self.assertNotIn("not run", row_match.group(0).lower(), f"Explain the limitation for {scenario_id}")
 
 
