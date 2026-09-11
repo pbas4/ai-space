@@ -24,6 +24,25 @@ FRONTMATTER_KEY = re.compile(r"[a-z][a-z0-9_-]*\Z")
 PLAIN_FRONTMATTER_SCALAR = re.compile(r"[A-Za-z0-9][^\r\n]*\Z")
 
 
+def find_scenario_result_rows(results: str, scenario_id: str) -> list[re.Match[str]]:
+    return list(
+        re.finditer(
+            rf"^\|\s*{re.escape(scenario_id.upper())}\s*\|\s*([^|\n]+?)\s*\|[^\n]+$",
+            results,
+            re.MULTILINE,
+        )
+    )
+
+
+def require_unique_scenario_result_row(
+    results: str, scenario_id: str
+) -> re.Match[str]:
+    row_matches = find_scenario_result_rows(results, scenario_id)
+    if len(row_matches) != 1:
+        raise AssertionError(f"Missing or duplicate result row for {scenario_id}")
+    return row_matches[0]
+
+
 def parse_plain_frontmatter_scalar(value: str, path: Path) -> str:
     if (
         PLAIN_FRONTMATTER_SCALAR.fullmatch(value) is None
@@ -108,6 +127,19 @@ class MarkdownAgentParserTest(unittest.TestCase):
             metadata,
         )
         self.assertEqual("Prompt", prompt)
+
+
+class BehaviorResultsContractTest(unittest.TestCase):
+    def test_valid_and_invalid_status_rows_are_rejected_as_duplicates(self):
+        results = (
+            "| Scenario | Status | Observation |\n"
+            "| --- | --- | --- |\n"
+            "| VS-22 | Pending | Awaiting a Claude CLI run. |\n"
+            "| VS-22 | Unknown | Duplicate with an invalid status. |\n"
+        )
+
+        with self.assertRaisesRegex(AssertionError, "duplicate result row"):
+            require_unique_scenario_result_row(results, "vs-22")
 
 
 class ReactVerticalSlicesContractTest(unittest.TestCase):
@@ -505,18 +537,8 @@ class ReactVerticalSlicesContractTest(unittest.TestCase):
 
         allowed_statuses = ("Pass", "Fail", "Pending")
         for scenario_id in required_scenarios:
-            row_pattern = re.compile(
-                rf"^\| {scenario_id.upper()} \| ({'|'.join(allowed_statuses)}) \|[^\n]+$",
-                re.MULTILINE,
-            )
-            self.assertIsNone(row_pattern.search(""))
-            self.assertIsNone(
-                row_pattern.search(f"| {scenario_id.upper()} | Unknown | fabricated |")
-            )
-            row_matches = list(row_pattern.finditer(results))
-            self.assertEqual(1, len(row_matches), f"Missing or duplicate result row for {scenario_id}")
-            row_match = row_matches[0]
-            self.assertIn(row_match.group(1), allowed_statuses)
+            row_match = require_unique_scenario_result_row(results, scenario_id)
+            self.assertIn(row_match.group(1).strip(), allowed_statuses)
             self.assertNotIn("not run", row_match.group(0).lower(), f"Explain the limitation for {scenario_id}")
 
 
