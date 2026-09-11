@@ -47,6 +47,7 @@ def parse_plain_frontmatter_scalar(value: str, path: Path) -> str:
     if (
         PLAIN_FRONTMATTER_SCALAR.fullmatch(value) is None
         or ": " in value
+        or value.endswith(":")
         or " #" in value
     ):
         raise AssertionError(f"Invalid frontmatter scalar in {path}: {value!r}")
@@ -108,6 +109,10 @@ class MarkdownAgentParserTest(unittest.TestCase):
     def test_rejects_invalid_plain_scalar_colon_space(self):
         with self.assertRaisesRegex(AssertionError, "Invalid frontmatter scalar"):
             self.parse("description: invalid: scalar")
+
+    def test_rejects_invalid_plain_scalar_terminal_colon(self):
+        with self.assertRaisesRegex(AssertionError, "Invalid frontmatter scalar"):
+            self.parse("description: invalid:")
 
     def test_parses_the_supported_scalar_and_list_shape(self):
         metadata, prompt = self.parse(
@@ -287,10 +292,16 @@ class ReactVerticalSlicesContractTest(unittest.TestCase):
             self.assertIn("preloaded `react-vertical-slices` skill", prompt)
             self.assertIn("unavailable", prompt.lower())
 
-        reviewer_contract = reviewer_prompt.lower()
+        reviewer_contract = " ".join(reviewer_prompt.lower().split())
         for expected in (
             "plan-review",
             "implementation-review",
+            "assess capability ownership",
+            "public boundaries",
+            "dependency direction",
+            "sharing",
+            "migration scope",
+            "use exactly one verdict",
             "approved",
             "changes_required",
             "blocked",
@@ -301,6 +312,8 @@ class ReactVerticalSlicesContractTest(unittest.TestCase):
             "remaining risks",
             "read-only",
             "never approve your own exceptions",
+            "keep existing debt separate from required corrections",
+            "do not expand the requested scope",
         ):
             self.assertIn(expected, reviewer_contract)
 
