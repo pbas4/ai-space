@@ -193,6 +193,20 @@ class BehaviorResultsContractTest(unittest.TestCase):
 
 
 class PromptSentenceContractTest(unittest.TestCase):
+    def test_negated_reviewer_scope_rule_does_not_satisfy_contract(self):
+        prompt = (
+            "Do not keep existing debt separate from corrections and do not "
+            "expand the requested scope."
+        )
+
+        with self.assertRaisesRegex(AssertionError, "Missing exact prompt sentences"):
+            require_exact_prompt_sentences(
+                prompt,
+                (
+                    "Keep existing debt separate from corrections and do not expand the requested scope.",
+                ),
+            )
+
     def test_negated_or_opposite_migration_rules_do_not_satisfy_contract(self):
         prompt = (
             "Do not act only after an explicit implementation request and an "
@@ -355,30 +369,17 @@ class ReactVerticalSlicesContractTest(unittest.TestCase):
             self.assertIn("preloaded `react-vertical-slices` skill", prompt)
             self.assertIn("unavailable", prompt.lower())
 
-        reviewer_contract = " ".join(reviewer_prompt.lower().split())
-        for expected in (
-            "plan-review",
-            "implementation-review",
-            "assess capability ownership",
-            "public boundaries",
-            "dependency direction",
-            "sharing",
-            "migration scope",
-            "use exactly one verdict",
-            "approved",
-            "changes_required",
-            "blocked",
-            "blocking violations",
-            "non-blocking improvements",
-            "existing debt",
-            "required corrections",
-            "remaining risks",
-            "read-only",
-            "never approve your own exceptions",
-            "keep existing debt separate from required corrections",
-            "do not expand the requested scope",
-        ):
-            self.assertIn(expected, reviewer_contract)
+        require_exact_prompt_sentences(
+            reviewer_prompt,
+            (
+                "Work in plan-review or implementation-review mode as requested.",
+                "Remain read-only and never approve your own exceptions.",
+                "Assess capability ownership, public boundaries, dependency direction, sharing, and migration scope.",
+                "Use exactly one verdict: `approved`, `changes_required`, or `blocked`.",
+                "Return: Blocking violations, Non-blocking improvements, Existing debt, Required corrections, and Remaining risks.",
+                "Keep existing debt separate from corrections and do not expand the requested scope.",
+            ),
+        )
 
         migrator_contract = " ".join(migrator_prompt.lower().split())
         require_exact_prompt_sentences(
