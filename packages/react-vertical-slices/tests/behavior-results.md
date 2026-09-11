@@ -34,11 +34,13 @@ general separation-of-concerns principle.
 
 ## Post-skill results
 
-The same ten prompts were repeated in fresh Codex contexts with the shared skill
-enabled. The evaluator read only the reference routed by `SKILL.md` for each
-prompt.
+The first ten prompts were repeated in fresh Codex contexts with the shared
+skill enabled. The evaluator read only the reference routed by `SKILL.md` for
+each prompt. VS-11 through VS-21 are pending template scenarios that can be run
+in either supported client. VS-22 through VS-24 are Claude Code-specific plugin
+scenarios and remain pending because the Claude CLI was unavailable.
 
-| Scenario | Codex with skill | Observation |
+| Scenario | With skill | Observation |
 | --- | --- | --- |
 | VS-01 | Pass | Chose a capability-owned slice, a single public entry, and only folders backed by files. |
 | VS-02 | Pass | Put application-aware coordination in `containers/` and kept reusable rendering props-only in `components/`. |
@@ -63,7 +65,7 @@ prompt.
 | VS-21 | Pending | Requires an approved migration project with runnable targeted verification, type, and static checks. |
 | VS-22 | Pending | Requires a Claude CLI fresh-context run to observe plugin discovery and scoped invocation. |
 | VS-23 | Pending | Requires a Claude CLI run to verify the reviewer exposes only read-only tools and refuses edits. |
-| VS-24 | Pending | Requires a Claude CLI run without approval to observe the migrator making no file changes. |
+| VS-24 | Pending | Requires a Claude CLI assessment-only run without an explicit request or approved plan to observe no editing or delegation. |
 
 ## Repeated high-risk samples
 

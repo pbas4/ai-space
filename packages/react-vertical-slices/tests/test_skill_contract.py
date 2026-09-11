@@ -43,6 +43,20 @@ def require_unique_scenario_result_row(
     return row_matches[0]
 
 
+def require_exact_prompt_sentences(prompt: str, required: tuple[str, ...]) -> None:
+    normalized_prompt = " ".join(prompt.split())
+    prompt_sentences = {
+        sentence.strip().casefold()
+        for sentence in re.split(r"(?<=[.!?])\s+", normalized_prompt)
+        if sentence.strip()
+    }
+    missing = [
+        sentence for sentence in required if sentence.casefold() not in prompt_sentences
+    ]
+    if missing:
+        raise AssertionError(f"Missing exact prompt sentences: {missing!r}")
+
+
 def parse_plain_frontmatter_scalar(value: str, path: Path) -> str:
     if (
         PLAIN_FRONTMATTER_SCALAR.fullmatch(value) is None
@@ -60,9 +74,13 @@ def parse_markdown_agent(path: Path) -> tuple[dict[str, object], str]:
     if match is None:
         raise AssertionError(f"Invalid agent frontmatter: {path}")
 
+    frontmatter = match.group(1)
+    if "\t" in frontmatter:
+        raise AssertionError(f"Tabs are not supported in agent frontmatter: {path}")
+
     metadata: dict[str, object] = {}
     active_list: list[str] | None = None
-    for line in match.group(1).splitlines():
+    for line in frontmatter.splitlines():
         if line.startswith("  - "):
             if active_list is None:
                 raise AssertionError(f"Unexpected frontmatter list item in {path}: {line!r}")
@@ -114,6 +132,19 @@ class MarkdownAgentParserTest(unittest.TestCase):
         with self.assertRaisesRegex(AssertionError, "Invalid frontmatter scalar"):
             self.parse("description: invalid:")
 
+    def test_rejects_tabs_anywhere_in_frontmatter(self):
+        invalid_frontmatter = (
+            "name:\texample-agent",
+            "description: Review\tan example.",
+            "tools:\n\t- Read",
+            "tools:\n  - Re\tad",
+        )
+
+        for frontmatter in invalid_frontmatter:
+            with self.subTest(frontmatter=frontmatter):
+                with self.assertRaisesRegex(AssertionError, "Tab"):
+                    self.parse(frontmatter)
+
     def test_parses_the_supported_scalar_and_list_shape(self):
         metadata, prompt = self.parse(
             "name: example-agent\n"
@@ -145,6 +176,38 @@ class BehaviorResultsContractTest(unittest.TestCase):
 
         with self.assertRaisesRegex(AssertionError, "duplicate result row"):
             require_unique_scenario_result_row(results, "vs-22")
+
+    def test_post_skill_status_column_is_cross_client(self):
+        results = (PACKAGE_ROOT / "tests" / "behavior-results.md").read_text(
+            encoding="utf-8"
+        )
+
+        self.assertIn("| Scenario | With skill | Observation |", results)
+        self.assertNotIn("| Scenario | Codex with skill | Observation |", results)
+        self.assertIn(
+            "VS-22 through VS-24 are Claude Code-specific plugin", results
+        )
+        for scenario_id in ("vs-22", "vs-23", "vs-24"):
+            row = require_unique_scenario_result_row(results, scenario_id)
+            self.assertIn("Claude CLI", row.group(0))
+
+
+class PromptSentenceContractTest(unittest.TestCase):
+    def test_negated_or_opposite_migration_rules_do_not_satisfy_contract(self):
+        prompt = (
+            "Do not act only after an explicit implementation request and an "
+            "approved architecture plan. Continue on ambiguity, conflict, or "
+            "unapproved expansion."
+        )
+
+        with self.assertRaisesRegex(AssertionError, "Missing exact prompt sentences"):
+            require_exact_prompt_sentences(
+                prompt,
+                (
+                    "Act only after an explicit implementation request and an approved architecture plan.",
+                    "Stop on ambiguity, conflict, or unapproved expansion.",
+                ),
+            )
 
 
 class ReactVerticalSlicesContractTest(unittest.TestCase):
@@ -318,6 +381,17 @@ class ReactVerticalSlicesContractTest(unittest.TestCase):
             self.assertIn(expected, reviewer_contract)
 
         migrator_contract = " ".join(migrator_prompt.lower().split())
+        require_exact_prompt_sentences(
+            migrator_prompt,
+            (
+                "Act only after an explicit implementation request and an approved architecture plan.",
+                "Require the target subtree, approved boundaries, expected public API, behaviour constraints, and verification expectations before work.",
+                "Implement one agreed migration unit.",
+                "Preserve behaviour, styling, and public contracts.",
+                "Stop on ambiguity, conflict, or unapproved expansion.",
+                "Return: Changed areas, Verification, and Remaining risks.",
+            ),
+        )
         for expected in (
             "explicit implementation request",
             "approved architecture plan",
@@ -526,7 +600,12 @@ class ReactVerticalSlicesContractTest(unittest.TestCase):
             "vs-21": ("actually runs", "remaining risks"),
             "vs-22": ("plugin discovery", "scoped invocation"),
             "vs-23": ("read", "grep", "glob", "refuses to edit"),
-            "vs-24": ("approved architecture plan", "makes no file changes"),
+            "vs-24": (
+                "no explicit implementation request",
+                "no approved architecture plan",
+                "makes no file changes",
+                "does not delegate",
+            ),
         }
 
         scenario_sections = {}
