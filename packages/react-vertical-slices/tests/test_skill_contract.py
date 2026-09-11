@@ -14,6 +14,36 @@ AGENT_PATHS = (
     AGENT_ROOT / "react_vertical_slices_reviewer.toml",
     AGENT_ROOT / "react_vertical_slices_migrator.toml",
 )
+CLAUDE_AGENT_PATHS = (
+    AGENT_ROOT / "react-vertical-slices-reviewer.md",
+    AGENT_ROOT / "react-vertical-slices-migrator.md",
+)
+ALL_AGENT_PATHS = (*AGENT_PATHS, *CLAUDE_AGENT_PATHS)
+
+
+def parse_markdown_agent(path: Path) -> tuple[dict[str, object], str]:
+    text = path.read_text(encoding="utf-8")
+    match = re.match(r"\A---\n(.*?)\n---\n(.*)\Z", text, re.DOTALL)
+    if match is None:
+        raise AssertionError(f"Invalid agent frontmatter: {path}")
+
+    metadata: dict[str, object] = {}
+    active_list: list[str] | None = None
+    for line in match.group(1).splitlines():
+        if line.startswith("  - ") and active_list is not None:
+            active_list.append(line[4:])
+            continue
+
+        key, value = line.split(":", 1)
+        value = value.strip()
+        if value:
+            metadata[key] = value
+            active_list = None
+        else:
+            active_list = []
+            metadata[key] = active_list
+
+    return metadata, match.group(2).strip()
 
 
 class ReactVerticalSlicesContractTest(unittest.TestCase):
@@ -22,6 +52,8 @@ class ReactVerticalSlicesContractTest(unittest.TestCase):
             ".claude-plugin/plugin.json",
             ".codex-plugin/plugin.json",
             "README.md",
+            "agents/react-vertical-slices-reviewer.md",
+            "agents/react-vertical-slices-migrator.md",
             "agents/react_vertical_slices_reviewer.toml",
             "agents/react_vertical_slices_migrator.toml",
             "skills/react-vertical-slices/SKILL.md",
@@ -123,6 +155,81 @@ class ReactVerticalSlicesContractTest(unittest.TestCase):
             {agent["name"] for agent in parsed_agents},
         )
 
+    def test_claude_agents_use_native_names_tools_and_shared_skill(self):
+        reviewer, reviewer_prompt = parse_markdown_agent(CLAUDE_AGENT_PATHS[0])
+        migrator, migrator_prompt = parse_markdown_agent(CLAUDE_AGENT_PATHS[1])
+
+        self.assertEqual("react-vertical-slices-reviewer", reviewer["name"])
+        self.assertEqual("react-vertical-slices-migrator", migrator["name"])
+        self.assertNotIn("model", reviewer)
+        self.assertNotIn("model", migrator)
+        self.assertEqual(["react-vertical-slices"], reviewer["skills"])
+        self.assertEqual(["react-vertical-slices"], migrator["skills"])
+        self.assertEqual(["Read", "Grep", "Glob"], reviewer["tools"])
+        self.assertEqual(
+            ["Read", "Grep", "Glob", "Write", "Edit", "Bash"],
+            migrator["tools"],
+        )
+        self.assertIn("approved architecture plan", migrator_prompt.lower())
+        self.assertIn("changes_required", reviewer_prompt.lower())
+
+    def test_claude_agents_are_portable_and_match_codex_behavior_contracts(self):
+        reviewer, reviewer_prompt = parse_markdown_agent(CLAUDE_AGENT_PATHS[0])
+        migrator, migrator_prompt = parse_markdown_agent(CLAUDE_AGENT_PATHS[1])
+
+        for path, metadata, prompt in (
+            (CLAUDE_AGENT_PATHS[0], reviewer, reviewer_prompt),
+            (CLAUDE_AGENT_PATHS[1], migrator, migrator_prompt),
+        ):
+            self.assertTrue(path.is_file())
+            self.assertFalse(path.is_symlink())
+            self.assertEqual({"name", "description", "tools", "skills"}, metadata.keys())
+            self.assertIsInstance(metadata["description"], str)
+            self.assertTrue(prompt)
+            self.assertIn("CLAUDE.md", prompt)
+            self.assertIn("AGENTS.md", prompt)
+            self.assertIn("preloaded `react-vertical-slices` skill", prompt)
+            self.assertIn("unavailable", prompt.lower())
+
+        reviewer_contract = reviewer_prompt.lower()
+        for expected in (
+            "plan-review",
+            "implementation-review",
+            "approved",
+            "changes_required",
+            "blocked",
+            "blocking violations",
+            "non-blocking improvements",
+            "existing debt",
+            "required corrections",
+            "remaining risks",
+            "read-only",
+            "never approve your own exceptions",
+        ):
+            self.assertIn(expected, reviewer_contract)
+
+        migrator_contract = " ".join(migrator_prompt.lower().split())
+        for expected in (
+            "explicit implementation request",
+            "approved architecture plan",
+            "target subtree",
+            "approved boundaries",
+            "expected public api",
+            "behaviour constraints",
+            "verification expectations",
+            "one agreed migration unit",
+            "preserve behaviour",
+            "styling",
+            "public contracts",
+            "ambiguity",
+            "conflict",
+            "unapproved expansion",
+            "changed areas",
+            "verification",
+            "remaining risks",
+        ):
+            self.assertIn(expected, migrator_contract)
+
     def test_agent_templates_have_no_external_integration_keys_or_urls(self):
         forbidden = re.compile(
             r"https?://|www\.|api[_ -]?key|(?:access|refresh|client)[_ -]?(?:token|secret|key|id)|bearer\s+|secret|webhook|mcp",
@@ -137,7 +244,7 @@ class ReactVerticalSlicesContractTest(unittest.TestCase):
         ):
             self.assertIsNotNone(forbidden.search(external_detail))
 
-        for path in AGENT_PATHS:
+        for path in ALL_AGENT_PATHS:
             text = path.read_text(encoding="utf-8")
             self.assertIsNone(forbidden.search(text), f"External integration detail found in {path}")
 
@@ -308,6 +415,9 @@ class ReactVerticalSlicesContractTest(unittest.TestCase):
             "vs-19": ("ambiguity", "conflict", "unapproved expansion"),
             "vs-20": ("unrelated debt", "does not fix"),
             "vs-21": ("actually runs", "remaining risks"),
+            "vs-22": ("plugin discovery", "scoped invocation"),
+            "vs-23": ("read", "grep", "glob", "refuses to edit"),
+            "vs-24": ("approved architecture plan", "makes no file changes"),
         }
 
         scenario_sections = {}

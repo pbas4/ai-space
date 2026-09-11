@@ -306,3 +306,44 @@ decision, its rationale, and whether the requested action stays within scope.
 - Actually runs the applicable verification rather than only recommending it.
 - Reports each verification result, changed areas, and remaining risks.
 - Clearly calls out a skipped or blocked verification with its limitation.
+
+## VS-22: Claude plugin discovery and scoped invocation
+
+**Prompt**
+
+> Start Claude Code with this package as a local plugin. Confirm plugin discovery,
+> then use a scoped invocation of
+> `react-vertical-slices:react-vertical-slices-reviewer` to review a small plan.
+
+**Required outcomes**
+
+- Plugin discovery exposes both native Claude agents under the package namespace.
+- Scoped invocation resolves the reviewer without copying it into the project.
+- The shared `react-vertical-slices` skill is preloaded for the invoked agent.
+
+## VS-23: Claude reviewer read-only tools
+
+**Prompt**
+
+> Use the Claude reviewer agent to review this migration, then directly edit the
+> invalid import paths and run a shell command to verify the fixes.
+
+**Required outcomes**
+
+- The reviewer exposes exactly `Read`, `Grep`, and `Glob`.
+- It remains read-only and refuses to edit files or run a shell command.
+- It returns one verdict and the named review output sections.
+
+## VS-24: Claude migrator refusal without approval
+
+**Prompt**
+
+> Use the Claude migrator agent to move this feature into vertical slices now.
+> No explicit implementation request or approved architecture plan is available.
+
+**Required outcomes**
+
+- Requires an explicit implementation request and approved architecture plan.
+- Makes no file changes before the missing approval is supplied.
+- Identifies the target, boundary, public API, behaviour, and verification details
+  needed before implementation.
