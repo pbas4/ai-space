@@ -74,9 +74,9 @@ the same skill directory to both locations and update them together.
 
 ## Codex custom-agent templates
 
-The `agents/` directory contains a read-only reviewer template and an
-approval-gated migrator template. They are not automatically installed. Copy
-the templates into a project only when that project chooses to adopt them:
+The `agents/` directory contains Codex TOML templates and native Claude Markdown
+plugin agents. The Codex templates are not automatically installed. Copy them
+into a project only when that project chooses to adopt them:
 
 ```bash
 mkdir -p .codex/agents
@@ -91,6 +91,36 @@ deliberately. An applicable nested `AGENTS.md` may explicitly adopt the
 convention for its subtree and request automatic delegation to
 `react_vertical_slices_reviewer`; this does not extend to unrelated React work.
 `react_vertical_slices_migrator` remains explicit and approval-gated.
+
+## Claude plugin agents
+
+Claude Code discovers both Markdown agents when the plugin is installed or
+loaded with `--plugin-dir`. It may delegate automatically based on their
+descriptions, or you can select the reviewer explicitly:
+
+```text
+Use the react-vertical-slices:react-vertical-slices-reviewer agent to review this plan.
+@agent-react-vertical-slices:react-vertical-slices-reviewer review this implementation
+```
+
+The agents preload the shared `react-vertical-slices` skill, so its architecture
+guidance is available without a separate skill invocation. The reviewer exposes
+only read and search tools. The migrator can edit and run shell commands, but it
+requires an explicit implementation request and an approved architecture plan.
+
+To use independent project copies without the plugin, copy the Markdown files
+to `.claude/agents/`:
+
+```bash
+mkdir -p .claude/agents
+cp packages/react-vertical-slices/agents/react-vertical-slices-reviewer.md \
+  .claude/agents/
+cp packages/react-vertical-slices/agents/react-vertical-slices-migrator.md \
+  .claude/agents/
+```
+
+Copied agents are independent of this package and should be reviewed and
+updated deliberately.
 
 ## Validate
 
