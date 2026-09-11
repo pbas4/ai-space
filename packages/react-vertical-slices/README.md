@@ -9,8 +9,10 @@ differently.
 
 ## Use it
 
-- Codex: invoke `$react-vertical-slices` or describe matching React architecture
-  work and allow automatic selection.
+- Codex: invoke `$react-vertical-slices` explicitly, or use it when the
+  applicable `AGENTS.md` explicitly adopts the convention for the target area.
+  It is not inferred from unrelated React work. `allow_implicit_invocation`
+  remains disabled; an adopted-area instruction deliberately directs its use.
 - Claude Code plugin: invoke
   `/react-vertical-slices:react-vertical-slices`.
 - Claude Code personal skill: invoke `/react-vertical-slices`.
@@ -69,6 +71,26 @@ ln -s ../../.agents/skills/react-vertical-slices \
 
 This keeps one source of truth. If the repository does not permit symlinks, copy
 the same skill directory to both locations and update them together.
+
+## Codex custom-agent templates
+
+The `agents/` directory contains a read-only reviewer template and an
+approval-gated migrator template. They are not automatically installed. Copy
+the templates into a project only when that project chooses to adopt them:
+
+```bash
+mkdir -p .codex/agents
+cp packages/react-vertical-slices/agents/react_vertical_slices_reviewer.toml \
+  .codex/agents/
+cp packages/react-vertical-slices/agents/react_vertical_slices_migrator.toml \
+  .codex/agents/
+```
+
+A copied project version is independent of this package; review and update it
+deliberately. An applicable nested `AGENTS.md` may explicitly adopt the
+convention for its subtree and request automatic delegation to
+`react_vertical_slices_reviewer`; this does not extend to unrelated React work.
+`react_vertical_slices_migrator` remains explicit and approval-gated.
 
 ## Validate
 

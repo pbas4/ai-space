@@ -9,6 +9,15 @@ Organize React code around capabilities that users recognize. Keep code that
 changes together under one owner, expose narrow public entries, and make
 dependency direction visible.
 
+## Invocation scope
+
+Use this skill when the user explicitly asks for `$react-vertical-slices`, or
+when the applicable `AGENTS.md` explicitly adopts this convention for the
+target area. Do not infer its use from unrelated React work, even if the request
+mentions features, folders, components, or imports. An adopted-area instruction
+is a deliberate authorization to use the skill; it does not make unrelated
+areas adopted.
+
 ## Start with the request
 
 1. Identify whether the user wants an explanation, plan, implementation, or

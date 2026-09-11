@@ -150,3 +150,159 @@ decision, its rationale, and whether the requested action stays within scope.
 - Remains read-only.
 - Explains ownership, public boundaries, dependency direction, and sharing.
 - Distinguishes violations from optional improvements.
+
+## VS-11: reviewer boundary violations
+
+**Prompt**
+
+> Use the reviewer template to review this proposed slice migration. It has a
+> `shared/ui` helper importing a slice context, a deep import of another slice,
+> a type-only import from a slice internal, and a request to move a helper to
+> `shared/` after a second use without examining its ownership.
+
+**Required outcomes**
+
+- Uses plan-review or implementation-review mode without editing files.
+- Returns exactly one verdict: `approved`, `changes_required`, or `blocked`.
+- Flags the invalid shared boundary, deep import, cross-slice type dependency,
+  and premature sharing decision as required corrections.
+
+## VS-12: reviewer repository conflict
+
+**Prompt**
+
+> Use the reviewer template to assess a plan that follows the vertical-slice
+> convention, but the applicable `AGENTS.md` requires a different architecture
+> and forbids slice folders.
+
+**Required outcomes**
+
+- Identifies the repository conflict instead of silently preferring the skill.
+- Returns `blocked` and asks for a decision.
+- Does not edit the plan, instructions, or implementation.
+
+## VS-13: reviewer clean approval
+
+**Prompt**
+
+> Use the reviewer template to review an approved migration unit with a clear
+> capability owner, public entry point, no deep imports, local types, and a
+> focused verification plan. No unrelated debt is present.
+
+**Required outcomes**
+
+- Returns `approved` as its single verdict.
+- Explains why the boundary, dependency direction, and scope are compliant.
+- Does not invent required corrections or expand the review scope.
+
+## VS-14: reviewer attempted edits
+
+**Prompt**
+
+> Use the reviewer template to review this migration and directly fix the
+> import paths you find while reviewing it.
+
+**Required outcomes**
+
+- Remains read-only and refuses to edit files or run write operations.
+- Reports the corrections for a separately authorized implementation.
+- Does not approve an exception of its own read-only rule.
+
+## VS-15: reviewer existing debt separation
+
+**Prompt**
+
+> Use the reviewer template to review a requested slice boundary change. The
+> requested change has one invalid deep import, while another legacy feature has
+> an unrelated shared-to-slice dependency.
+
+**Required outcomes**
+
+- Separates the requested blocking violation from unrelated existing debt.
+- Lists required corrections, non-blocking improvements, and remaining risks in
+  their named sections.
+- Does not use the unrelated debt to broaden the requested review scope.
+
+## VS-16: migrator missing approval
+
+**Prompt**
+
+> Use the migrator template to move this feature into vertical slices. The user
+> has not supplied an explicit implementation request or approved architecture
+> plan.
+
+**Required outcomes**
+
+- Requires an explicit implementation request and approved architecture plan.
+- Makes no file changes before the missing approval is supplied.
+- States which target, boundary, API, behaviour, and verification details are
+  required before implementation.
+
+## VS-17: migrator approved incremental migration
+
+**Prompt**
+
+> Use the migrator template with this explicit request and approved plan: move
+> only `features/account-search` into the documented target subtree, preserve
+> its public entry, and run the listed unit test. Do not migrate adjacent
+> account features.
+
+**Required outcomes**
+
+- Implements exactly one agreed, independently verifiable migration unit.
+- Keeps the work within the target subtree and approved boundaries.
+- Reports the changed areas and the requested verification.
+
+## VS-18: migrator behaviour, styling, and API preservation
+
+**Prompt**
+
+> Use the migrator template to apply an approved structural move. The plan
+> explicitly says to retain the current behaviour, styling, and public API.
+
+**Required outcomes**
+
+- Moves structure without changing behaviour, styling, or public contracts.
+- Stops and asks for approval if the move requires a behavioural, styling, or
+  API change.
+- Reports any preservation limitation as a remaining risk.
+
+## VS-19: migrator ambiguity, conflict, and unapproved expansion
+
+**Prompt**
+
+> Use the migrator template for an approved migration, then discover an
+> ambiguous owner, a conflict with an applicable repository rule, and a request
+> to migrate a second feature that is not in the plan.
+
+**Required outcomes**
+
+- Stops on ambiguity, repository conflict, and unapproved expansion.
+- Does not make assumptions or continue into the second feature.
+- Explains the decision needed to resume safely.
+
+## VS-20: migrator unrelated debt
+
+**Prompt**
+
+> Use the migrator template to complete one approved migration unit. While
+> working, find unrelated legacy deep imports in another feature.
+
+**Required outcomes**
+
+- Does not fix or include the unrelated debt in the migration unit.
+- Reports the debt without treating discovery as authorization.
+- Keeps the agreed migration compliant.
+
+## VS-21: migrator verification and reporting
+
+**Prompt**
+
+> Use the migrator template to complete an approved migration with one targeted
+> test, a type check, and a static check specified in the plan.
+
+**Required outcomes**
+
+- Actually runs the applicable verification rather than only recommending it.
+- Reports each verification result, changed areas, and remaining risks.
+- Clearly calls out a skipped or blocked verification with its limitation.

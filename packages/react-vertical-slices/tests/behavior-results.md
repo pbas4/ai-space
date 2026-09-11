@@ -50,6 +50,17 @@ prompt.
 | VS-08 | Pass | Preserved behaviour and public contracts while proposing independently verifiable migration units. |
 | VS-09 | Pass | Kept changed code compliant and reported unrelated violations without expanding scope. |
 | VS-10 | Pass | Stayed read-only and assessed ownership, public boundaries, dependency direction, and sharing. |
+| VS-11 | Pending | Requires the reviewer template in an adopted project and a fresh-context boundary-violation review. |
+| VS-12 | Pending | Requires the reviewer template in a project whose applicable instructions intentionally conflict with this convention. |
+| VS-13 | Pending | Requires the reviewer template in an adopted project with a clean, reviewable migration unit. |
+| VS-14 | Pending | Requires a fresh-context reviewer run with a request to edit, so read-only enforcement can be observed. |
+| VS-15 | Pending | Requires the reviewer template in a project containing both in-scope violations and separate legacy debt. |
+| VS-16 | Pending | Requires the migrator template in an adopted project without the required implementation approval. |
+| VS-17 | Pending | Requires the migrator template in a project with an explicit request and one approved migration unit. |
+| VS-18 | Pending | Requires an approved structural migration with observable behaviour, styling, and public API baselines. |
+| VS-19 | Pending | Requires a migrator run that presents an ambiguity, repository conflict, and out-of-plan expansion. |
+| VS-20 | Pending | Requires an approved migration project containing unrelated legacy boundary debt. |
+| VS-21 | Pending | Requires an approved migration project with runnable targeted verification, type, and static checks. |
 
 ## Repeated high-risk samples
 
@@ -74,6 +85,9 @@ reasonable separation of concerns.
 - Claude Code was not installed on the test machine. Its baseline, post-skill,
   strict plugin validation, and command-discovery checks remain to be run in an
   environment with the Claude CLI.
+- VS-11 through VS-21 are documented template scenarios. Each remains pending
+  because the templates are deliberately not installed automatically and the
+  required fresh-context project fixtures have not yet been prepared.
 - These are instruction-following scenarios, not a measurement of long-term
   maintainability in a production codebase.
 - Repository-specific rules can intentionally prevent this architecture. The
