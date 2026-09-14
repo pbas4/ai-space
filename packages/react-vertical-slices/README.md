@@ -102,6 +102,17 @@ convention for its subtree and request automatic delegation to
 `react_vertical_slices_reviewer`; this does not extend to unrelated React work.
 `react_vertical_slices_migrator` remains explicit and approval-gated.
 
+The reviewer starts with an `approved`, `changes_required`, or `blocked` verdict,
+then separates evidence, required findings, improvements, existing debt,
+unverified claims, and remaining risks. Required findings include the violated
+rule, impact, correction, and concrete evidence.
+
+The migrator reports whether it is ready before editing. It checks the approved
+scope, working tree, public consumers, owned tests, and repository instructions;
+then implements one approved migration unit. Its final report records the
+baseline, exact verification results, deferred debt, risks, and a reviewer
+handoff.
+
 ## Claude plugin agents
 
 Claude Code discovers both Markdown agents when the plugin is installed or

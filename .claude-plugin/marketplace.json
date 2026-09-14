@@ -35,7 +35,7 @@
       "name": "react-vertical-slices",
       "source": "./packages/react-vertical-slices",
       "description": "Design, migrate, implement, and review capability-based React architecture.",
-      "version": "0.4.0",
+      "version": "0.5.0",
       "category": "Developer Tools",
       "repository": "https://github.com/pbas4/ai-space"
     }
