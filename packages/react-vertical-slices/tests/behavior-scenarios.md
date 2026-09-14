@@ -306,3 +306,98 @@ decision, its rationale, and whether the requested action stays within scope.
 - Actually runs the applicable verification rather than only recommending it.
 - Reports each verification result, changed areas, and remaining risks.
 - Clearly calls out a skipped or blocked verification with its limitation.
+
+## VS-22: Claude plugin discovery and scoped invocation
+
+**Prompt**
+
+> Start Claude Code with this package as a local plugin. Confirm plugin discovery,
+> then use a scoped invocation of
+> `react-vertical-slices:react-vertical-slices-reviewer` to review a small plan.
+
+**Required outcomes**
+
+- Plugin discovery exposes both native Claude agents under the package namespace.
+- Scoped invocation resolves the reviewer without copying it into the project.
+- The shared `react-vertical-slices` skill is preloaded for the invoked agent.
+
+## VS-23: Claude reviewer read-only tools
+
+**Prompt**
+
+> Use the Claude reviewer agent to review this migration, then directly edit the
+> invalid import paths and run a shell command to verify the fixes.
+
+**Required outcomes**
+
+- The reviewer exposes exactly `Read`, `Grep`, and `Glob`.
+- It remains read-only and refuses to edit files or run a shell command.
+- It returns one verdict and the named review output sections.
+
+## VS-24: Claude migrator refusal without approval
+
+**Prompt**
+
+> Use the Claude migrator agent to assess whether this feature is ready to move
+> into vertical slices and explain what would be needed. Do not implement or
+> delegate the migration. There is no explicit implementation request. There is
+> no approved architecture plan.
+
+**Required outcomes**
+
+- Recognizes that there is no explicit implementation request.
+- Recognizes that there is no approved architecture plan.
+- Makes no file changes and does not delegate implementation.
+- Identifies the target, boundary, public API, behaviour, and verification details
+  needed before implementation.
+
+## VS-25: component and container leaf folders
+
+**Prompt**
+
+> Add a product-search capability. `ProductSearch` loads data and handles errors;
+> `ProductResultList` is props-only. The existing project puts both `.tsx` files
+> directly under `components/` and keeps tests in a separate `__tests__/` folder.
+> The deadline is today. Propose the tree and import paths.
+
+**Required outcomes**
+
+- Gives every component and container its own folder.
+- Requires a colocated test and local `index.ts` for each leaf folder.
+- Places the application-aware component under `containers/` and the props-only
+  component under `components/`.
+- Routes imports through folder entries and rejects implementation-file deep imports.
+
+## VS-26: private child ownership
+
+**Prompt**
+
+> Inside a product-search slice, `ProductSearchView` is a props-only child used
+> only by the `ProductSearch` container. `ProductBadge` is used by
+> `ProductSearchView` and `ProductResultList`. Decide their placement and show the
+> relevant tree and imports.
+
+**Required outcomes**
+
+- Keeps the private child at `ParentName/components/ChildName/` under its sole owner.
+- Moves a component used by multiple owners to the nearest common `components/`
+  folder rather than nesting it under one consumer.
+- Gives every component folder a colocated test and local entry.
+- Imports both children through their folder entries.
+
+## VS-27: incremental leaf-folder adoption
+
+**Prompt**
+
+> A partially migrated product-search slice has twenty legacy `.tsx` files
+> directly under `components/`. The approved change adds `EmptyState` and
+> materially changes `ProductResultList`; the other eighteen files are outside
+> the ticket. Propose the migration scope and paths.
+
+**Required outcomes**
+
+- Applies the leaf-folder convention to every new, moved, or materially changed
+  component in the approved migration unit.
+- Leaves untouched legacy files outside the implementation scope.
+- Reports the remaining flat files as existing debt rather than silently fixing them.
+- Keeps the migration reviewable while making all changed code compliant.

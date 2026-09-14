@@ -34,11 +34,13 @@ general separation-of-concerns principle.
 
 ## Post-skill results
 
-The same ten prompts were repeated in fresh Codex contexts with the shared skill
-enabled. The evaluator read only the reference routed by `SKILL.md` for each
-prompt.
+The first ten prompts were repeated in fresh Codex contexts with the shared
+skill enabled. The evaluator read only the reference routed by `SKILL.md` for
+each prompt. VS-11 through VS-21 are pending template scenarios that can be run
+in either supported client. VS-22 through VS-24 are Claude Code-specific plugin
+scenarios and remain pending because the Claude CLI was unavailable.
 
-| Scenario | Codex with skill | Observation |
+| Scenario | With skill | Observation |
 | --- | --- | --- |
 | VS-01 | Pass | Chose a capability-owned slice, a single public entry, and only folders backed by files. |
 | VS-02 | Pass | Put application-aware coordination in `containers/` and kept reusable rendering props-only in `components/`. |
@@ -61,10 +63,16 @@ prompt.
 | VS-19 | Pending | Requires a migrator run that presents an ambiguity, repository conflict, and out-of-plan expansion. |
 | VS-20 | Pending | Requires an approved migration project containing unrelated legacy boundary debt. |
 | VS-21 | Pending | Requires an approved migration project with runnable targeted verification, type, and static checks. |
+| VS-22 | Pending | Requires a Claude CLI fresh-context run to observe plugin discovery and scoped invocation. |
+| VS-23 | Pending | Requires a Claude CLI run to verify the reviewer exposes only read-only tools and refuses edits. |
+| VS-24 | Pending | Requires a Claude CLI assessment-only run without an explicit request or approved plan to observe no editing or delegation. |
+| VS-25 | Pass | Five of five `0.4.0` runs used separate container/component leaf folders with colocated tests, local entries, and imports through those entries. |
+| VS-26 | Pass | Five of five `0.4.0` runs nested the single-owner child beneath its parent and placed the multi-owner component at the slice's nearest common `components/` folder. |
+| VS-27 | Pass | Five of five `0.4.0` runs migrated only the new and materially changed components to leaf folders and reported the untouched eighteen files as existing debt. |
 
 ## Repeated high-risk samples
 
-Four decisions were sampled five times in fresh Codex contexts with no guidance
+Seven decisions were sampled five times in fresh Codex contexts with no guidance
 and five times with the skill. A sample passed only when it made every required
 architectural decision; exact wording was not scored.
 
@@ -74,6 +82,9 @@ architectural decision; exact wording was not scored.
 | Cross-slice type ownership | 5/5 | 5/5 | The skill preserved already-strong reasoning and made the three valid resolutions explicit. |
 | Sharing after a second use | 5/5 | 5/5 | Both groups rejected count-based extraction; the skill supplied a stable decision checklist. |
 | Explicit repository conflict | 5/5 | 5/5 | Both groups surfaced the conflict and paused for approval. |
+| Strict component leaf folders | 0/5 | 5/5 | The skill consistently required a folder, colocated test, and local entry for every component and container. |
+| Private child ownership | 0/5 | 5/5 | The skill kept single-owner children beneath the parent and placed multi-owner components at their nearest common component folder. |
+| Touched-only leaf migration | 1/5 | 5/5 | The skill kept scope incremental while applying the leaf shape to all new and materially changed components. |
 
 The control result matters: this skill is not intended to replace general React
 judgement. Its value is making this particular architecture predictable,
@@ -85,7 +96,7 @@ reasonable separation of concerns.
 - Claude Code was not installed on the test machine. Its baseline, post-skill,
   strict plugin validation, and command-discovery checks remain to be run in an
   environment with the Claude CLI.
-- VS-11 through VS-21 are documented template scenarios. Each remains pending
+- VS-11 through VS-24 are documented template scenarios. Each remains pending
   because the templates are deliberately not installed automatically and the
   required fresh-context project fixtures have not yet been prepared.
 - These are instruction-following scenarios, not a measurement of long-term

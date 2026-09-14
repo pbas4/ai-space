@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 import re
+import tempfile
 import tomllib
 import unittest
 
@@ -14,6 +15,213 @@ AGENT_PATHS = (
     AGENT_ROOT / "react_vertical_slices_reviewer.toml",
     AGENT_ROOT / "react_vertical_slices_migrator.toml",
 )
+CLAUDE_AGENT_PATHS = (
+    AGENT_ROOT / "react-vertical-slices-reviewer.md",
+    AGENT_ROOT / "react-vertical-slices-migrator.md",
+)
+ALL_AGENT_PATHS = (*AGENT_PATHS, *CLAUDE_AGENT_PATHS)
+FRONTMATTER_KEY = re.compile(r"[a-z][a-z0-9_-]*\Z")
+PLAIN_FRONTMATTER_SCALAR = re.compile(r"[A-Za-z0-9][^\r\n]*\Z")
+
+
+def find_scenario_result_rows(results: str, scenario_id: str) -> list[re.Match[str]]:
+    return list(
+        re.finditer(
+            rf"^\|\s*{re.escape(scenario_id.upper())}\s*\|\s*([^|\n]+?)\s*\|[^\n]+$",
+            results,
+            re.MULTILINE,
+        )
+    )
+
+
+def require_unique_scenario_result_row(
+    results: str, scenario_id: str
+) -> re.Match[str]:
+    row_matches = find_scenario_result_rows(results, scenario_id)
+    if len(row_matches) != 1:
+        raise AssertionError(f"Missing or duplicate result row for {scenario_id}")
+    return row_matches[0]
+
+
+def require_exact_prompt_sentences(prompt: str, required: tuple[str, ...]) -> None:
+    normalized_prompt = " ".join(prompt.split())
+    prompt_sentences = {
+        sentence.strip().casefold()
+        for sentence in re.split(r"(?<=[.!?])\s+", normalized_prompt)
+        if sentence.strip()
+    }
+    missing = [
+        sentence for sentence in required if sentence.casefold() not in prompt_sentences
+    ]
+    if missing:
+        raise AssertionError(f"Missing exact prompt sentences: {missing!r}")
+
+
+def parse_plain_frontmatter_scalar(value: str, path: Path) -> str:
+    if (
+        PLAIN_FRONTMATTER_SCALAR.fullmatch(value) is None
+        or ": " in value
+        or value.endswith(":")
+        or " #" in value
+    ):
+        raise AssertionError(f"Invalid frontmatter scalar in {path}: {value!r}")
+    return value
+
+
+def parse_markdown_agent(path: Path) -> tuple[dict[str, object], str]:
+    text = path.read_text(encoding="utf-8")
+    match = re.match(r"\A---\n(.*?)\n---\n(.*)\Z", text, re.DOTALL)
+    if match is None:
+        raise AssertionError(f"Invalid agent frontmatter: {path}")
+
+    frontmatter = match.group(1)
+    if "\t" in frontmatter:
+        raise AssertionError(f"Tabs are not supported in agent frontmatter: {path}")
+
+    metadata: dict[str, object] = {}
+    active_list: list[str] | None = None
+    for line in frontmatter.splitlines():
+        if line.startswith("  - "):
+            if active_list is None:
+                raise AssertionError(f"Unexpected frontmatter list item in {path}: {line!r}")
+            active_list.append(parse_plain_frontmatter_scalar(line[4:], path))
+            continue
+
+        if active_list == []:
+            raise AssertionError(f"Empty frontmatter list in {path}")
+        active_list = None
+
+        key_match = re.fullmatch(r"([^:]+):(?: (.*))?", line)
+        if key_match is None:
+            raise AssertionError(f"Invalid frontmatter entry in {path}: {line!r}")
+        key, value = key_match.groups()
+        if FRONTMATTER_KEY.fullmatch(key) is None:
+            raise AssertionError(f"Invalid frontmatter key in {path}: {key!r}")
+        if key in metadata:
+            raise AssertionError(f"Duplicate frontmatter key in {path}: {key!r}")
+
+        if value is not None:
+            metadata[key] = parse_plain_frontmatter_scalar(value, path)
+            active_list = None
+        else:
+            active_list = []
+            metadata[key] = active_list
+
+    if active_list == []:
+        raise AssertionError(f"Empty frontmatter list in {path}")
+
+    return metadata, match.group(2).strip()
+
+
+class MarkdownAgentParserTest(unittest.TestCase):
+    def parse(self, frontmatter: str) -> tuple[dict[str, object], str]:
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "agent.md"
+            path.write_text(f"---\n{frontmatter}\n---\nPrompt\n", encoding="utf-8")
+            return parse_markdown_agent(path)
+
+    def test_rejects_duplicate_frontmatter_keys(self):
+        with self.assertRaisesRegex(AssertionError, "Duplicate frontmatter key"):
+            self.parse("name: first\nname: second")
+
+    def test_rejects_invalid_plain_scalar_colon_space(self):
+        with self.assertRaisesRegex(AssertionError, "Invalid frontmatter scalar"):
+            self.parse("description: invalid: scalar")
+
+    def test_rejects_invalid_plain_scalar_terminal_colon(self):
+        with self.assertRaisesRegex(AssertionError, "Invalid frontmatter scalar"):
+            self.parse("description: invalid:")
+
+    def test_rejects_tabs_anywhere_in_frontmatter(self):
+        invalid_frontmatter = (
+            "name:\texample-agent",
+            "description: Review\tan example.",
+            "tools:\n\t- Read",
+            "tools:\n  - Re\tad",
+        )
+
+        for frontmatter in invalid_frontmatter:
+            with self.subTest(frontmatter=frontmatter):
+                with self.assertRaisesRegex(AssertionError, "Tab"):
+                    self.parse(frontmatter)
+
+    def test_parses_the_supported_scalar_and_list_shape(self):
+        metadata, prompt = self.parse(
+            "name: example-agent\n"
+            "description: Review an example.\n"
+            "tools:\n"
+            "  - Read\n"
+            "  - Glob"
+        )
+
+        self.assertEqual(
+            {
+                "name": "example-agent",
+                "description": "Review an example.",
+                "tools": ["Read", "Glob"],
+            },
+            metadata,
+        )
+        self.assertEqual("Prompt", prompt)
+
+
+class BehaviorResultsContractTest(unittest.TestCase):
+    def test_valid_and_invalid_status_rows_are_rejected_as_duplicates(self):
+        results = (
+            "| Scenario | Status | Observation |\n"
+            "| --- | --- | --- |\n"
+            "| VS-22 | Pending | Awaiting a Claude CLI run. |\n"
+            "| VS-22 | Unknown | Duplicate with an invalid status. |\n"
+        )
+
+        with self.assertRaisesRegex(AssertionError, "duplicate result row"):
+            require_unique_scenario_result_row(results, "vs-22")
+
+    def test_post_skill_status_column_is_cross_client(self):
+        results = (PACKAGE_ROOT / "tests" / "behavior-results.md").read_text(
+            encoding="utf-8"
+        )
+
+        self.assertIn("| Scenario | With skill | Observation |", results)
+        self.assertNotIn("| Scenario | Codex with skill | Observation |", results)
+        self.assertIn(
+            "VS-22 through VS-24 are Claude Code-specific plugin", results
+        )
+        for scenario_id in ("vs-22", "vs-23", "vs-24"):
+            row = require_unique_scenario_result_row(results, scenario_id)
+            self.assertIn("Claude CLI", row.group(0))
+
+
+class PromptSentenceContractTest(unittest.TestCase):
+    def test_negated_reviewer_scope_rule_does_not_satisfy_contract(self):
+        prompt = (
+            "Do not keep existing debt separate from corrections and do not "
+            "expand the requested scope."
+        )
+
+        with self.assertRaisesRegex(AssertionError, "Missing exact prompt sentences"):
+            require_exact_prompt_sentences(
+                prompt,
+                (
+                    "Keep existing debt separate from corrections and do not expand the requested scope.",
+                ),
+            )
+
+    def test_negated_or_opposite_migration_rules_do_not_satisfy_contract(self):
+        prompt = (
+            "Do not act only after an explicit implementation request and an "
+            "approved architecture plan. Continue on ambiguity, conflict, or "
+            "unapproved expansion."
+        )
+
+        with self.assertRaisesRegex(AssertionError, "Missing exact prompt sentences"):
+            require_exact_prompt_sentences(
+                prompt,
+                (
+                    "Act only after an explicit implementation request and an approved architecture plan.",
+                    "Stop on ambiguity, conflict, or unapproved expansion.",
+                ),
+            )
 
 
 class ReactVerticalSlicesContractTest(unittest.TestCase):
@@ -22,6 +230,8 @@ class ReactVerticalSlicesContractTest(unittest.TestCase):
             ".claude-plugin/plugin.json",
             ".codex-plugin/plugin.json",
             "README.md",
+            "agents/react-vertical-slices-reviewer.md",
+            "agents/react-vertical-slices-migrator.md",
             "agents/react_vertical_slices_reviewer.toml",
             "agents/react_vertical_slices_migrator.toml",
             "skills/react-vertical-slices/SKILL.md",
@@ -51,7 +261,7 @@ class ReactVerticalSlicesContractTest(unittest.TestCase):
 
         for manifest in (claude, codex):
             self.assertEqual("react-vertical-slices", manifest["name"])
-            self.assertEqual("0.2.0", manifest["version"])
+            self.assertEqual("0.4.0", manifest["version"])
             self.assertEqual("Pol", manifest["author"]["name"])
 
         self.assertEqual("./skills/", codex["skills"])
@@ -123,6 +333,87 @@ class ReactVerticalSlicesContractTest(unittest.TestCase):
             {agent["name"] for agent in parsed_agents},
         )
 
+    def test_claude_agents_use_native_names_tools_and_shared_skill(self):
+        reviewer, reviewer_prompt = parse_markdown_agent(CLAUDE_AGENT_PATHS[0])
+        migrator, migrator_prompt = parse_markdown_agent(CLAUDE_AGENT_PATHS[1])
+
+        self.assertEqual("react-vertical-slices-reviewer", reviewer["name"])
+        self.assertEqual("react-vertical-slices-migrator", migrator["name"])
+        self.assertNotIn("model", reviewer)
+        self.assertNotIn("model", migrator)
+        self.assertEqual(["react-vertical-slices"], reviewer["skills"])
+        self.assertEqual(["react-vertical-slices"], migrator["skills"])
+        self.assertEqual(["Read", "Grep", "Glob"], reviewer["tools"])
+        self.assertEqual(
+            ["Read", "Grep", "Glob", "Write", "Edit", "Bash"],
+            migrator["tools"],
+        )
+        self.assertIn("approved architecture plan", migrator_prompt.lower())
+        self.assertIn("changes_required", reviewer_prompt.lower())
+
+    def test_claude_agents_are_portable_and_match_codex_behavior_contracts(self):
+        reviewer, reviewer_prompt = parse_markdown_agent(CLAUDE_AGENT_PATHS[0])
+        migrator, migrator_prompt = parse_markdown_agent(CLAUDE_AGENT_PATHS[1])
+
+        for path, metadata, prompt in (
+            (CLAUDE_AGENT_PATHS[0], reviewer, reviewer_prompt),
+            (CLAUDE_AGENT_PATHS[1], migrator, migrator_prompt),
+        ):
+            self.assertTrue(path.is_file())
+            self.assertFalse(path.is_symlink())
+            self.assertEqual({"name", "description", "tools", "skills"}, metadata.keys())
+            self.assertIsInstance(metadata["description"], str)
+            self.assertTrue(prompt)
+            self.assertIn("CLAUDE.md", prompt)
+            self.assertIn("AGENTS.md", prompt)
+            self.assertIn("preloaded `react-vertical-slices` skill", prompt)
+            self.assertIn("unavailable", prompt.lower())
+
+        require_exact_prompt_sentences(
+            reviewer_prompt,
+            (
+                "Work in plan-review or implementation-review mode as requested.",
+                "Remain read-only and never approve your own exceptions.",
+                "Assess capability ownership, public boundaries, dependency direction, sharing, and migration scope.",
+                "Use exactly one verdict: `approved`, `changes_required`, or `blocked`.",
+                "Return: Blocking violations, Non-blocking improvements, Existing debt, Required corrections, and Remaining risks.",
+                "Keep existing debt separate from corrections and do not expand the requested scope.",
+            ),
+        )
+
+        migrator_contract = " ".join(migrator_prompt.lower().split())
+        require_exact_prompt_sentences(
+            migrator_prompt,
+            (
+                "Act only after an explicit implementation request and an approved architecture plan.",
+                "Require the target subtree, approved boundaries, expected public API, behaviour constraints, and verification expectations before work.",
+                "Implement one agreed migration unit.",
+                "Preserve behaviour, styling, and public contracts.",
+                "Stop on ambiguity, conflict, or unapproved expansion.",
+                "Return: Changed areas, Verification, and Remaining risks.",
+            ),
+        )
+        for expected in (
+            "explicit implementation request",
+            "approved architecture plan",
+            "target subtree",
+            "approved boundaries",
+            "expected public api",
+            "behaviour constraints",
+            "verification expectations",
+            "one agreed migration unit",
+            "preserve behaviour",
+            "styling",
+            "public contracts",
+            "ambiguity",
+            "conflict",
+            "unapproved expansion",
+            "changed areas",
+            "verification",
+            "remaining risks",
+        ):
+            self.assertIn(expected, migrator_contract)
+
     def test_agent_templates_have_no_external_integration_keys_or_urls(self):
         forbidden = re.compile(
             r"https?://|www\.|api[_ -]?key|(?:access|refresh|client)[_ -]?(?:token|secret|key|id)|bearer\s+|secret|webhook|mcp",
@@ -137,7 +428,7 @@ class ReactVerticalSlicesContractTest(unittest.TestCase):
         ):
             self.assertIsNotNone(forbidden.search(external_detail))
 
-        for path in AGENT_PATHS:
+        for path in ALL_AGENT_PATHS:
             text = path.read_text(encoding="utf-8")
             self.assertIsNone(forbidden.search(text), f"External integration detail found in {path}")
 
@@ -202,6 +493,50 @@ class ReactVerticalSlicesContractTest(unittest.TestCase):
         ):
             self.assertIn(reference, skill)
             self.assertTrue((SKILL_ROOT / reference).is_file())
+
+    def test_component_and_container_leaf_folder_convention_is_complete(self):
+        skill = " ".join(
+            (SKILL_ROOT / "SKILL.md").read_text(encoding="utf-8").lower().split()
+        )
+        folders = (SKILL_ROOT / "references" / "folder-conventions.md").read_text(
+            encoding="utf-8"
+        ).lower()
+        migration = (SKILL_ROOT / "references" / "migration.md").read_text(
+            encoding="utf-8"
+        ).lower()
+
+        for expected in (
+            "every component and container",
+            "own folder",
+            "colocated test",
+            "local `index.ts`",
+            "flat component or container files",
+            "missing colocated tests",
+            "missing leaf entries",
+            "bypass a leaf entry",
+        ):
+            self.assertIn(expected, skill)
+
+        for expected in (
+            "componentname/",
+            "componentname.tsx",
+            "componentname.spec.tsx",
+            "componentname.types.ts",
+            "parentname/components/childname/",
+            "shared/ui/components/",
+            "nearest common `components/`",
+            "implementation-file deep imports",
+            "feature or slice root",
+            "optional files are never scaffolded empty",
+        ):
+            self.assertIn(expected, folders)
+
+        for expected in (
+            "new, moved, or materially changed",
+            "untouched legacy",
+            "existing debt",
+        ):
+            self.assertIn(expected, migration)
 
     def test_shared_guidance_has_no_client_specific_instructions(self):
         shared_guidance = [SKILL_ROOT / "SKILL.md", *sorted((SKILL_ROOT / "references").glob("*.md"))]
@@ -308,6 +643,30 @@ class ReactVerticalSlicesContractTest(unittest.TestCase):
             "vs-19": ("ambiguity", "conflict", "unapproved expansion"),
             "vs-20": ("unrelated debt", "does not fix"),
             "vs-21": ("actually runs", "remaining risks"),
+            "vs-22": ("plugin discovery", "scoped invocation"),
+            "vs-23": ("read", "grep", "glob", "refuses to edit"),
+            "vs-24": (
+                "no explicit implementation request",
+                "no approved architecture plan",
+                "makes no file changes",
+                "does not delegate",
+            ),
+            "vs-25": (
+                "own folder",
+                "colocated test",
+                "local `index.ts`",
+                "implementation-file deep imports",
+            ),
+            "vs-26": (
+                "private child",
+                "parentname/components/childname",
+                "nearest common `components/`",
+            ),
+            "vs-27": (
+                "new, moved, or materially changed",
+                "untouched legacy",
+                "existing debt",
+            ),
         }
 
         scenario_sections = {}
@@ -329,17 +688,10 @@ class ReactVerticalSlicesContractTest(unittest.TestCase):
                     f"Missing {expected!r} in {scenario_id}",
                 )
 
+        allowed_statuses = ("Pass", "Fail", "Pending")
         for scenario_id in required_scenarios:
-            row_pattern = re.compile(
-                rf"^\| {scenario_id.upper()} \| Pending \|[^\n]+$",
-                re.MULTILINE,
-            )
-            self.assertIsNone(row_pattern.search(""))
-            self.assertIsNone(
-                row_pattern.search(f"| {scenario_id.upper()} | Pass | fabricated |")
-            )
-            row_match = row_pattern.search(results)
-            self.assertIsNotNone(row_match, f"Missing honest Pending result for {scenario_id}")
+            row_match = require_unique_scenario_result_row(results, scenario_id)
+            self.assertIn(row_match.group(1).strip(), allowed_statuses)
             self.assertNotIn("not run", row_match.group(0).lower(), f"Explain the limitation for {scenario_id}")
 
 

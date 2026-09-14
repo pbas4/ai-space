@@ -85,6 +85,11 @@ This distinction is about responsibility, not React purity. Containers must also
 render purely. Business rules belong in services, hooks, or pure domain
 functions rather than inside JSX.
 
+Each component or container is also a small ownership unit. Its implementation,
+test, and private supporting files live in one folder behind a local entry. This
+makes ownership and imports predictable without turning the component into a
+feature-level public API.
+
 ## Benefits
 
 - Product changes touch fewer unrelated areas.
@@ -93,6 +98,8 @@ functions rather than inside JSX.
 - Tests and fixtures move with the behaviour they protect.
 - Features become easier to replace or remove.
 - Reviewers can reason about a smaller part of the codebase.
+- Component tests and private helpers are easy to find beside the code they
+  protect.
 
 Clear ownership also helps coding agents load less irrelevant context, choose
 focused verification, avoid edits to broad shared modules, and produce plans with
@@ -104,6 +111,7 @@ explicit contracts.
 - Some duplication remains while abstractions are uncertain.
 - Cross-slice workflows need explicit coordination.
 - Structural migrations create temporary import churn.
+- Leaf folders add some navigation and small entry files.
 - Shared folders can still become junk drawers when reuse count replaces meaning.
 
 The benefits come from real boundaries and dependency direction. Renaming
