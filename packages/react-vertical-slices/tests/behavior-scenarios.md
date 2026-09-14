@@ -350,3 +350,54 @@ decision, its rationale, and whether the requested action stays within scope.
 - Makes no file changes and does not delegate implementation.
 - Identifies the target, boundary, public API, behaviour, and verification details
   needed before implementation.
+
+## VS-25: component and container leaf folders
+
+**Prompt**
+
+> Add a product-search capability. `ProductSearch` loads data and handles errors;
+> `ProductResultList` is props-only. The existing project puts both `.tsx` files
+> directly under `components/` and keeps tests in a separate `__tests__/` folder.
+> The deadline is today. Propose the tree and import paths.
+
+**Required outcomes**
+
+- Gives every component and container its own folder.
+- Requires a colocated test and local `index.ts` for each leaf folder.
+- Places the application-aware component under `containers/` and the props-only
+  component under `components/`.
+- Routes imports through folder entries and rejects implementation-file deep imports.
+
+## VS-26: private child ownership
+
+**Prompt**
+
+> Inside a product-search slice, `ProductSearchView` is a props-only child used
+> only by the `ProductSearch` container. `ProductBadge` is used by
+> `ProductSearchView` and `ProductResultList`. Decide their placement and show the
+> relevant tree and imports.
+
+**Required outcomes**
+
+- Keeps the private child at `ParentName/components/ChildName/` under its sole owner.
+- Moves a component used by multiple owners to the nearest common `components/`
+  folder rather than nesting it under one consumer.
+- Gives every component folder a colocated test and local entry.
+- Imports both children through their folder entries.
+
+## VS-27: incremental leaf-folder adoption
+
+**Prompt**
+
+> A partially migrated product-search slice has twenty legacy `.tsx` files
+> directly under `components/`. The approved change adds `EmptyState` and
+> materially changes `ProductResultList`; the other eighteen files are outside
+> the ticket. Propose the migration scope and paths.
+
+**Required outcomes**
+
+- Applies the leaf-folder convention to every new, moved, or materially changed
+  component in the approved migration unit.
+- Leaves untouched legacy files outside the implementation scope.
+- Reports the remaining flat files as existing debt rather than silently fixing them.
+- Keeps the migration reviewable while making all changed code compliant.

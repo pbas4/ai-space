@@ -261,7 +261,7 @@ class ReactVerticalSlicesContractTest(unittest.TestCase):
 
         for manifest in (claude, codex):
             self.assertEqual("react-vertical-slices", manifest["name"])
-            self.assertEqual("0.3.0", manifest["version"])
+            self.assertEqual("0.4.0", manifest["version"])
             self.assertEqual("Pol", manifest["author"]["name"])
 
         self.assertEqual("./skills/", codex["skills"])
@@ -494,6 +494,50 @@ class ReactVerticalSlicesContractTest(unittest.TestCase):
             self.assertIn(reference, skill)
             self.assertTrue((SKILL_ROOT / reference).is_file())
 
+    def test_component_and_container_leaf_folder_convention_is_complete(self):
+        skill = " ".join(
+            (SKILL_ROOT / "SKILL.md").read_text(encoding="utf-8").lower().split()
+        )
+        folders = (SKILL_ROOT / "references" / "folder-conventions.md").read_text(
+            encoding="utf-8"
+        ).lower()
+        migration = (SKILL_ROOT / "references" / "migration.md").read_text(
+            encoding="utf-8"
+        ).lower()
+
+        for expected in (
+            "every component and container",
+            "own folder",
+            "colocated test",
+            "local `index.ts`",
+            "flat component or container files",
+            "missing colocated tests",
+            "missing leaf entries",
+            "bypass a leaf entry",
+        ):
+            self.assertIn(expected, skill)
+
+        for expected in (
+            "componentname/",
+            "componentname.tsx",
+            "componentname.spec.tsx",
+            "componentname.types.ts",
+            "parentname/components/childname/",
+            "shared/ui/components/",
+            "nearest common `components/`",
+            "implementation-file deep imports",
+            "feature or slice root",
+            "optional files are never scaffolded empty",
+        ):
+            self.assertIn(expected, folders)
+
+        for expected in (
+            "new, moved, or materially changed",
+            "untouched legacy",
+            "existing debt",
+        ):
+            self.assertIn(expected, migration)
+
     def test_shared_guidance_has_no_client_specific_instructions(self):
         shared_guidance = [SKILL_ROOT / "SKILL.md", *sorted((SKILL_ROOT / "references").glob("*.md"))]
 
@@ -606,6 +650,22 @@ class ReactVerticalSlicesContractTest(unittest.TestCase):
                 "no approved architecture plan",
                 "makes no file changes",
                 "does not delegate",
+            ),
+            "vs-25": (
+                "own folder",
+                "colocated test",
+                "local `index.ts`",
+                "implementation-file deep imports",
+            ),
+            "vs-26": (
+                "private child",
+                "parentname/components/childname",
+                "nearest common `components/`",
+            ),
+            "vs-27": (
+                "new, moved, or materially changed",
+                "untouched legacy",
+                "existing debt",
             ),
         }
 

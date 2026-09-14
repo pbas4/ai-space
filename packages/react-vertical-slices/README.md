@@ -7,6 +7,16 @@ Codex and Claude Code use the same `SKILL.md` and local references. The package
 contains separate manifests only because the clients package plugins
 differently.
 
+## Component ownership convention
+
+Every component and container lives in its own folder with a colocated test and
+local `index.ts`. Component-only types, styles, stories, fixtures, hooks, and
+helpers stay there too. A child used by one parent stays beneath that parent;
+multi-owner components move only to the nearest common `components/` folder.
+
+New, moved, or materially changed components follow this convention. Untouched
+legacy files remain reported debt rather than expanding a migration by default.
+
 ## Use it
 
 - Codex: invoke `$react-vertical-slices` explicitly, or use it when the

@@ -66,10 +66,13 @@ scenarios and remain pending because the Claude CLI was unavailable.
 | VS-22 | Pending | Requires a Claude CLI fresh-context run to observe plugin discovery and scoped invocation. |
 | VS-23 | Pending | Requires a Claude CLI run to verify the reviewer exposes only read-only tools and refuses edits. |
 | VS-24 | Pending | Requires a Claude CLI assessment-only run without an explicit request or approved plan to observe no editing or delegation. |
+| VS-25 | Pass | Five of five `0.4.0` runs used separate container/component leaf folders with colocated tests, local entries, and imports through those entries. |
+| VS-26 | Pass | Five of five `0.4.0` runs nested the single-owner child beneath its parent and placed the multi-owner component at the slice's nearest common `components/` folder. |
+| VS-27 | Pass | Five of five `0.4.0` runs migrated only the new and materially changed components to leaf folders and reported the untouched eighteen files as existing debt. |
 
 ## Repeated high-risk samples
 
-Four decisions were sampled five times in fresh Codex contexts with no guidance
+Seven decisions were sampled five times in fresh Codex contexts with no guidance
 and five times with the skill. A sample passed only when it made every required
 architectural decision; exact wording was not scored.
 
@@ -79,6 +82,9 @@ architectural decision; exact wording was not scored.
 | Cross-slice type ownership | 5/5 | 5/5 | The skill preserved already-strong reasoning and made the three valid resolutions explicit. |
 | Sharing after a second use | 5/5 | 5/5 | Both groups rejected count-based extraction; the skill supplied a stable decision checklist. |
 | Explicit repository conflict | 5/5 | 5/5 | Both groups surfaced the conflict and paused for approval. |
+| Strict component leaf folders | 0/5 | 5/5 | The skill consistently required a folder, colocated test, and local entry for every component and container. |
+| Private child ownership | 0/5 | 5/5 | The skill kept single-owner children beneath the parent and placed multi-owner components at their nearest common component folder. |
+| Touched-only leaf migration | 1/5 | 5/5 | The skill kept scope incremental while applying the leaf shape to all new and materially changed components. |
 
 The control result matters: this skill is not intended to replace general React
 judgement. Its value is making this particular architecture predictable,

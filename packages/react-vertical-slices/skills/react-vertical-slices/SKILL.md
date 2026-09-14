@@ -49,6 +49,9 @@ areas adopted.
 - Put deterministic props-only UI in `components/`. It must not fetch data, call
   services, read business context, depend on transport shapes, or import a
   container.
+- Give every component and container its own folder, a colocated test, and a
+  local `index.ts`. Import it from outside that folder through the local entry;
+  do not deep-import its implementation file.
 - Allow only `shared/domain`, `shared/infrastructure`, and `shared/ui`. Nothing
   lives directly under `shared/`, and there is no broad `shared/index.ts`.
 - Shared code never imports a feature or slice. Type-only imports still count as
@@ -56,6 +59,10 @@ areas adopted.
 - A second use triggers a sharing decision; it does not settle it. Compare
   meaning, ownership, lifecycle, state independence, and reasons to change.
 - Keep tests, styles, fixtures, state, services, and helpers with their owner.
+
+In review mode, report flat component or container files, missing colocated
+tests, missing leaf entries, and imports that bypass a leaf entry as violations
+in changed code. Keep untouched legacy cases separate as existing debt.
 
 ## Work within scope
 
