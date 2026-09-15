@@ -24,6 +24,7 @@ The package can be used independently or consumed by the Create Task Plan plugin
 - Missing or ambiguous Figma, library, CRM-code, or convention context is reported rather than guessed.
 - Learning-ledger entries are proposed after corrections and persisted only with user approval.
 - Changes to the `rw-crm-components` repository require the component version and Pol-attributed changelog update policy.
+- Commits remain opt-in. When explicitly requested, the workflow classifies the commit as Full AI, AI assisted, or Human and asks the user to confirm the tier. AI attribution uses a user-supplied Git identity for that commit only; the package never changes Git configuration or installs hooks.
 
 ## Model selection
 
@@ -57,6 +58,8 @@ context discovery → model selection → Planner → Plan Reviewer → plan app
 ```
 
 The package never creates a pull request. The PR Description Writer is read-only and returns a draft for the user to adapt or approve.
+
+The package also does not commit by default. An explicit commit request starts the shared [AI commit-labeling policy](references/ai-code-labeling.md): inspect the intended content, propose and confirm a tier, request the exact AI identity when needed, apply it once, and verify the resulting metadata.
 
 For `rw-crm-components`, the PR draft uses the repository template with PR type checkboxes, description, ticket number, and additional notes. Other repositories receive the normal concise format.
 

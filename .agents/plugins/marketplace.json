@@ -6,7 +6,7 @@
       "name": "rw-crm",
       "source": { "source": "local", "path": "./packages/rw-crm" },
       "description": "Reusable RW CRM planning, component implementation, and UI review workflows.",
-      "version": "0.1.0",
+      "version": "0.2.0",
       "policy": { "installation": "AVAILABLE", "authentication": "ON_INSTALL" },
       "category": "Developer Tools"
     },

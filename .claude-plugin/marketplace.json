@@ -11,7 +11,7 @@
       "name": "rw-crm",
       "source": "./packages/rw-crm",
       "description": "Reusable RW CRM planning, component implementation, and UI review workflows.",
-      "version": "0.1.0",
+      "version": "0.2.0",
       "category": "Developer Tools",
       "repository": "https://github.com/pbas4/ai-space"
     },
