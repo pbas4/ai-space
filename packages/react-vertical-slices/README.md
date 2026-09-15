@@ -1,7 +1,8 @@
 # React Vertical Slices
 
-A shared skill for designing, migrating, implementing, and reviewing React code
-with capability-based ownership and explicit dependency boundaries.
+A shared skill and seven specialist agents for designing, planning,
+implementing, migrating, auditing, and reviewing React code with
+capability-based ownership and explicit dependency boundaries.
 
 Codex and Claude Code use the same `SKILL.md` and local references. The package
 contains separate manifests only because the clients package plugins
@@ -82,50 +83,92 @@ ln -s ../../.agents/skills/react-vertical-slices \
 This keeps one source of truth. If the repository does not permit symlinks, copy
 the same skill directory to both locations and update them together.
 
-## Codex custom-agent templates
+## Agent suite
 
-The `agents/` directory contains Codex TOML templates and native Claude Markdown
-plugin agents. The Codex templates are not automatically installed. Copy them
-into a project only when that project chooses to adopt them:
+The package contains equivalent Codex TOML and Claude Markdown definitions for
+seven independently callable specialists. They are not automatically installed;
+copy them only into projects that choose to adopt them.
+
+| Codex agent | Role | Access |
+| --- | --- | --- |
+| `react_vertical_slices_boundary_advisor` | Helps decide which slice should own a capability, asking one plain-language question at a time. | Read-only |
+| `react_vertical_slices_planner` | Inspects the repository and writes a reviewable implementation plan. | Plan-file writes only |
+| `react_vertical_slices_reviewer` | Reviews a plan or implementation and returns one verdict. | Read-only |
+| `react_vertical_slices_implementer` | Adds approved new behaviour to a new or existing slice. | Workspace-write |
+| `react_vertical_slices_migrator` | Applies approved structural moves while preserving behaviour and public contracts. | Workspace-write |
+| `react_vertical_slices_dependency_auditor` | Audits a selected subtree for dependency direction and architecture debt. | Read-only |
+| `react_vertical_slices_orchestrator` | Selects and coordinates the smallest appropriate workflow. | Delegation only |
+
+The Implementer and Migrator deliberately have different jobs. Use the
+Implementer for approved new behaviour. Use the Migrator for approved structural
+work that should not change behaviour. Both are explicit and approval-gated.
+
+The Advisor, Planner, Reviewer, and Auditor may be selected automatically only
+when an applicable `AGENTS.md` adopts the convention for that subtree. The
+Orchestrator, Implementer, and Migrator always require explicit invocation. This
+keeps automatic delegation out of unrelated React work.
+
+## Plans and approval
+
+The Planner uses the repository's plan convention when one exists. Otherwise it
+writes to `docs/plans/vertical-slices/YYYY-MM-DD-<feature-slug>-plan.md`. The plan
+covers the request, boundaries, public contract, responsibilities, dependencies,
+file placement, ordered units, preservation rules, verification, risks, and
+handoff agent.
+
+A written or reviewed plan is not implementation approval. The Orchestrator
+stops after plan review and waits for explicit human authorization. Once
+authorized, it runs write agents sequentially, reviews each unit, and permits at
+most one in-scope correction before stopping for a decision.
+
+## Use agents in Codex
+
+Copy the TOML definitions into a project that has chosen to use them:
 
 ```bash
 mkdir -p .codex/agents
-cp packages/react-vertical-slices/agents/react_vertical_slices_reviewer.toml \
-  .codex/agents/
-cp packages/react-vertical-slices/agents/react_vertical_slices_migrator.toml \
+cp packages/react-vertical-slices/agents/react_vertical_slices_*.toml \
   .codex/agents/
 ```
 
-A copied project version is independent of this package; review and update it
-deliberately. An applicable nested `AGENTS.md` may explicitly adopt the
-convention for its subtree and request automatic delegation to
-`react_vertical_slices_reviewer`; this does not extend to unrelated React work.
-`react_vertical_slices_migrator` remains explicit and approval-gated.
-
-## Claude plugin agents
-
-Claude Code discovers both Markdown agents when the plugin is installed or
-loaded with `--plugin-dir`. It may delegate automatically based on their
-descriptions, or you can select the reviewer explicitly:
+Call any specialist directly:
 
 ```text
-Use the react-vertical-slices:react-vertical-slices-reviewer agent to review this plan.
-@agent-react-vertical-slices:react-vertical-slices-reviewer review this implementation
+Use the react_vertical_slices_boundary_advisor agent to help decide where this feature belongs.
+Use the react_vertical_slices_planner agent to write the implementation plan.
+Use the react_vertical_slices_dependency_auditor agent to audit src/features/orders.
 ```
 
-The agents preload the shared `react-vertical-slices` skill, so its architecture
-guidance is available without a separate skill invocation. The reviewer exposes
-only read and search tools. The migrator can edit and run shell commands, but it
-requires an explicit implementation request and an approved architecture plan.
+Or explicitly ask for coordinated work:
 
-To use independent project copies without the plugin, copy the Markdown files
-to `.claude/agents/`:
+```text
+Use the react_vertical_slices_orchestrator agent to plan this capability and stop before implementation approval.
+```
+
+Copied project agents are independent of this package. Review and update them
+deliberately.
+
+## Use agents in Claude Code
+
+Claude Code discovers the Markdown definitions when the plugin is installed or
+loaded with `--plugin-dir`. Natural language can select an agent, while
+`@agent-...` guarantees the choice:
+
+```text
+Use the react-vertical-slices:react-vertical-slices-planner agent to plan this feature.
+@agent-react-vertical-slices:react-vertical-slices-dependency-auditor audit src/features/orders
+@agent-react-vertical-slices:react-vertical-slices-orchestrator coordinate this migration
+```
+
+Each agent preloads the shared skill. Read-only agents expose only inspection
+tools, the Planner can write only its plan by contract, write agents can edit and
+verify approved work, and the Orchestrator delegates without implementing.
+
+To use independent project copies without the plugin:
 
 ```bash
 mkdir -p .claude/agents
-cp packages/react-vertical-slices/agents/react-vertical-slices-reviewer.md \
-  .claude/agents/
-cp packages/react-vertical-slices/agents/react-vertical-slices-migrator.md \
+cp packages/react-vertical-slices/agents/react-vertical-slices-*.md \
   .claude/agents/
 ```
 
