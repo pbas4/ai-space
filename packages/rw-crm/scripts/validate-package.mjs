@@ -32,6 +32,7 @@ const required = [
   'references/review-checklist.md', 'references/model-policy.md',
   'references/ui-task-routing-policy.md',
   'references/rw-components-versioning.md',
+  'references/ai-code-labeling.md',
   'test/fixtures/new-component.json',
   'test/fixtures/bug-fix.json',
   'test/fixtures/feature-extension.json',
@@ -39,7 +40,8 @@ const required = [
   'test/fixtures/approved-correction.json',
   'test/fixtures/planner-task.json', 'test/fixtures/plan-review.json', 'test/fixtures/ui-review.json', 'test/fixtures/orchestration.json',
   'test/fixtures/plugin-flow.json', 'test/fixtures/model-escalation.json',
-  'test/corpus/rw-crm-task-corpus.json', 'test/behavior-integration.test.mjs', 'test/heartbeat-controller.test.mjs', 'test/prompt-loop-contract.test.mjs'
+  'test/corpus/rw-crm-task-corpus.json', 'test/behavior-integration.test.mjs', 'test/heartbeat-controller.test.mjs', 'test/prompt-loop-contract.test.mjs',
+  'test/commit-labeling-contract.test.mjs'
 ];
 
 for (const relativePath of required) {
