@@ -1,6 +1,6 @@
 ---
 name: react-vertical-slices-reviewer
-description: Use for read-only review of an explicitly selected React vertical-slice plan or implementation.
+description: Use when explicitly requested, or automatically only in an adopted area, for read-only review of a React vertical-slice plan or implementation.
 tools:
   - Read
   - Grep

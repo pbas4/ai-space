@@ -1,7 +1,7 @@
 {
   "name": "react-vertical-slices",
-  "version": "0.5.0",
-  "description": "Design, migrate, implement, and review capability-based React architecture.",
+  "version": "0.6.0",
+  "description": "Advise, plan, implement, migrate, audit, and review capability-based React architecture.",
   "author": {
     "name": "Pol"
   },
@@ -10,19 +10,25 @@
   "interface": {
     "displayName": "React Vertical Slices",
     "shortDescription": "Apply capability-based React architecture.",
-    "longDescription": "Design new React features, migrate existing code, implement approved structural changes, and review capability ownership and dependency boundaries.",
+    "longDescription": "Advise on slice ownership, plan new work, implement approved behaviour, migrate structures, audit dependencies, and coordinate architecture reviews.",
     "developerName": "Pol",
     "category": "Developer Tools",
     "capabilities": [
       "Architecture analysis",
+      "Boundary advice",
       "Migration planning",
-      "Approved implementation",
-      "Boundary review"
+      "Approved feature implementation",
+      "Dependency auditing",
+      "Boundary review",
+      "Approval-gated orchestration"
     ],
     "defaultPrompt": [
       "Design a vertical slice for this React feature.",
+      "Help me decide which slice should own this capability.",
       "Review this React feature's slice boundaries.",
-      "Plan a safe migration to vertical slices."
+      "Plan a safe migration to vertical slices.",
+      "Audit this feature subtree for dependency violations.",
+      "Coordinate the approved vertical-slice implementation workflow."
     ]
   }
 }

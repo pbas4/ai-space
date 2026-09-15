@@ -15,10 +15,20 @@ AGENT_ROOT = PACKAGE_ROOT / "agents"
 AGENT_PATHS = (
     AGENT_ROOT / "react_vertical_slices_reviewer.toml",
     AGENT_ROOT / "react_vertical_slices_migrator.toml",
+    AGENT_ROOT / "react_vertical_slices_boundary_advisor.toml",
+    AGENT_ROOT / "react_vertical_slices_planner.toml",
+    AGENT_ROOT / "react_vertical_slices_implementer.toml",
+    AGENT_ROOT / "react_vertical_slices_dependency_auditor.toml",
+    AGENT_ROOT / "react_vertical_slices_orchestrator.toml",
 )
 CLAUDE_AGENT_PATHS = (
     AGENT_ROOT / "react-vertical-slices-reviewer.md",
     AGENT_ROOT / "react-vertical-slices-migrator.md",
+    AGENT_ROOT / "react-vertical-slices-boundary-advisor.md",
+    AGENT_ROOT / "react-vertical-slices-planner.md",
+    AGENT_ROOT / "react-vertical-slices-implementer.md",
+    AGENT_ROOT / "react-vertical-slices-dependency-auditor.md",
+    AGENT_ROOT / "react-vertical-slices-orchestrator.md",
 )
 ALL_AGENT_PATHS = (*AGENT_PATHS, *CLAUDE_AGENT_PATHS)
 FRONTMATTER_KEY = re.compile(r"[a-z][a-z0-9_-]*\Z")
@@ -233,8 +243,18 @@ class ReactVerticalSlicesContractTest(unittest.TestCase):
             "README.md",
             "agents/react-vertical-slices-reviewer.md",
             "agents/react-vertical-slices-migrator.md",
+            "agents/react-vertical-slices-boundary-advisor.md",
+            "agents/react-vertical-slices-planner.md",
+            "agents/react-vertical-slices-implementer.md",
+            "agents/react-vertical-slices-dependency-auditor.md",
+            "agents/react-vertical-slices-orchestrator.md",
             "agents/react_vertical_slices_reviewer.toml",
             "agents/react_vertical_slices_migrator.toml",
+            "agents/react_vertical_slices_boundary_advisor.toml",
+            "agents/react_vertical_slices_planner.toml",
+            "agents/react_vertical_slices_implementer.toml",
+            "agents/react_vertical_slices_dependency_auditor.toml",
+            "agents/react_vertical_slices_orchestrator.toml",
             "skills/react-vertical-slices/SKILL.md",
             "skills/react-vertical-slices/agents/openai.yaml",
             "skills/react-vertical-slices/references/architecture.md",
@@ -262,7 +282,7 @@ class ReactVerticalSlicesContractTest(unittest.TestCase):
 
         for manifest in (claude, codex):
             self.assertEqual("react-vertical-slices", manifest["name"])
-            self.assertEqual("0.5.0", manifest["version"])
+            self.assertEqual("0.6.0", manifest["version"])
             self.assertEqual("Pol", manifest["author"]["name"])
 
         self.assertEqual("./skills/", codex["skills"])
@@ -284,7 +304,7 @@ class ReactVerticalSlicesContractTest(unittest.TestCase):
                 if plugin["name"] == "react-vertical-slices"
             ]
             self.assertEqual(1, len(entries), f"Invalid entry count in {catalog_path}")
-            self.assertEqual("0.5.0", entries[0]["version"])
+            self.assertEqual("0.6.0", entries[0]["version"])
 
     def test_skill_frontmatter_is_portable(self):
         skill = (SKILL_ROOT / "SKILL.md").read_text(encoding="utf-8")
@@ -346,9 +366,229 @@ class ReactVerticalSlicesContractTest(unittest.TestCase):
 
         self.assertEqual(len(parsed_agents), len({agent["name"] for agent in parsed_agents}))
         self.assertEqual(
-            {"react_vertical_slices_reviewer", "react_vertical_slices_migrator"},
+            {
+                "react_vertical_slices_boundary_advisor",
+                "react_vertical_slices_planner",
+                "react_vertical_slices_reviewer",
+                "react_vertical_slices_implementer",
+                "react_vertical_slices_migrator",
+                "react_vertical_slices_dependency_auditor",
+                "react_vertical_slices_orchestrator",
+            },
             {agent["name"] for agent in parsed_agents},
         )
+
+    def test_all_claude_agents_use_native_names_tools_and_shared_skill(self):
+        expected_tools = {
+            "react-vertical-slices-boundary-advisor": ["Read", "Grep", "Glob"],
+            "react-vertical-slices-planner": ["Read", "Grep", "Glob", "Write", "Edit"],
+            "react-vertical-slices-reviewer": ["Read", "Grep", "Glob"],
+            "react-vertical-slices-implementer": ["Read", "Grep", "Glob", "Write", "Edit", "Bash"],
+            "react-vertical-slices-migrator": ["Read", "Grep", "Glob", "Write", "Edit", "Bash"],
+            "react-vertical-slices-dependency-auditor": ["Read", "Grep", "Glob", "Bash"],
+            "react-vertical-slices-orchestrator": ["Agent"],
+        }
+
+        parsed = [parse_markdown_agent(path) for path in CLAUDE_AGENT_PATHS]
+        self.assertEqual(set(expected_tools), {agent["name"] for agent, _ in parsed})
+        for metadata, prompt in parsed:
+            self.assertNotIn("model", metadata)
+            self.assertEqual(["react-vertical-slices"], metadata["skills"])
+            self.assertEqual(expected_tools[metadata["name"]], metadata["tools"])
+            self.assertIn("preloaded `react-vertical-slices` skill", prompt)
+            self.assertIn("CLAUDE.md", prompt)
+            self.assertIn("AGENTS.md", prompt)
+            self.assertIn("unavailable", prompt.lower())
+
+    def test_agent_selection_boundaries_are_explicit(self):
+        automatically_selectable = {
+            "react_vertical_slices_boundary_advisor",
+            "react_vertical_slices_planner",
+            "react_vertical_slices_reviewer",
+            "react_vertical_slices_dependency_auditor",
+        }
+
+        for path in AGENT_PATHS:
+            with path.open("rb") as agent_file:
+                agent = tomllib.load(agent_file)
+            description = agent["description"].lower()
+            if agent["name"] in automatically_selectable:
+                self.assertIn("explicitly requested", description)
+                self.assertIn("adopted", description)
+            else:
+                self.assertIn("explicitly requested", description)
+                self.assertNotIn("automatically", description)
+
+        for path in CLAUDE_AGENT_PATHS:
+            metadata, _ = parse_markdown_agent(path)
+            description = str(metadata["description"]).lower()
+            codex_name = metadata["name"].replace("-", "_")
+            if codex_name in automatically_selectable:
+                self.assertIn("explicitly requested", description)
+                self.assertIn("adopted", description)
+            else:
+                self.assertIn("explicitly requested", description)
+                self.assertNotIn("automatically", description)
+
+    def test_codex_and_claude_agent_pairs_share_role_contracts(self):
+        role_markers = {
+            "boundary_advisor": ("one question at a time", "public contract", "unresolved risks"),
+            "planner": ("plan artifact", "ordered implementation units", "never counts as human approval"),
+            "reviewer": ("exactly one verdict", "required findings", "unverified evidence"),
+            "implementer": ("human-approved plan", "one approved implementation unit", "actual result"),
+            "migrator": ("approved architecture plan", "one approved migration unit", "actual result"),
+            "dependency_auditor": ("selected subtree", "type-only dependencies", "legacy debt"),
+            "orchestrator": ("delegation only", "never run write agents concurrently", "one in-scope correction"),
+        }
+
+        for role, markers in role_markers.items():
+            codex_path = AGENT_ROOT / f"react_vertical_slices_{role}.toml"
+            claude_path = AGENT_ROOT / f"react-vertical-slices-{role.replace('_', '-')}.md"
+            with codex_path.open("rb") as agent_file:
+                codex_prompt = tomllib.load(agent_file)["developer_instructions"].lower()
+            _, claude_prompt = parse_markdown_agent(claude_path)
+            claude_prompt = claude_prompt.lower()
+            for marker in markers:
+                self.assertIn(marker, codex_prompt, f"Missing {marker!r} in {codex_path}")
+                self.assertIn(marker, claude_prompt, f"Missing {marker!r} in {claude_path}")
+
+    def test_boundary_advisor_is_read_only_and_conversational(self):
+        path = AGENT_ROOT / "react_vertical_slices_boundary_advisor.toml"
+        with path.open("rb") as agent_file:
+            agent = tomllib.load(agent_file)
+        instructions = " ".join(agent["developer_instructions"].lower().split())
+
+        self.assertEqual("read-only", agent["sandbox_mode"])
+        for expected in (
+            "inspect discoverable repository facts before asking",
+            "one question at a time",
+            "plain language",
+            "existing slice",
+            "new slice",
+            "coordinator",
+            "shared/domain",
+            "shared/infrastructure",
+            "shared/ui",
+            "ownership",
+            "rationale",
+            "public contract",
+            "dependencies",
+            "alternatives",
+            "confidence",
+            "unresolved risks",
+            "never edit",
+        ):
+            self.assertIn(expected, instructions)
+
+    def test_planner_writes_only_the_plan_contract(self):
+        path = AGENT_ROOT / "react_vertical_slices_planner.toml"
+        with path.open("rb") as agent_file:
+            agent = tomllib.load(agent_file)
+        instructions = " ".join(agent["developer_instructions"].lower().split())
+
+        self.assertEqual("workspace-write", agent["sandbox_mode"])
+        for expected in (
+            "docs/plans/vertical-slices/yyyy-mm-dd-<feature-slug>-plan.md",
+            "never edit application code",
+            "never overwrite an existing plan",
+            "explicit revision request",
+            "request",
+            "goal",
+            "non-goals",
+            "target subtree",
+            "new-feature or migration mode",
+            "boundary decisions",
+            "public apis and types",
+            "container and component responsibilities",
+            "dependencies",
+            "file placement",
+            "ordered implementation units",
+            "preservation constraints",
+            "verification",
+            "risks",
+            "handoff agent",
+            "never counts as human approval",
+        ):
+            self.assertIn(expected, instructions)
+
+    def test_implementer_is_approval_gated_and_not_a_migrator(self):
+        path = AGENT_ROOT / "react_vertical_slices_implementer.toml"
+        with path.open("rb") as agent_file:
+            agent = tomllib.load(agent_file)
+        instructions = " ".join(agent["developer_instructions"].lower().split())
+
+        self.assertEqual("workspace-write", agent["sandbox_mode"])
+        for expected in (
+            "explicit implementation request",
+            "human-approved plan",
+            "new behaviour",
+            "structural moves without behaviour changes",
+            "react_vertical_slices_migrator",
+            "applicable repository-required skills",
+            "exactly one approved implementation unit",
+            "unrelated user work",
+            "passed",
+            "failed",
+            "skipped",
+            "actual result",
+        ):
+            self.assertIn(expected, instructions)
+
+    def test_dependency_auditor_is_read_only_and_reports_evidence(self):
+        path = AGENT_ROOT / "react_vertical_slices_dependency_auditor.toml"
+        with path.open("rb") as agent_file:
+            agent = tomllib.load(agent_file)
+        instructions = " ".join(agent["developer_instructions"].lower().split())
+
+        self.assertEqual("read-only", agent["sandbox_mode"])
+        for expected in (
+            "selected subtree",
+            "deep imports",
+            "type-only dependencies",
+            "cycles",
+            "shared-to-slice dependencies",
+            "invalid cross-slice coupling",
+            "public-entry bypasses",
+            "responsibility violations",
+            "file and line evidence",
+            "legacy debt",
+            "never edit",
+        ):
+            self.assertIn(expected, instructions)
+
+    def test_orchestrator_is_explicit_and_delegation_only(self):
+        path = AGENT_ROOT / "react_vertical_slices_orchestrator.toml"
+        with path.open("rb") as agent_file:
+            agent = tomllib.load(agent_file)
+        instructions = " ".join(agent["developer_instructions"].lower().split())
+
+        self.assertEqual("read-only", agent["sandbox_mode"])
+        for expected in (
+            "delegation only",
+            "smallest appropriate workflow",
+            "react_vertical_slices_boundary_advisor",
+            "react_vertical_slices_planner",
+            "react_vertical_slices_reviewer",
+            "react_vertical_slices_implementer",
+            "react_vertical_slices_migrator",
+            "react_vertical_slices_dependency_auditor",
+            "write the plan artifact before review",
+            "do not substitute a chat-only plan",
+            "stop after the plan is approved",
+            "explicit human implementation authorization",
+            "all approved units sequentially",
+            "review every completed unit",
+            "never run write agents concurrently",
+            "one in-scope correction",
+            "second non-approved verdict",
+            "scope change",
+            "ambiguous ownership",
+            "conflicting instruction",
+            "unsafe overlap",
+            "independently callable",
+            "never edit",
+        ):
+            self.assertIn(expected, instructions)
 
     def test_claude_agents_use_native_names_tools_and_shared_skill(self):
         reviewer, reviewer_prompt = parse_markdown_agent(CLAUDE_AGENT_PATHS[0])
@@ -670,7 +910,16 @@ class ReactVerticalSlicesContractTest(unittest.TestCase):
             "automatic delegation",
             "react_vertical_slices_reviewer",
             "react_vertical_slices_migrator",
+            "react_vertical_slices_boundary_advisor",
+            "react_vertical_slices_planner",
+            "react_vertical_slices_implementer",
+            "react_vertical_slices_dependency_auditor",
+            "react_vertical_slices_orchestrator",
             "explicit and approval-gated",
+            "docs/plans/vertical-slices",
+            "smallest appropriate workflow",
+            "Implementer",
+            "Migrator",
         ):
             self.assertIn(expected, readme)
 
@@ -735,6 +984,16 @@ class ReactVerticalSlicesContractTest(unittest.TestCase):
             "vs-33": ("source-code comment", "authorization", "does not implement"),
             "vs-34": ("exactly one verdict", "changes_required", "unverified evidence"),
             "vs-35": ("approved plan", "does not delegate", "parent task"),
+            "vs-36": ("one question at a time", "plain language", "existing slice"),
+            "vs-37": ("new slice", "coordinator", "shared/domain"),
+            "vs-38": ("plan artifact", "never counts as human approval", "handoff agent"),
+            "vs-39": ("existing plan", "explicit revision request", "does not overwrite"),
+            "vs-40": ("human-approved plan", "new behaviour", "migrator"),
+            "vs-41": ("deep imports", "type-only dependencies", "file evidence"),
+            "vs-42": ("cycles", "shared-to-slice", "legacy debt"),
+            "vs-43": ("smallest workflow", "human authorization", "sequentially"),
+            "vs-44": ("one correction", "second non-approved verdict", "stops"),
+            "vs-45": ("independently callable", "explicit invocation", "does not orchestrate"),
         }
 
         scenario_sections = {}
