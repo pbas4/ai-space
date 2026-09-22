@@ -9,3 +9,16 @@ test('Create Task Plan is a thin UI-only consumer with delegated brainstorming r
   const contract = await readFile(join(root, 'references/create-task-plan-consumer-contract.md'), 'utf8');
   for (const phrase of ['thin consumer', 'UI', 'initial plan', 'brainstorming', 'does not invoke the package Plan Reviewer', 'does not modify the plugin', 'routing evidence', 'snapshot ID', 'context gaps', 'structured validation evidence']) assert.match(contract, new RegExp(phrase, 'i'));
 });
+
+test('Create Task Plan retains the initial artifact and publishes a readable final revision', async () => {
+  const contract = await readFile(join(root, 'references/create-task-plan-consumer-contract.md'), 'utf8');
+  for (const phrase of [
+    'ticketKey',
+    'artifactRevision',
+    'retains the initial plan artifact',
+    'new conversation Markdown artifact',
+    'previous revisions',
+    'attachment is unavailable',
+    'inline'
+  ]) assert.match(contract, new RegExp(phrase, 'i'), phrase);
+});

@@ -6,8 +6,8 @@ Monorepo for independent AI projects, agents, plugins, and reusable workflows.
 
 Projects live under [`packages/`](packages/). Each project owns its own source, tests, documentation, and runtime configuration.
 
-- [`packages/rw-crm/`](packages/rw-crm/) — reusable RW CRM planning, implementation, and UI-review Codex plugin.
-- [`packages/rw-create-task-plan/`](packages/rw-create-task-plan/) — Realworks-oriented Create Task Plan plugin with RW CRM UI planning integration.
+- [`packages/rw-crm/`](packages/rw-crm/) — reusable RW CRM planning, implementation, and UI-review Codex plugin with versioned, human-readable Markdown plan artifacts.
+- [`packages/rw-create-task-plan/`](packages/rw-create-task-plan/) — Realworks-oriented Create Task Plan plugin that preserves RW CRM plan revisions as readable conversation artifacts.
 - [`packages/book-summary/`](packages/book-summary/) — summarize EPUB/PDF books into a templated Markdown + PDF and file them to Google Drive and Obsidian.
 - [`packages/react-vertical-slices/`](packages/react-vertical-slices/) — React vertical-slice skill with seven agents for boundary advice, planning, implementation, migration, auditing, review, and orchestration.
 - [`packages/book-summary/`](packages/book-summary/) — summarize a book or document (EPUB/PDF/DOCX/HTML/TXT/URL) into a templated Markdown + PDF via model-split subagents, and file it to Google Drive and Obsidian.

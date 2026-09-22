@@ -62,3 +62,25 @@ test('user-facing guidance names the planner and documents snapshot safety', asy
   assert.match(adapter, /createCodexHostAdapter/);
   for (const phrase of ['task-scoped', 'material refresh', 'allowlist', 'dry run', 'redacted']) assert.match(`${workflow}\n${adapter}\n${readme}`, new RegExp(phrase, 'i'));
 });
+
+test('planning guidance publishes readable Markdown artifacts without exposing hashes', async () => {
+  const [planner, reviewer, workflow, consumer] = await Promise.all([
+    read('skills/rw-crm-components-planner/SKILL.md'),
+    read('skills/rw-crm-plan-reviewer/SKILL.md'),
+    read('skills/rw-crm-workflow/SKILL.md'),
+    read('references/create-task-plan-consumer-contract.md')
+  ]);
+  const text = `${planner}\n${reviewer}\n${workflow}\n${consumer}`;
+  for (const phrase of [
+    'conversation Markdown artifact',
+    'ticketKey',
+    'artifactRevision',
+    'text/markdown',
+    'previous revisions',
+    'attachment is unavailable',
+    'inline',
+    'target repository'
+  ]) assert.match(text, new RegExp(phrase, 'i'), phrase);
+  assert.match(text, /never[^.]+SHA-256[^.]+(?:title|filename|content)/i);
+  assert.match(text, /structured plan[^.]+source of truth/i);
+});

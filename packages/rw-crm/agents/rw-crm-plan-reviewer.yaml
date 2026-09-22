@@ -7,6 +7,6 @@ permissions:
   default: read-only
 outputs:
   format: structured
-  fields: [findings, reviewed_plan, recommendation, proposed_learning_entry]
+  fields: [findings, reviewed_plan, plan_artifact, recommendation, proposed_learning_entry]
 authority:
   figma_conflict: ui-library

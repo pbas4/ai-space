@@ -1,0 +1,13 @@
+{
+  "type": "object",
+  "required": ["kind", "title", "filename", "mediaType", "revision", "planId", "content"],
+  "properties": {
+    "kind": { "enum": ["implementation-plan"] },
+    "title": { "type": "string", "minLength": 1 },
+    "filename": { "type": "string", "minLength": 1, "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]*-plan-v[1-9][0-9]*\\.md$" },
+    "mediaType": { "enum": ["text/markdown"] },
+    "revision": { "type": "integer", "minimum": 1 },
+    "planId": { "type": "string", "minLength": 1 },
+    "content": { "type": "string", "minLength": 1 }
+  }
+}

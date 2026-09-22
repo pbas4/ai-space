@@ -25,6 +25,7 @@ const required = [
   'schemas/dry-run-report.schema.json', 'schemas/verification-evidence.schema.json', 'schemas/finding.schema.json',
   'schemas/approval-receipt.schema.json',
   'schemas/initial-plan.schema.json', 'schemas/plan-review.schema.json', 'schemas/ui-review.schema.json', 'schemas/model-proposal.schema.json',
+  'schemas/plan-artifact.schema.json', 'src/planning/plan-artifact.mjs', 'test/plan-artifact.test.mjs',
   'references/workflow.md',
   'references/testing-policy.md',
   'references/rw-conventions.md',

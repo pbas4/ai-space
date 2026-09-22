@@ -8,9 +8,11 @@ const context = { gaps: [], ambiguities: [], libraryDecisions: [] };
 
 test('approves a complete plan without mutating it', async () => {
   const original = structuredClone(completePlan);
-  const result = await reviewPlan({ request: { task: 'Add DatePicker' }, initialPlan: completePlan }, { contextAdapter: { async discover() { return context; } }, checklist: [], ledger: { async consult() { return []; } } });
+  const planArtifact = { kind: 'implementation-plan', title: 'Add DatePicker — Plan v1', filename: 'rw-crm-add-datepicker-plan-v1.md', mediaType: 'text/markdown', revision: 1, planId: 'p1', content: '# Add DatePicker' };
+  const result = await reviewPlan({ request: { task: 'Add DatePicker' }, initialPlan: completePlan, planArtifact }, { contextAdapter: { async discover() { return context; } }, checklist: [], ledger: { async consult() { return []; } } });
   assert.equal(result.recommendation, 'approve');
   assert.deepEqual(result.reviewedPlan, original);
+  assert.deepEqual(result.planArtifact, planArtifact);
   assert.deepEqual(completePlan, original);
 });
 

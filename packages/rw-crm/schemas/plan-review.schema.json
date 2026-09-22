@@ -4,6 +4,7 @@
   "properties": {
     "findings": { "type": "array", "items": {} },
     "reviewedPlan": { "type": "object" },
+    "planArtifact": { "type": ["object", "null"] },
     "recommendation": { "enum": ["approve", "revise", "blocked"] }
   }
 }

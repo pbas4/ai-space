@@ -9,3 +9,5 @@ Use the shared review checklist to inspect an initial plan against freshly disco
 
 Use this reviewer only in standalone package flow. When called by the Create Task Plan plugin, defer plan review to its brainstorming review and return the structured plan to the consumer.
 Review the task-scoped snapshot provenance, source allowlist evidence, and any dry-run report. Flag material context changes that require `awaiting-context-reapproval`; never expose source bodies.
+
+Carry the input `planArtifact` through unchanged when the structured plan is unchanged. A material plan rewrite creates the next `artifactRevision` as a new conversation Markdown artifact and keeps previous revisions available. The structured plan remains the approval source of truth; never put a SHA-256 value in an artifact title, filename, or content. Artifact publication must not modify the target repository. If an attachment is unavailable, render the Markdown inline under its intended filename and report the attachment gap.
