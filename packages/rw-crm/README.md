@@ -24,6 +24,7 @@ The package can be used independently or consumed by the Create Task Plan plugin
 - Missing or ambiguous Figma, library, CRM-code, or convention context is reported rather than guessed.
 - Learning-ledger entries are proposed after corrections and persisted only with user approval.
 - Changes to the `rw-crm-components` repository require the component version and Pol-attributed changelog update policy.
+- Target-repository tests and production coverage focus on observable behavior; pure barrels, type-only declarations, generated sources, stories, and test-only support do not receive tests merely to satisfy coverage.
 
 ## Model selection
 

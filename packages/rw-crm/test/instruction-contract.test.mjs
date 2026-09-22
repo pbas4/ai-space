@@ -50,6 +50,24 @@ test('RW CRM target-repository verification uses direct Jest and prohibits Nx', 
   assert.match(text, /Nx-wrapped/i);
 });
 
+test('RW CRM coverage targets executable production behavior', async () => {
+  const policy = await read('references/testing-policy.md');
+  for (const phrase of [
+    'observable production behavior',
+    'pure barrel',
+    'index.ts(x)',
+    'type-only',
+    '.d.ts',
+    'generated sources',
+    'Storybook stories',
+    'fixtures, mocks, and test utilities',
+    'solely to execute excluded files',
+    'regardless of filename',
+    'runtime enums, constants, schemas, or custom configuration logic',
+    'negative collectCoverageFrom patterns after positive patterns'
+  ]) assert.match(policy, new RegExp(phrase.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i'), phrase);
+});
+
 test('user-facing guidance names the planner and documents snapshot safety', async () => {
   const [plannerSkill, workflow, adapter, readme] = await Promise.all([
     read('skills/rw-crm-components-planner/SKILL.md'),
