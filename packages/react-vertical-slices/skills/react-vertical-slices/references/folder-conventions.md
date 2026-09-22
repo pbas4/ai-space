@@ -9,7 +9,15 @@ else lives in a named folder.
 Feature/
 ├── index.ts
 ├── containers/
+│   └── FeatureName/
+│       ├── FeatureName.tsx
+│       ├── FeatureName.spec.tsx
+│       └── index.ts
 ├── components/
+│   └── ComponentName/
+│       ├── ComponentName.tsx
+│       ├── ComponentName.spec.tsx
+│       └── index.ts
 ├── hooks/
 ├── services/
 ├── utils/
@@ -36,6 +44,10 @@ Feature/
     └── ui/
         ├── index.ts
         └── components/
+            └── SharedComponent/
+                ├── SharedComponent.tsx
+                ├── SharedComponent.spec.tsx
+                └── index.ts
 ```
 
 This is a menu, not a scaffold. Create a folder only when it owns a real file.
@@ -69,6 +81,57 @@ of every file.
 
 ## React folders
 
+Every component and container is a leaf ownership unit with its own folder,
+colocated test, and local `index.ts`. The same rule applies under `components/`,
+`containers/`, and `shared/ui/components/`.
+
+```text
+components/
+└── ComponentName/
+    ├── ComponentName.tsx
+    ├── ComponentName.spec.tsx
+    ├── ComponentName.types.ts      # optional
+    ├── ComponentName.module.scss   # optional
+    ├── ComponentName.stories.tsx   # optional
+    ├── hooks/                      # optional, private to this component
+    ├── components/                 # optional private children
+    │   └── ChildName/
+    │       ├── ChildName.tsx
+    │       ├── ChildName.spec.tsx
+    │       └── index.ts
+    └── index.ts
+```
+
+Optional files are never scaffolded empty. Use the target repository's test
+suffix and file extensions; `.spec.tsx` is only the TypeScript example.
+
+The leaf `index.ts` exports the component and only the types its consumers need,
+using the repository's established export style. Wildcard exports remain
+discouraged.
+
+```ts
+export { ComponentName } from './ComponentName';
+export type { ComponentNameProps } from './ComponentName.types';
+```
+
+Code outside the folder imports its entry:
+
+```ts
+import { ComponentName } from './components/ComponentName';
+
+// Boundary violation: implementation-file deep imports are not allowed
+import { ComponentName } from './components/ComponentName/ComponentName';
+```
+
+This local entry does not make the component a feature or slice public API.
+External consumers still import through the feature or slice root. That root
+decides whether the component is public at all.
+
+A private child used by one parent stays under
+`ParentName/components/ChildName/`. If multiple owners use it, move it to their
+nearest common `components/` folder. Reuse does not automatically make it
+feature-wide or shared UI.
+
 ### `containers/`
 
 Containers connect the feature or slice to application behaviour. They may:
@@ -81,6 +144,10 @@ Containers connect the feature or slice to application behaviour. They may:
 
 Keep detailed reusable markup and business rules elsewhere. Use a natural name
 such as `ProductSearch` for the connected component.
+
+Providers and other React components follow the same folder rule after their
+responsibility is clear. Application-aware providers belong in `containers/`;
+props-only providers belong in `components/`.
 
 ### `components/`
 
@@ -109,8 +176,9 @@ for data mapping, status selection, callbacks, and service interaction.
 - **`types/`** contains local state shapes, form values, shared component props,
   and service inputs or results. Types remain private unless the public entry
   exports them.
-- Styles and tests stay beside their owner. Use a slice-level `testing/` folder
-  only for fixtures or builders shared by several tests in that slice.
+- Component- or container-owned types, styles, stories, fixtures, hooks, helpers,
+  and tests stay in its leaf folder. Use a slice-level `testing/` folder only for
+  fixtures or builders shared by several tests in that slice.
 
 ## Shared areas
 
@@ -163,6 +231,12 @@ are too fragmented.
 - Does the path reveal the owning capability?
 - Is the entry point the only file at the boundary root?
 - Are connected components in `containers/` and props-only UI in `components/`?
+- Does every component and container have its own folder, colocated test, and
+  local entry?
+- Are private children nested with their sole owner and multi-owner components
+  placed at the nearest common component folder?
+- Do imports outside a component folder use its local entry rather than its
+  implementation file?
 - Do consumers use public entries?
 - Does shared code remain independent of slices?
 - Is shared meaning proven rather than inferred from call-site count?
