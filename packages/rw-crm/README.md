@@ -32,6 +32,7 @@ SHA-256 plan hashes remain internal approval metadata. They are never used as ar
 - Learning-ledger entries are proposed after corrections and persisted only with user approval.
 - Changes to the `rw-crm-components` repository require the component version and Pol-attributed changelog update policy.
 - Commits remain opt-in. When explicitly requested, the workflow classifies the commit as Full AI, AI assisted, or Human and asks the user to confirm the tier. AI attribution uses a user-supplied Git identity for that commit only; the package never changes Git configuration or installs hooks.
+- Target-repository tests and production coverage focus on observable behavior; pure barrels, type-only declarations, generated sources, stories, and test-only support do not receive tests merely to satisfy coverage.
 
 ## Model selection
 

@@ -85,7 +85,7 @@ test('package validation requires both the policy and its contract test', async 
   assert.match(validator, /test\/commit-labeling-contract\.test\.mjs/);
 });
 
-test('package and both marketplace entries publish version 0.2.1', async () => {
+test('package and both marketplace entries publish version 0.2.2', async () => {
   const [packageJson, codexManifest, claudeManifest, codexCatalog, claudeCatalog] = await Promise.all([
     readPackage('package.json').then(JSON.parse),
     readPackage('.codex-plugin/plugin.json').then(JSON.parse),
@@ -102,6 +102,6 @@ test('package and both marketplace entries publish version 0.2.1', async () => {
     findRwCrm(codexCatalog).version,
     findRwCrm(claudeCatalog).version
   ]) {
-    assert.equal(version, '0.2.1');
+    assert.equal(version, '0.2.2');
   }
 });
