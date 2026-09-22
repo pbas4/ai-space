@@ -8,4 +8,4 @@ permissions:
   implementation: delegated_to_components_engineer_after_approvals
 outputs:
   format: structured
-  fields: [routing, model_proposal, planner, plan_review, plan_approval, engineer, ui_review, status]
+  fields: [routing, model_proposal, planner, plan_artifact, plan_review, plan_approval, engineer, ui_review, status]

@@ -5,11 +5,12 @@ import { createContextSnapshot } from '../src/context/context-snapshot.mjs';
 
 const request = { task: 'Fix Button', componentScope: ['Button'], figmaLinks: [], constraints: [], environment: 'standalone' };
 const plan = { id: 'plan:Fix Button', goal: 'Fix Button', scope: {}, files: ['Button'], interfaces: ['Button API'], risks: [], verification: ['unit'], libraryDecisions: [], approvalStatus: 'awaiting-approval' };
+const planArtifact = { kind: 'implementation-plan', title: 'Fix Button — Plan v1', filename: 'rw-crm-fix-button-plan-v1.md', mediaType: 'text/markdown', revision: 1, planId: plan.id, content: '# Fix Button' };
 function deps(calls, { executions = [], plannerResult = null } = {}) {
   return {
     contextAdapter: { async discover() { return { gaps: [], ambiguities: [] }; } },
-    planner: async (_request, execution) => { calls.push('planner'); executions.push(['planner', execution]); return plannerResult ?? { context: {}, plan, proposedLearningEntry: null }; },
-    planReviewer: async (_input, execution) => { calls.push('reviewer'); executions.push(['planReviewer', execution]); return { findings: [], reviewedPlan: plan, recommendation: 'approve', proposedLearningEntry: null }; },
+    planner: async (_request, execution) => { calls.push('planner'); executions.push(['planner', execution]); return plannerResult ?? { context: {}, plan, planArtifact, proposedLearningEntry: null }; },
+    planReviewer: async (input, execution) => { calls.push('reviewer'); executions.push(['planReviewer', execution]); return { findings: [], reviewedPlan: plan, planArtifact: input.planArtifact, recommendation: 'approve', proposedLearningEntry: null }; },
     engineer: async (_input, execution) => { calls.push('engineer'); executions.push(['engineer', execution]); return { status: 'implemented', changedArtifacts: ['Button.mjs'], verification: { checks: [] } }; },
     uiReviewer: async (_input, execution) => { calls.push('ui-reviewer'); executions.push(['uiReviewer', execution]); return { findings: [], verification: { checks: [] }, completion: 'pass' }; },
     prWriter: async (_input, execution) => { calls.push('pr-writer'); executions.push(['prWriter', execution]); return { title: 'Fix Button', body: '## Summary' }; }
@@ -50,6 +51,7 @@ test('creates one context snapshot and shares it with every workflow worker', as
   }, { ...workflowDeps, contextAdapter, clock: () => '2026-08-28T10:00:00.000Z' });
 
   assert.equal(result.status, 'complete');
+  assert.deepEqual(result.planArtifact, planArtifact);
   assert.equal(discoveries, 1);
   assert.equal(result.engineer.contextSnapshot.id, result.planner.contextSnapshot.id);
   assert.deepEqual(workerInputs.map(([, input]) => input.contextSnapshot.id), Array(5).fill(result.planner.contextSnapshot.id));
@@ -76,6 +78,7 @@ test('delegates plugin plan review and skips package work for non-UI tasks', asy
   const pluginCalls = [];
   const plugin = await runRwCrmOrchestrator({ ...request, environment: 'create-task-plan-plugin', modelApproval: modelApproval() }, deps(pluginCalls));
   assert.equal(plugin.status, 'awaiting-plugin-plan-review');
+  assert.deepEqual(plugin.planArtifact, planArtifact);
   assert.deepEqual(pluginCalls, ['planner']);
   const skipped = await runRwCrmOrchestrator({ task: 'Update database index', figmaLinks: [], environment: 'standalone' }, deps([]));
   assert.equal(skipped.status, 'skipped');

@@ -14,6 +14,18 @@ test('creates a bounded read-only initial plan from context and ledger', async (
   assert.equal(result.plan.goal, 'Add DatePicker');
   assert.equal(result.plan.libraryDecisions[0].authority, 'ui-library');
   assert.match(result.plan.interfaces[0], /DatePicker/);
+  assert.equal(result.planArtifact.kind, 'implementation-plan');
+  assert.equal(result.planArtifact.filename, 'rw-crm-add-datepicker-plan-v1.md');
+  assert.equal(result.planArtifact.planId, result.plan.id);
+});
+
+test('uses ticket and revision inputs for the readable plan artifact', async () => {
+  const result = await createInitialPlan({ task: 'Add DatePicker', ticketKey: 'CRM-123', artifactRevision: 2, componentScope: ['DatePicker'] }, {
+    contextAdapter: { async discover() { return { scope: { components: ['DatePicker'] }, sources: [], gaps: [], ambiguities: [], libraryDecisions: [] }; } },
+    ledger: { async consult() { return []; } }
+  });
+  assert.equal(result.planArtifact.filename, 'CRM-123-add-datepicker-plan-v2.md');
+  assert.equal(result.planArtifact.revision, 2);
 });
 
 test('reports ambiguous context without attempting implementation', async () => {

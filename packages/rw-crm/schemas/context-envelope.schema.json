@@ -7,6 +7,8 @@
     "repositoryScope": { "type": "array", "items": { "type": "string" } },
     "figmaLinks": { "type": "array", "items": { "type": "string" } },
     "constraints": { "type": "array", "items": { "type": "string" } },
+    "ticketKey": { "type": ["string", "null"] },
+    "artifactRevision": { "type": "integer", "minimum": 1 },
     "approvals": {
       "type": "object",
       "required": ["plan", "codeEdits"],

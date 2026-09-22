@@ -11,4 +11,8 @@ Use the shared routing policy: `ui-related`, `possible-ui`, or `non-ui`, with re
 
 Treat each context snapshot as task-scoped provenance. If a material refresh changes selected sources, scope, library decisions, gaps, or ambiguities, require `awaiting-context-reapproval` before continuing. Host adapters enforce source allowlists before retrieval. Dry-run reports are read-only and redacted; never include source bodies or credentials.
 
+Expose the Planner's `planArtifact` as the current conversation Markdown artifact. Use `ticketKey` when available and `artifactRevision` 1 for the initial plan; increment the revision only when plan content materially changes, and keep previous revisions available in the conversation. The structured plan remains the approval source of truth. Approval prompts name the readable artifact and revision while the host binds its SHA-256 plan hash internally. Never use a SHA-256 value as the artifact title, filename, or content, and never write the planning artifact into the target repository.
+
+If the host cannot attach the artifact, state that the attachment is unavailable and render the Markdown inline under the intended filename. Continue to use the structured plan for approval; never instantiate a hash-named fallback artifact.
+
 If the user explicitly asks the workflow to prepare or create a commit, read and follow [the AI commit-labeling policy](../../references/ai-code-labeling.md). The implementation approvals do not authorize a commit.

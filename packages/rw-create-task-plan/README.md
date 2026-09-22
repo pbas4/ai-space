@@ -37,7 +37,7 @@ codex plugin add create-task-plan@ai-space
 2. Classifies the issue as `ui-related`, `possible-ui`, or `non-ui` using evidence from the Jira task.
 3. For UI-related tasks, invokes the installed `rw-crm:rw-crm-components-planner` skill as a read-only subagent with the Jira scope, links, Figma references, and repository context.
 4. Runs requirements, repository-impact, and technical-risk analysis.
-5. Presents gaps, assumptions, risks, and the reviewed implementation plan for user approval.
+5. Publishes the RW CRM baseline and synthesized final plan as readable, versioned Markdown conversation artifacts, then presents the final revision for user approval.
 6. Executes approved work only on an approved non-protected task branch, with checkpoint commit authorization.
 
 ## UI routing
@@ -55,6 +55,8 @@ The planner is read-only. Create Task Plan does not invoke the Components Engine
 - `main` and `master` are protected from task changes and commits.
 - Commits require checkpoint approval; pushing and pull-request creation require separate approval.
 - Missing UI context is surfaced as an explicit planning risk; the plugin does not invent component details.
+- The structured plan remains the approval source of truth. SHA-256 approval hashes stay internal and never become artifact names or content.
+- Plan artifacts remain in the conversation rather than modifying the target repository; unsupported attachments fall back to inline Markdown under the intended filename.
 
 ## Package relationship
 

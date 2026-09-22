@@ -6,7 +6,8 @@ import {
   validateUiReview,
   validateModelProposal,
   validateApprovalReceipt,
-  validateEngineerResult
+  validateEngineerResult,
+  validatePlanArtifact
 } from '../src/contracts.mjs';
 import { createContextSnapshot } from '../src/context/context-snapshot.mjs';
 
@@ -18,6 +19,7 @@ test('validates shared planner, reviewer, and model contracts', () => {
   assignments.prWriter = { model: 'gpt-5.6-luna', reasoning: 'light' };
   assert.equal(validateModelProposal({ proposalId: 'model-1', tier: 'terra', preset: 'recommended', assignments, selectionOptions: [], reasons: [], status: 'awaiting-confirmation' }).valid, true);
   assert.equal(validateApprovalReceipt({ planId: 'plan-1', planHash: 'a'.repeat(64), contextSnapshotId: 'b'.repeat(64), contextDigest: 'c'.repeat(64), editSetHash: 'd'.repeat(64), approvedBy: 'Pol', approvedAt: '2026-08-26T10:00:00.000Z' }, { requireEditSetHash: true }).valid, true);
+  assert.equal(validatePlanArtifact({ kind: 'implementation-plan', title: 'CRM-123 — Add DatePicker — Plan v1', filename: 'CRM-123-add-datepicker-plan-v1.md', mediaType: 'text/markdown', revision: 1, planId: 'plan-1', content: '# CRM-123 — Add DatePicker — Plan v1' }).valid, true);
 });
 
 test('rejects unsafe contract values', () => {
@@ -26,6 +28,7 @@ test('rejects unsafe contract values', () => {
   assert.equal(validateUiReview({ findings: [], verification: {}, completion: 'unknown' }).valid, false);
   assert.equal(validateModelProposal({ proposalId: 'model-1', tier: 'unknown', assignments: {}, reasons: [], status: 'approved' }).valid, false);
   assert.equal(validateApprovalReceipt({ planId: 'plan-1', planHash: 'not-a-digest', approvedBy: 'Pol', approvedAt: 'now' }, { requireEditSetHash: true }).valid, false);
+  assert.equal(validatePlanReview({ findings: [], reviewedPlan: { id: 'plan-1' }, planArtifact: {}, recommendation: 'approve' }).valid, false);
 });
 
 test('requires snapshot evidence for approval receipts and reapproval evidence for engineer results', () => {

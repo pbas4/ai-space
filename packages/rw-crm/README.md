@@ -15,11 +15,18 @@ RW CRM is an independently usable Codex plugin package. It exposes composable pr
 
 The package can be used independently or consumed by the Create Task Plan plugin and other agents.
 
+## Human-readable plan artifacts
+
+Every planning path returns the structured plan used for approval and a versioned Markdown conversation artifact for people to read. Artifact names use the Jira key when available, such as `CRM-123-add-date-picker-plan-v1.md`, and otherwise use an `rw-crm-` prefix. Material plan changes create a new revision while earlier revisions remain available.
+
+SHA-256 plan hashes remain internal approval metadata. They are never used as artifact titles, filenames, or document content. Creating a conversation artifact does not write a planning file into the target repository; when attachments are unavailable, the workflow displays the Markdown inline under its intended filename.
+
 ## Core safeguards
 
 - Planning and reviews are read-only.
 - Implementation requires separate approval of the implementation plan and code edits.
 - Approval receipts bind the plan ID and SHA-256 plan hash; code-edit receipts also bind the exact edit-set hash, so changed content requires fresh approval.
+- Structured plans remain the approval source of truth; readable Markdown artifacts are deterministic, hash-free projections.
 - The UI library is authoritative when it conflicts with Figma; conflicts are reported explicitly.
 - Missing or ambiguous Figma, library, CRM-code, or convention context is reported rather than guessed.
 - Learning-ledger entries are proposed after corrections and persisted only with user approval.

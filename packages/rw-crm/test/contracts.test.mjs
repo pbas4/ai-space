@@ -14,6 +14,8 @@ const baseRequest = {
   repositoryScope: ['packages/ui'],
   figmaLinks: ['https://figma.com/file/example'],
   constraints: [],
+  ticketKey: 'CRM-123',
+  artifactRevision: 2,
   approvals: { plan: null, codeEdits: null }
 };
 
@@ -21,6 +23,8 @@ test('creates and validates a complete context envelope', () => {
   const envelope = createContextEnvelope(baseRequest);
   assert.equal(validateContextEnvelope(envelope).valid, true);
   assert.deepEqual(envelope.componentScope, ['DatePicker']);
+  assert.equal(envelope.ticketKey, 'CRM-123');
+  assert.equal(envelope.artifactRevision, 2);
 });
 
 test('rejects a context envelope without a task', () => {
