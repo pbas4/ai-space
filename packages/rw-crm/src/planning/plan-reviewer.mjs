@@ -2,7 +2,7 @@ function finding(id, severity, category, message, evidence = []) {
   return { id, severity, category, message, evidence, blocking: severity === 'critical' };
 }
 
-export async function reviewPlan({ request, initialPlan, contextSnapshot = null }, { contextAdapter, checklist, ledger }) {
+export async function reviewPlan({ request, initialPlan, planArtifact = null, contextSnapshot = null }, { contextAdapter, checklist, ledger }) {
   const context = contextSnapshot ?? await contextAdapter.discover(request);
   const findings = [];
   if (context.gaps?.length || context.ambiguities?.length) {
@@ -17,5 +17,5 @@ export async function reviewPlan({ request, initialPlan, contextSnapshot = null 
   }
   const proposedLearningEntry = await ledger.consult(request, context, checklist);
   const recommendation = findings.some((item) => item.blocking) ? 'blocked' : findings.some((item) => item.severity === 'high') ? 'revise' : 'approve';
-  return { findings, reviewedPlan: structuredClone(initialPlan), recommendation, proposedLearningEntry };
+  return { findings, reviewedPlan: structuredClone(initialPlan), planArtifact: planArtifact && structuredClone(planArtifact), recommendation, proposedLearningEntry };
 }

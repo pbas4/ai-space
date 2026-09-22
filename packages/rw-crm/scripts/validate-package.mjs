@@ -25,6 +25,7 @@ const required = [
   'schemas/dry-run-report.schema.json', 'schemas/verification-evidence.schema.json', 'schemas/finding.schema.json',
   'schemas/approval-receipt.schema.json',
   'schemas/initial-plan.schema.json', 'schemas/plan-review.schema.json', 'schemas/ui-review.schema.json', 'schemas/model-proposal.schema.json',
+  'schemas/plan-artifact.schema.json', 'src/planning/plan-artifact.mjs', 'test/plan-artifact.test.mjs',
   'references/workflow.md',
   'references/testing-policy.md',
   'references/rw-conventions.md',
@@ -32,6 +33,7 @@ const required = [
   'references/review-checklist.md', 'references/model-policy.md',
   'references/ui-task-routing-policy.md',
   'references/rw-components-versioning.md',
+  'references/ai-code-labeling.md',
   'test/fixtures/new-component.json',
   'test/fixtures/bug-fix.json',
   'test/fixtures/feature-extension.json',
@@ -39,7 +41,8 @@ const required = [
   'test/fixtures/approved-correction.json',
   'test/fixtures/planner-task.json', 'test/fixtures/plan-review.json', 'test/fixtures/ui-review.json', 'test/fixtures/orchestration.json',
   'test/fixtures/plugin-flow.json', 'test/fixtures/model-escalation.json',
-  'test/corpus/rw-crm-task-corpus.json', 'test/behavior-integration.test.mjs', 'test/heartbeat-controller.test.mjs', 'test/prompt-loop-contract.test.mjs'
+  'test/corpus/rw-crm-task-corpus.json', 'test/behavior-integration.test.mjs', 'test/heartbeat-controller.test.mjs', 'test/prompt-loop-contract.test.mjs',
+  'test/commit-labeling-contract.test.mjs'
 ];
 
 for (const relativePath of required) {

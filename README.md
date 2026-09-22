@@ -6,10 +6,10 @@ Monorepo for independent AI projects, agents, plugins, and reusable workflows.
 
 Projects live under [`packages/`](packages/). Each project owns its own source, tests, documentation, and runtime configuration.
 
-- [`packages/rw-crm/`](packages/rw-crm/) — reusable RW CRM planning, implementation, and UI-review Codex plugin.
-- [`packages/rw-create-task-plan/`](packages/rw-create-task-plan/) — Realworks-oriented Create Task Plan plugin with RW CRM UI planning integration.
+- [`packages/rw-crm/`](packages/rw-crm/) — reusable RW CRM planning, implementation, and UI-review Codex plugin with versioned, human-readable Markdown plan artifacts.
+- [`packages/rw-create-task-plan/`](packages/rw-create-task-plan/) — Realworks-oriented Create Task Plan plugin that preserves RW CRM plan revisions as readable conversation artifacts.
 - [`packages/book-summary/`](packages/book-summary/) — summarize EPUB/PDF books into a templated Markdown + PDF and file them to Google Drive and Obsidian.
-- [`packages/react-vertical-slices/`](packages/react-vertical-slices/) — design, migrate, implement, and review capability-based React architecture in Codex and Claude Code.
+- [`packages/react-vertical-slices/`](packages/react-vertical-slices/) — React vertical-slice skill with seven agents for boundary advice, planning, implementation, migration, auditing, review, and orchestration.
 - [`packages/book-summary/`](packages/book-summary/) — summarize a book or document (EPUB/PDF/DOCX/HTML/TXT/URL) into a templated Markdown + PDF via model-split subagents, and file it to Google Drive and Obsidian.
 
 ## Working with a project
@@ -25,13 +25,14 @@ Then work inside the relevant project directory. Project-specific commands are d
 
 ## Plugin marketplaces
 
-This repository is also a dual-host plugin marketplace. Add it to Claude Code and install either plugin independently:
+This repository is also a dual-host plugin marketplace. Add it to Claude Code and install any plugin independently:
 
 ```text
 /plugin marketplace add pbas4/ai-space
 /plugin install rw-crm@ai-space
 /plugin install create-task-plan@ai-space
 /plugin install book-summary@ai-space
+/plugin install react-vertical-slices@ai-space
 ```
 
 Codex uses the repository marketplace at `.agents/plugins/marketplace.json`:
@@ -40,6 +41,7 @@ Codex uses the repository marketplace at `.agents/plugins/marketplace.json`:
 codex plugin add rw-crm@ai-space
 codex plugin add create-task-plan@ai-space
 codex plugin add book-summary@ai-space
+codex plugin add react-vertical-slices@ai-space
 ```
 
 Push changes to `main` to publish marketplace updates.

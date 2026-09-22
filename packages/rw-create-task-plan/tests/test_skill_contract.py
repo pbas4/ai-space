@@ -1,9 +1,12 @@
+import json
 from pathlib import Path
 import unittest
 
 
 SKILL_PATH = Path(__file__).parents[1] / "skills" / "create-task-plan" / "SKILL.md"
 METADATA_PATH = Path(__file__).parents[1] / "skills" / "create-task-plan" / "agents" / "openai.yaml"
+PACKAGE_ROOT = Path(__file__).parents[1]
+WORKSPACE_ROOT = PACKAGE_ROOT.parents[1]
 
 
 class CreateTaskPlanSkillContractTest(unittest.TestCase):
@@ -197,6 +200,33 @@ class CreateTaskPlanSkillContractTest(unittest.TestCase):
         for phrase in ("routing evidence", "context snapshot ID", "context gaps", "structured validation evidence"):
             self.assertIn(phrase, self.skill)
         self.assertIn("continue the read-only planning workflow", self.skill)
+
+    def test_publishes_versioned_human_readable_plan_artifacts(self):
+        for phrase in (
+            "ticketKey",
+            "artifactRevision",
+            "conversation Markdown artifact",
+            "retains the planner's initial artifact",
+            "previous revisions",
+            "attachment is unavailable",
+            "render the Markdown inline",
+            "structured plan remains the approval source of truth",
+        ):
+            self.assertIn(phrase, self.skill)
+        self.assertIn("SHA-256 value as the artifact title, filename, or content", self.skill)
+
+    def test_publishes_release_0_2_3_in_both_marketplaces(self):
+        codex_manifest = json.loads((PACKAGE_ROOT / ".codex-plugin" / "plugin.json").read_text())
+        claude_manifest = json.loads((PACKAGE_ROOT / ".claude-plugin" / "plugin.json").read_text())
+        codex_marketplace = json.loads((WORKSPACE_ROOT / ".agents" / "plugins" / "marketplace.json").read_text())
+        claude_marketplace = json.loads((WORKSPACE_ROOT / ".claude-plugin" / "marketplace.json").read_text())
+        codex_entry = next(item for item in codex_marketplace["plugins"] if item["name"] == "create-task-plan")
+        claude_entry = next(item for item in claude_marketplace["plugins"] if item["name"] == "create-task-plan")
+        self.assertEqual(codex_manifest["version"].split("+", 1)[0], "0.2.3")
+        self.assertRegex(codex_manifest["version"], r"^0\.2\.3\+codex\.")
+        self.assertEqual(claude_manifest["version"], "0.2.3")
+        self.assertEqual(codex_entry["version"], codex_manifest["version"])
+        self.assertEqual(claude_entry["version"], claude_manifest["version"])
 
 
 if __name__ == "__main__":

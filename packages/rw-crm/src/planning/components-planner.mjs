@@ -1,3 +1,5 @@
+import { createPlanArtifact } from './plan-artifact.mjs';
+
 function contextRisks(context) {
   return [
     ...(context.gaps ?? []).map((gap) => ({ type: 'missing-context', ...gap })),
@@ -30,5 +32,11 @@ export async function createInitialPlan(input, { contextAdapter, ledger }) {
     lessons,
     approvalStatus: 'awaiting-approval'
   };
-  return { context, plan, proposedLearningEntry: null };
+  const planArtifact = createPlanArtifact({
+    plan,
+    task: request.task,
+    ticketKey: request.ticketKey ?? request.jiraKey ?? request.ticketNumber ?? request.ticket_number,
+    revision: request.artifactRevision ?? 1
+  });
+  return { context, plan, planArtifact, proposedLearningEntry: null };
 }

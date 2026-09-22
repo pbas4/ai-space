@@ -7,7 +7,7 @@ const schemaDirectory = join(dirname(fileURLToPath(import.meta.url)), '../schema
 const schemaNames = [
   'approval-receipt', 'context-envelope', 'engineer-result', 'initial-plan',
   'learning-ledger', 'model-proposal', 'plan-review', 'ui-review', 'context-snapshot',
-  'dry-run-report', 'verification-evidence', 'finding'
+  'dry-run-report', 'verification-evidence', 'finding', 'plan-artifact'
 ];
 const schemas = Object.fromEntries(await Promise.all(schemaNames.map(async (name) => {
   const schema = JSON.parse(await readFile(join(schemaDirectory, `${name}.schema.json`), 'utf8'));
@@ -33,6 +33,8 @@ export function createContextEnvelope(input) {
     repositoryScope: [...(input.repositoryScope ?? [])],
     figmaLinks: [...(input.figmaLinks ?? [])],
     constraints: [...(input.constraints ?? [])],
+    ticketKey: input.ticketKey ?? input.jiraKey ?? null,
+    artifactRevision: input.artifactRevision ?? 1,
     approvals: { plan: input.approvals?.plan ?? null, codeEdits: input.approvals?.codeEdits ?? null }
   };
 }
@@ -58,11 +60,18 @@ export function validateLedgerEntry(value) {
 }
 
 export const validateInitialPlan = (value) => validateWithSchema('initial-plan', value);
-export const validatePlanReview = (value) => validateWithSchema('plan-review', value);
+export function validatePlanReview(value) {
+  const errors = [...validateWithSchema('plan-review', value).errors];
+  if (value?.planArtifact !== undefined && value.planArtifact !== null) {
+    errors.push(...validatePlanArtifact(value.planArtifact).errors.map((error) => `$.planArtifact${error.slice(1)}`));
+  }
+  return result(errors);
+}
 export const validateUiReview = (value) => validateWithSchema('ui-review', value);
 export const validateDryRunReport = (value) => validateWithSchema('dry-run-report', value);
 export const validateVerificationEvidence = (value) => validateWithSchema('verification-evidence', value);
 export const validateFinding = (value) => validateWithSchema('finding', value);
+export const validatePlanArtifact = (value) => validateWithSchema('plan-artifact', value);
 
 export function validateModelProposal(value) {
   const errors = [...validateWithSchema('model-proposal', value).errors];

@@ -19,7 +19,7 @@ async function getOrCreateContextSnapshot(request, deps) {
 
 export async function runRwCrmOrchestrator(request, deps) {
   const routing = routeUiTask(request);
-  const base = { routing, modelProposal: null, planner: null, planReview: null, planApproval: null, engineer: null, uiReview: null, prDescription: null };
+  const base = { routing, modelProposal: null, planner: null, planArtifact: null, planReview: null, planApproval: null, engineer: null, uiReview: null, prDescription: null };
   if (!routing.invoke) return { ...base, status: 'skipped' };
   const { context: contextSummary, contextSnapshot } = await getOrCreateContextSnapshot(request, deps);
   const modelProposal = proposeModelExecution(request, classifyTask(request, contextSummary ?? contextSnapshot));
@@ -47,25 +47,26 @@ export async function runRwCrmOrchestrator(request, deps) {
   const plannerRun = await runWorker('planner', { request, contextSnapshot });
   if (plannerRun.escalation) return { ...base, modelProposal: approvedModels, modelEscalation: plannerRun.escalation, status: 'awaiting-model-escalation' };
   const planner = { ...plannerRun.result, contextSnapshot };
+  const planArtifact = planner.planArtifact ?? null;
   if (request.environment === 'create-task-plan-plugin') {
-    return { ...base, modelProposal: approvedModels, planner, planReview: { mode: 'plugin-brainstorming-review', delegated: true }, status: 'awaiting-plugin-plan-review' };
+    return { ...base, modelProposal: approvedModels, planner, planArtifact, planReview: { mode: 'plugin-brainstorming-review', delegated: true }, status: 'awaiting-plugin-plan-review' };
   }
-  const reviewRun = await runWorker('planReviewer', { request, initialPlan: planner.plan, contextSnapshot });
-  if (reviewRun.escalation) return { ...base, modelProposal: approvedModels, planner, modelEscalation: reviewRun.escalation, status: 'awaiting-model-escalation' };
+  const reviewRun = await runWorker('planReviewer', { request, initialPlan: planner.plan, planArtifact, contextSnapshot });
+  if (reviewRun.escalation) return { ...base, modelProposal: approvedModels, planner, planArtifact, modelEscalation: reviewRun.escalation, status: 'awaiting-model-escalation' };
   const planReview = { ...reviewRun.result, contextSnapshot };
-  if (planReview.recommendation === 'blocked') return { ...base, modelProposal: approvedModels, planner, planReview, status: 'blocked' };
-  if (planReview.recommendation === 'revise') return { ...base, modelProposal: approvedModels, planner, planReview, status: 'awaiting-plan-revision' };
+  if (planReview.recommendation === 'blocked') return { ...base, modelProposal: approvedModels, planner, planArtifact, planReview, status: 'blocked' };
+  if (planReview.recommendation === 'revise') return { ...base, modelProposal: approvedModels, planner, planArtifact, planReview, status: 'awaiting-plan-revision' };
   if (!request.approvedPlan || request.approvedPlan.approvalStatus !== 'approved') {
-    return { ...base, modelProposal: approvedModels, planner, planReview, planApproval: 'awaiting-approval', status: 'awaiting-plan-approval' };
+    return { ...base, modelProposal: approvedModels, planner, planArtifact, planReview, planApproval: 'awaiting-approval', status: 'awaiting-plan-approval' };
   }
   const engineerRun = await runWorker('engineer', { request, approvedPlan: request.approvedPlan, contextSnapshot });
-  if (engineerRun.escalation) return { ...base, modelProposal: approvedModels, planner, planReview, modelEscalation: engineerRun.escalation, status: 'awaiting-model-escalation' };
+  if (engineerRun.escalation) return { ...base, modelProposal: approvedModels, planner, planArtifact, planReview, modelEscalation: engineerRun.escalation, status: 'awaiting-model-escalation' };
   const engineer = { ...engineerRun.result, contextSnapshot: engineerRun.result.contextSnapshot ?? contextSnapshot };
-  if (engineer.status !== 'implemented') return { ...base, modelProposal: approvedModels, planner, planReview, planApproval: request.approvedPlan.approval, engineer, status: engineer.status };
+  if (engineer.status !== 'implemented') return { ...base, modelProposal: approvedModels, planner, planArtifact, planReview, planApproval: request.approvedPlan.approval, engineer, status: engineer.status };
   const uiReviewRun = await runWorker('uiReviewer', { request, approvedPlan: request.approvedPlan, changedArtifacts: engineer.changedArtifacts, contextSnapshot });
-  if (uiReviewRun.escalation) return { ...base, modelProposal: approvedModels, planner, planReview, engineer, modelEscalation: uiReviewRun.escalation, status: 'awaiting-model-escalation' };
+  if (uiReviewRun.escalation) return { ...base, modelProposal: approvedModels, planner, planArtifact, planReview, engineer, modelEscalation: uiReviewRun.escalation, status: 'awaiting-model-escalation' };
   const uiReview = { ...uiReviewRun.result, contextSnapshot };
-  if (uiReview.completion === 'blocked') return { ...base, modelProposal: approvedModels, planner, planReview, planApproval: request.approvedPlan.approval, engineer, uiReview, status: 'blocked' };
+  if (uiReview.completion === 'blocked') return { ...base, modelProposal: approvedModels, planner, planArtifact, planReview, planApproval: request.approvedPlan.approval, engineer, uiReview, status: 'blocked' };
   const prRun = deps.prWriter ? await runWorker('prWriter', {
     task: request.task,
     repository: request.repository,
@@ -82,7 +83,7 @@ export async function runRwCrmOrchestrator(request, deps) {
     approvedPlan: request.approvedPlan,
     contextSnapshot
   }) : { result: null };
-  if (prRun.escalation) return { ...base, modelProposal: approvedModels, planner, planReview, engineer, uiReview, modelEscalation: prRun.escalation, status: 'awaiting-model-escalation' };
+  if (prRun.escalation) return { ...base, modelProposal: approvedModels, planner, planArtifact, planReview, engineer, uiReview, modelEscalation: prRun.escalation, status: 'awaiting-model-escalation' };
   const prDescription = prRun.result && { ...prRun.result, contextSnapshot };
-  return { ...base, modelProposal: approvedModels, planner, planReview, planApproval: request.approvedPlan.approval, engineer, uiReview, prDescription, status: 'complete' };
+  return { ...base, modelProposal: approvedModels, planner, planArtifact, planReview, planApproval: request.approvedPlan.approval, engineer, uiReview, prDescription, status: 'complete' };
 }

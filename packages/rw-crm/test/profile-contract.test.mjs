@@ -28,3 +28,12 @@ test('workflow and model policy record UI routing and approval gates', async () 
   const text = await Promise.all(['skills/rw-crm-workflow/SKILL.md', 'references/model-policy.md'].map((path) => readFile(join(root, path), 'utf8'))).then((files) => files.join('\n'));
   for (const phrase of ['Figma-linked', 'explicitly', 'UI-relevant', 'confirmation', 'escalation']) assert.match(text, new RegExp(phrase, 'i'));
 });
+
+test('planning profiles expose human-readable plan artifacts', async () => {
+  const planner = await readFile(join(root, 'agents/rw-crm-components-planner.yaml'), 'utf8');
+  const reviewer = await readFile(join(root, 'agents/rw-crm-plan-reviewer.yaml'), 'utf8');
+  const workflow = await readFile(join(root, 'agents/rw-crm-workflow.yaml'), 'utf8');
+  assert.match(planner, /plan_artifact/);
+  assert.match(reviewer, /plan_artifact/);
+  assert.match(workflow, /plan_artifact/);
+});

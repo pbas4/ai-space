@@ -22,17 +22,27 @@ Do not treat a migration request as permission to override local instructions.
 For each capability:
 
 1. Add its narrow public entry.
-2. Move its connected React layer into `containers/`.
-3. Move deterministic props-only UI into `components/`.
+2. Move each connected React component into its own folder under `containers/`,
+   with a colocated test and local entry.
+3. Move each deterministic props-only component into its own folder under
+   `components/`, with a colocated test and local entry.
 4. Move its hooks, services, utilities, types, styles, tests, and fixtures with
    their owner.
-5. Replace external deep imports with the public entry.
-6. Use temporary compatibility exports only when consumers cannot move in the
+5. Keep single-owner child components beneath their parent. Promote a component
+   only to the nearest common `components/` folder when multiple owners use it.
+6. Replace implementation-file imports with leaf entries, and replace external
+   slice deep imports with the slice public entry.
+7. Use temporary compatibility exports only when consumers cannot move in the
    same review unit. Record exactly when each export will be removed.
-7. Run focused verification before starting the next capability.
+8. Run focused verification before starting the next capability.
 
 A review unit is one coherent ownership change, not a fixed line count. It should
 be understandable, testable, and revertible on its own.
+
+Adopt the leaf-folder rule incrementally. Every new, moved, or materially changed
+component or container in the approved unit must comply. Leave untouched legacy
+flat files outside the implementation scope and report them as existing debt;
+their presence is not permission to expand the migration.
 
 ## Coordinate without coupling slices
 
@@ -63,6 +73,11 @@ lifecycle, ownership, and state independence for every candidate.
 - Existing styling and dependencies remain unchanged unless separately scoped.
 - The boundary root contains only its public entry.
 - Containers and components follow their distinct responsibilities.
+- Every touched component and container has its own folder, colocated test, and
+  local entry; optional files are added only when needed.
+- Private children stay with their sole owner, and multi-owner components live
+  at the nearest common component folder.
+- Code outside a component folder imports through its local entry.
 - Consumers import through public entries.
 - Shared code has no dependency on feature or slice state.
 - Tests and styles move with their owner.

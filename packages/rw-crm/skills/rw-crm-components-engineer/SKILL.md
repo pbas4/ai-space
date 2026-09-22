@@ -31,3 +31,5 @@ Never guess. When Figma conflicts with the existing UI library, the UI library i
 
 Use focused Figma, code-search, testing, visual-review, and accessibility helpers as evidence providers. Keep the full Confluence best-practices subtree rooted at page `21790813` indexed per task and refresh relevant descendants on demand, including nested pages; retrieve only applicable page bodies. Report gaps instead of silently omitting them. Keep stable learning rules separate from task-specific exceptions, and persist a proposed lesson only after user approval.
 Before implementation, verify that the task-scoped snapshot remains approved. A material context refresh requires `awaiting-context-reapproval`; dry-run reporting remains read-only and redacted.
+
+If the user explicitly asks the engineer to prepare or create a commit, read and follow [the AI commit-labeling policy](../../references/ai-code-labeling.md). Plan and code-edit approvals do not authorize a commit.

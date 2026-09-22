@@ -6,7 +6,7 @@
       "name": "rw-crm",
       "source": { "source": "local", "path": "./packages/rw-crm" },
       "description": "Reusable RW CRM planning, component implementation, and UI review workflows.",
-      "version": "0.1.1",
+      "version": "0.2.2",
       "policy": { "installation": "AVAILABLE", "authentication": "ON_INSTALL" },
       "category": "Developer Tools"
     },
@@ -14,7 +14,7 @@
       "name": "create-task-plan",
       "source": { "source": "local", "path": "./packages/rw-create-task-plan" },
       "description": "Analyze Jira tasks, route UI work through the read-only RW UI Components Planner, and execute approved plans safely on protected task branches.",
-      "version": "0.2.2+codex.20260831000000",
+      "version": "0.2.3+codex.20260921143956",
       "policy": { "installation": "AVAILABLE", "authentication": "ON_INSTALL" },
       "category": "Productivity"
     },
@@ -25,6 +25,14 @@
       "version": "0.4.0",
       "policy": { "installation": "AVAILABLE", "authentication": "ON_INSTALL" },
       "category": "Productivity"
+    },
+    {
+      "name": "react-vertical-slices",
+      "source": { "source": "local", "path": "./packages/react-vertical-slices" },
+      "description": "Advise, plan, implement, migrate, audit, and review capability-based React architecture.",
+      "version": "0.6.0",
+      "policy": { "installation": "AVAILABLE", "authentication": "ON_INSTALL" },
+      "category": "Developer Tools"
     }
   ]
 }
