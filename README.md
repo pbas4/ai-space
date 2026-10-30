@@ -10,6 +10,7 @@ Projects live under [`packages/`](packages/). Each project owns its own source, 
 - [`packages/rw-create-task-plan/`](packages/rw-create-task-plan/) — Realworks-oriented Create Task Plan plugin that preserves RW CRM plan revisions as readable conversation artifacts.
 - [`packages/book-summary/`](packages/book-summary/) — summarize EPUB/PDF books into a templated Markdown + PDF and file them to Google Drive and Obsidian.
 - [`packages/react-vertical-slices/`](packages/react-vertical-slices/) — React vertical-slice skill with seven agents for boundary advice, planning, implementation, migration, auditing, review, and orchestration.
+- [`packages/retro/`](packages/retro/) — shared retrospective skill with three agents for evidence-backed findings, scoped proposals, authorized improvements, and independent verification.
 - [`packages/book-summary/`](packages/book-summary/) — summarize a book or document (EPUB/PDF/DOCX/HTML/TXT/URL) into a templated Markdown + PDF via model-split subagents, and file it to Google Drive and Obsidian.
 
 ## Working with a project
@@ -33,16 +34,26 @@ This repository is also a dual-host plugin marketplace. Add it to Claude Code an
 /plugin install create-task-plan@ai-space
 /plugin install book-summary@ai-space
 /plugin install react-vertical-slices@ai-space
+/plugin install retro@ai-space
 ```
 
 Codex uses the repository marketplace at `.agents/plugins/marketplace.json`:
 
 ```bash
+codex plugin marketplace add .
 codex plugin add rw-crm@ai-space
 codex plugin add create-task-plan@ai-space
 codex plugin add book-summary@ai-space
 codex plugin add react-vertical-slices@ai-space
+codex plugin add retro@ai-space
 ```
+
+Run the registration command from this checkout; remote registration via
+`codex plugin marketplace add pbas4/ai-space` requires published marketplace
+entries. Start a new Codex session after installation to refresh skill discovery.
+
+Invoke Retro as `$retro` in Codex or `/retro:retro` in Claude Code. Its package
+README documents the separate Codex custom-agent installation and scope limits.
 
 Push changes to `main` to publish marketplace updates.
 
