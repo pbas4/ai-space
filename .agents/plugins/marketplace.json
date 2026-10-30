@@ -33,6 +33,14 @@
       "version": "0.6.0",
       "policy": { "installation": "AVAILABLE", "authentication": "ON_INSTALL" },
       "category": "Developer Tools"
+    },
+    {
+      "name": "retro",
+      "source": { "source": "local", "path": "./packages/retro" },
+      "description": "Turn session corrections into scoped proposals and independently reviewed improvements.",
+      "version": "0.1.0",
+      "policy": { "installation": "AVAILABLE", "authentication": "ON_INSTALL" },
+      "category": "Developer Tools"
     }
   ]
 }

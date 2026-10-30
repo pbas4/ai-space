@@ -1,0 +1,6 @@
+interface:
+  display_name: "Retro"
+  short_description: "Turn session corrections into reviewed improvements"
+  default_prompt: "Use $retro to review the supplied session evidence and propose scoped improvements."
+policy:
+  allow_implicit_invocation: false

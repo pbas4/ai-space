@@ -1,0 +1,26 @@
+{
+  "name": "retro",
+  "version": "0.1.0",
+  "description": "Turn session corrections into scoped proposals and independently reviewed improvements.",
+  "author": {
+    "name": "Pol"
+  },
+  "repository": "https://github.com/pbas4/ai-space",
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Retro",
+    "shortDescription": "Review session corrections and scoped improvements.",
+    "longDescription": "Coordinate an interviewer, rule designer, and verifier using supplied session evidence. Propose changes first, and implement only authorized improvements.",
+    "developerName": "Pol",
+    "category": "Developer Tools",
+    "capabilities": [
+      "Session retrospectives",
+      "Scoped proposals",
+      "Authorized improvements",
+      "Independent verification"
+    ],
+    "defaultPrompt": [
+      "Review this session and propose scoped improvements."
+    ]
+  }
+}

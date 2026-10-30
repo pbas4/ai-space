@@ -4,8 +4,8 @@ Each directory under this folder is an independently usable project within the A
 
 All packages are independently installable from the AI Space marketplaces:
 
-- Claude Code: `rw-crm@ai-space`, `create-task-plan@ai-space`, and `book-summary@ai-space`
-- Codex: `rw-crm@ai-space`, `create-task-plan@ai-space`, and `book-summary@ai-space`
+- Claude Code: `rw-crm@ai-space`, `create-task-plan@ai-space`, `book-summary@ai-space`, `react-vertical-slices@ai-space`, and `retro@ai-space`
+- Codex: `rw-crm@ai-space`, `create-task-plan@ai-space`, `book-summary@ai-space`, `react-vertical-slices@ai-space`, and `retro@ai-space`
 
 ## Project conventions
 
@@ -20,6 +20,7 @@ Projects may use different runtimes or no runtime at all; the monorepo does not 
 
 - [`rw-crm/`](rw-crm/) — reusable RW CRM planning, implementation, and UI-review agents with versioned Markdown plan artifacts.
 - [`react-vertical-slices/`](react-vertical-slices/) — cross-client skill for capability-based React architecture and migration.
+- [`retro/`](retro/) — shared retrospective skill with three specialists for findings, proposals, authorized improvements, and independent verification; invoke `$retro` or `/retro:retro` and install Codex custom agents separately as documented.
 - [`rw-create-task-plan/`](rw-create-task-plan/) — Jira task planning plugin that consumes the installed `rw-crm:rw-crm-components-planner` skill and retains readable plan revisions; install both plugins for that handoff.
 - [`book-summary/`](book-summary/) — skill that summarizes a book or document (EPUB/PDF/DOCX/HTML/TXT/URL) into a templated Markdown + PDF via model-split subagents, and files it to Google Drive and Obsidian.
 
